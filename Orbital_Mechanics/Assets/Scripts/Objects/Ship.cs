@@ -6,42 +6,87 @@ using Sim.Math;
 
 namespace Sim.Objects
 {
-    [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(OrbitDrawer))]
     public class Ship : MonoBehaviour
     {
-        private Rigidbody body;
-        public Rigidbody Body { get => body; }
-
         [SerializeField] private Vector3 startVelocity;
+        [SerializeField] private float thrust;
         [SerializeField] private Celestial celestial;
         [SerializeField] private KeplerianOrbit.Elements orbit;
 
         private OrbitDrawer orbitDrawer;
+        [SerializeField] private Vector3 velocity;
+        private Vector3 lastPosition;
+        private float timeOnOrbit = 0;
+
+        private void Awake() {
+            ShipManager.Instance.Ships.Add(this);
+        }
 
         private void Start()
         {
-            body = GetComponent<Rigidbody>();
             orbitDrawer = GetComponent<OrbitDrawer>();
+            orbitDrawer.SetupOrbitRenderer(celestial.transform); 
 
-            ShipManager.Instance.Ships.Add(this);
-
+            this.velocity = Vector3.zero;
             AddVelocity(startVelocity);
+
+            lastPosition = transform.position;
         }
 
-        private void AddVelocity(Vector3 velocity) {
-            var targetVelocity = body.velocity + velocity;
-            body.velocity += velocity * 7.07f; // ????
-            orbit = KeplerianOrbit.CalculateOrbitElements(transform.position, targetVelocity / 7.07f, celestial);
+        private void Update()
+        {
+            HandleControls(thrust);
+            MoveAlongOrbit();
+            CalculateVelocity();  
+        }
+
+        private void AddVelocity(Vector3 d_vel)
+        {
+            this.velocity += d_vel; 
+            orbit = KeplerianOrbit.CalculateOrbitElements(transform.position, this.velocity, celestial);
             orbitDrawer.DrawOrbit(orbit);
+            timeOnOrbit = 0;
         }
 
-        private void Update() {
-            if (Input.GetKeyDown(KeyCode.W)) {
-                AddVelocity(body.velocity.normalized * 0.01f);
+        private void MoveAlongOrbit()
+        {
+            float eccentricAnomaly = KeplerianOrbit.CalculateEccentricAnomaly(orbit, timeOnOrbit);
+            transform.position = celestial.transform.position + KeplerianOrbit.CalculatePositionOnOrbit(orbit, eccentricAnomaly);
+            timeOnOrbit += Time.deltaTime;
+        }
+
+        private void CalculateVelocity(bool global = false)
+        {
+            if (global)
+            {
+                this.velocity = (transform.position - lastPosition) / Time.deltaTime;
             }
-            if (Input.GetKeyDown(KeyCode.S)) {
-                AddVelocity(-body.velocity.normalized * 0.01f);
+            else
+            {
+                this.velocity = ((transform.position - lastPosition) - celestial.transform.position) / Time.deltaTime;
+            }
+            lastPosition = transform.position;
+        }
+
+        private void HandleControls(float thrust)
+        {
+            Vector3 thrustForward = this.velocity.normalized * thrust;
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                AddVelocity(thrustForward);
+            }
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                AddVelocity(-thrustForward);
             }
         }
+
+        // call this later
+        private void ExitCelestialInfluence() {
+            //celestial = new Celestial...
+            orbitDrawer.DestroyOrbitRenderer();
+        }
+        
     }
 }

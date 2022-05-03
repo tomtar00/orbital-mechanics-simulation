@@ -1,19 +1,25 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Sim.Math;
 
 namespace Sim.Visuals
 {
-    [RequireComponent(typeof(LineRenderer))]
     public class OrbitDrawer : MonoBehaviour
     {
         [SerializeField] private int orbitResolution = 30;
         private LineRenderer lineRenderer;
+        private GameObject rendererObject;
 
-        private void Awake()
+        public void SetupOrbitRenderer(Transform celestial)
         {
-            lineRenderer = GetComponent<LineRenderer>();
+            rendererObject = new GameObject("Orbit Renderer");
+            rendererObject.transform.SetParent(celestial);
+            lineRenderer = rendererObject.AddComponent<LineRenderer>();
+            lineRenderer.useWorldSpace = false;
+            lineRenderer.startWidth= .1f;
+        }
+
+        public void DestroyOrbitRenderer() {
+            Destroy(rendererObject);
         }
 
         public void DrawOrbit(KeplerianOrbit.Elements elements)
@@ -25,17 +31,9 @@ namespace Sim.Visuals
             for (int i = 0; i < orbitResolution; i++)
             {
                 float eccentricAnomaly = i * orbitFraction * 2 * Mathf.PI;        
-                float trueAnomaly = 2 * Mathf.Atan(elements.meta.trueAnomalyConstant * Mathf.Tan(eccentricAnomaly / 2));
-                float distance = elements.semimajorAxis * (1 - elements.eccentricity * Mathf.Cos(eccentricAnomaly));
+                Vector3 position = KeplerianOrbit.CalculatePositionOnOrbit(elements, eccentricAnomaly);
 
-                float cosArgTrue = Mathf.Cos(elements.argPeriapsis + trueAnomaly);
-                float sinArgTrue = Mathf.Sin(elements.argPeriapsis + trueAnomaly);
-
-                float x = distance * ((elements.meta.cosLonAcsNode * cosArgTrue) - (elements.meta.sinLonAcsNode * sinArgTrue * elements.meta.cosInclination));
-                float y = distance * ((elements.meta.sinLonAcsNode * cosArgTrue) + (elements.meta.cosLonAcsNode * sinArgTrue * elements.meta.cosInclination));
-                float z = distance * (elements.meta.sinInclination * sinArgTrue);
-
-                lineRenderer.SetPosition(i, new Vector3(x, y, z));
+                lineRenderer.SetPosition(i, position);
             }
 
             lineRenderer.SetPosition(orbitResolution, lineRenderer.GetPosition(0));
