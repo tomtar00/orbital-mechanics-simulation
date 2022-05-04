@@ -34,7 +34,7 @@ namespace Sim.Math
 
         // CONVERTER https://janus.astro.umd.edu/orbits/elements/convertframe.html
         // https://en.wikipedia.org/wiki/Hyperbolic_trajectory
-        // https://phys.libretexts.org/Bookshelves/Astronomy__Cosmology/Celestial_Mechanics_(Tatum)/09%3A_The_Two_Body_Problem_in_Two_Dimensions/9.08%3A_Orbital_Elements_and_Velocity_Vector
+        // source: https://phys.libretexts.org/Bookshelves/Astronomy__Cosmology/Celestial_Mechanics_(Tatum)/09%3A_The_Two_Body_Problem_in_Two_Dimensions/9.08%3A_Orbital_Elements_and_Velocity_Vector
         public static Elements CalculateOrbitElements(Vector3 position, Vector3 velocity, Celestial body, bool deg = false)
         {
             float PI2 = 2 * Mathf.PI;
@@ -43,20 +43,24 @@ namespace Sim.Math
             float velMagnitude = velocity.magnitude;
 
             // Semi-major axis
+            // source: wyprowadzenie_semimajor.png
             float centerMassDst = Vector3.Distance(position, body.transform.position);
             float semimajorAxis = (GM * centerMassDst) / (2 * GM - velMagnitude * velMagnitude * centerMassDst);
 
             // Eccentricity
+            // source: https://en.wikipedia.org/wiki/Eccentricity_vector
             Vector3 angMomentum = Vector3.Cross(position, velocity);
             float angMomMag = angMomentum.magnitude;
             Vector3 eccVec = (Vector3.Cross(velocity, angMomentum) / GM) - (position / posMagnitude);
             float eccentricity = eccVec.magnitude;
 
             // Inclination
+            // source: https://en.wikipedia.org/wiki/Orbital_inclination
             float inclination = Mathf.Acos(angMomentum.z / angMomMag);
             if (deg) inclination *= Mathf.Rad2Deg;
 
             // Longitude of the ascending node
+            // source: https://en.wikipedia.org/wiki/Longitude_of_the_ascending_node
             Vector3 nodeVector = Vector3.Cross(Vector3.forward, angMomentum);
             float nodeMag = nodeVector.magnitude;
             float lonAscNode = Mathf.Acos(nodeVector.x / nodeMag);
@@ -65,12 +69,14 @@ namespace Sim.Math
             if (deg) lonAscNode *= Mathf.Rad2Deg;
 
             // Argument of periapsis
+            // source: https://en.wikipedia.org/wiki/Argument_of_periapsis
             float argPeriapsis = Mathf.Acos(Vector3.Dot(nodeVector, eccVec) / (nodeMag * eccentricity));
             if (eccVec.z < 0)
                 argPeriapsis = PI2 - argPeriapsis;
             if (deg) argPeriapsis *= Mathf.Rad2Deg;
 
             // True anomaly
+            // source: https://en.wikipedia.org/wiki/True_anomaly
             float trueAnomaly = Mathf.Acos(Vector3.Dot(eccVec, position) / (eccentricity * posMagnitude));
             if (Vector3.Dot(position, velocity) < 0)
                 trueAnomaly = PI2 - trueAnomaly;
@@ -98,7 +104,8 @@ namespace Sim.Math
             return elements;
         }
 
-        public static Vector3 CalculatePositionOnOrbit(Elements elements, float eccentricAnomaly)
+        // source: https://phas.ubc.ca/~newhouse/p210/orbits/cometreport.pdf
+        public static Vector3 CalculateOrbitalPosition(Elements elements, float eccentricAnomaly)
         {
             float trueAnomaly = 2 * Mathf.Atan(elements.meta.trueAnomalyConstant * Mathf.Tan(eccentricAnomaly / 2));
             float distance = elements.semimajorAxis * (1 - elements.eccentricity * Mathf.Cos(eccentricAnomaly));
@@ -113,6 +120,8 @@ namespace Sim.Math
             return new Vector3(x, y, z);
         }
 
+        // source: https://en.wikipedia.org/wiki/Eccentric_anomaly
+        // numerical method: https://en.wikipedia.org/wiki/Newton%27s_method
         public static float CalculateEccentricAnomaly(KeplerianOrbit.Elements elements, float time)
         {       
             float meanAnomaly = elements.meanAnomaly + elements.meta.meanMotion * time;
@@ -131,7 +140,6 @@ namespace Sim.Math
 
             return E1;
         }
-
         // Kepler equation f(x) = 0 
         private static float Kepler(float E, float e, float M)
         {
@@ -143,6 +151,7 @@ namespace Sim.Math
             return e * Mathf.Cos(E) - 1f;
         }
 
+        // source: https://en.wikipedia.org/wiki/Mean_anomaly
         public static float ConvertTrueToMeanAnomaly(float trueAnomaly, float eccentricity)
         {
             float sinTrue = Mathf.Sin(trueAnomaly);

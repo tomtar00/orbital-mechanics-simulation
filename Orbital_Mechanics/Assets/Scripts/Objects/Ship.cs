@@ -13,9 +13,10 @@ namespace Sim.Objects
         [SerializeField] private float thrust;
         [SerializeField] private Celestial celestial;
         [SerializeField] private KeplerianOrbit.Elements orbit;
+        [SerializeField] private Vector3 velocity;
+        [SerializeField] private float speed;
 
         private OrbitDrawer orbitDrawer;
-        [SerializeField] private Vector3 velocity;
         private Vector3 lastPosition;
         private float timeOnOrbit = 0;
 
@@ -34,11 +35,14 @@ namespace Sim.Objects
             lastPosition = transform.position;
         }
 
+        bool control = false;
         private void Update()
         {
-            HandleControls(thrust);
-            MoveAlongOrbit();
-            CalculateVelocity();  
+            this.velocity = CalculateVelocity(out this.speed);  
+            if (control) HandleControls();  
+            MoveAlongOrbit(); 
+
+            control = !control;
         }
 
         private void AddVelocity(Vector3 d_vel)
@@ -52,31 +56,34 @@ namespace Sim.Objects
         private void MoveAlongOrbit()
         {
             float eccentricAnomaly = KeplerianOrbit.CalculateEccentricAnomaly(orbit, timeOnOrbit);
-            transform.position = celestial.transform.position + KeplerianOrbit.CalculatePositionOnOrbit(orbit, eccentricAnomaly);
+            transform.position = celestial.transform.position + KeplerianOrbit.CalculateOrbitalPosition(orbit, eccentricAnomaly);
             timeOnOrbit += Time.deltaTime;
         }
 
-        private void CalculateVelocity(bool global = false)
+        private Vector3 CalculateVelocity(out float speed, bool global = false)
         {
+            speed = Mathf.Sqrt(KeplerianOrbit.G * celestial.Mass * (2/transform.position.magnitude - 1/orbit.semimajorAxis));
+            Vector3 velocity;
             if (global)
             {
-                this.velocity = (transform.position - lastPosition) / Time.deltaTime;
+                velocity = (transform.position - lastPosition) / Time.deltaTime;
             }
             else
             {
-                this.velocity = ((transform.position - lastPosition) - celestial.transform.position) / Time.deltaTime;
+                velocity = ((transform.position - lastPosition) - celestial.transform.position) / Time.deltaTime;
             }
             lastPosition = transform.position;
+            return velocity.normalized * speed;
         }
 
-        private void HandleControls(float thrust)
+        private void HandleControls()
         {
             Vector3 thrustForward = this.velocity.normalized * thrust;
-            if (Input.GetKeyDown(KeyCode.W))
+            if (Input.GetKey(KeyCode.W))
             {
                 AddVelocity(thrustForward);
             }
-            if (Input.GetKeyDown(KeyCode.S))
+            if (Input.GetKey(KeyCode.S))
             {
                 AddVelocity(-thrustForward);
             }

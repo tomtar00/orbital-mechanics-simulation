@@ -15,7 +15,7 @@ namespace Sim.Visuals
             rendererObject.transform.SetParent(celestial);
             lineRenderer = rendererObject.AddComponent<LineRenderer>();
             lineRenderer.useWorldSpace = false;
-            lineRenderer.startWidth= .1f;
+            lineRenderer.startWidth = .1f;
         }
 
         public void DestroyOrbitRenderer() {
@@ -31,7 +31,7 @@ namespace Sim.Visuals
             for (int i = 0; i < orbitResolution; i++)
             {
                 float eccentricAnomaly = i * orbitFraction * 2 * Mathf.PI;        
-                Vector3 position = KeplerianOrbit.CalculatePositionOnOrbit(elements, eccentricAnomaly);
+                Vector3 position = KeplerianOrbit.CalculateOrbitalPosition(elements, eccentricAnomaly);
 
                 lineRenderer.SetPosition(i, position);
             }
