@@ -213,8 +213,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97e67e0dd11f5c8479c542aa31544f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startVelocity: {x: 1, y: 0, z: 0}
-  thrust: 0.001
+  startVelocity: {x: 2, y: 0, z: 0}
+  thrust: 0.01
   celestial: {fileID: 1992058759}
   orbit:
     semimajorAxis: 0
@@ -229,8 +229,12 @@ MonoBehaviour:
       cosLonAcsNode: 0
       sinInclination: 0
       cosInclination: 0
+      sinArgPeriapsis: 0
+      cosArgPeriapsis: 0
+      semiminorAxis: 0
       trueAnomalyConstant: 0
       meanMotion: 0
+      semiLatusRectum: 0
   velocity: {x: 0, y: 0, z: 0}
   speed: 0
 --- !u!96 &493653091
@@ -590,7 +594,7 @@ Transform:
   m_GameObject: {fileID: 1992058754}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 6.4, y: 6.4, z: 6.4}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 153973663}
   m_RootOrder: 0
@@ -654,8 +658,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bfc56ccaec4ed5a478916ef71befdfe2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mass: 1
-  radius: 6.4
+  mass: 10
+  radius: 2
 --- !u!1 &2138677391
 GameObject:
   m_ObjectHideFlags: 0

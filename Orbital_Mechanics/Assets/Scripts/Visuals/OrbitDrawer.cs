@@ -31,7 +31,7 @@ namespace Sim.Visuals
             for (int i = 0; i < orbitResolution; i++)
             {
                 float eccentricAnomaly = i * orbitFraction * 2 * Mathf.PI;        
-                Vector3 position = KeplerianOrbit.CalculateOrbitalPosition(elements, eccentricAnomaly);
+                Vector3 position = KeplerianOrbit.CalculateOrbitalPosition(elements, eccentricAnomaly, out _);
 
                 lineRenderer.SetPosition(i, position);
             }
