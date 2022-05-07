@@ -15,6 +15,7 @@ namespace Sim.Math
             public float sinArgPeriapsis;
             public float cosArgPeriapsis;
 
+            [Space]
             public float semiminorAxis;
             public float trueAnomalyConstant;
             public float meanMotion;
@@ -29,8 +30,10 @@ namespace Sim.Math
             public float inclination;
             public float lonAscNode;
             public float argPeriapsis;
-            public float trueAnomaly;
             public float meanAnomaly;
+
+            [Space]
+            public float trueAnomaly;     
 
             public MetaElements meta;
         }
@@ -40,23 +43,22 @@ namespace Sim.Math
         // CONVERTER https://janus.astro.umd.edu/orbits/elements/convertframe.html
         // https://en.wikipedia.org/wiki/Hyperbolic_trajectory
         // source: https://phys.libretexts.org/Bookshelves/Astronomy__Cosmology/Celestial_Mechanics_(Tatum)/09%3A_The_Two_Body_Problem_in_Two_Dimensions/9.08%3A_Orbital_Elements_and_Velocity_Vector
-        public static Elements CalculateOrbitElements(Vector3 position, Vector3 velocity, Celestial body, bool deg = false)
+        public static Elements CalculateOrbitElements(Vector3 relativePosition, Vector3 velocity, float celestialMass, bool deg = false)
         {
             float PI2 = 2 * Mathf.PI;
-            float GM = G * body.Mass;
-            float posMagnitude = position.magnitude;
+            float GM = G * celestialMass;
+            float posMagnitude = relativePosition.magnitude;
             float velMagnitude = velocity.magnitude;
 
             // Semi-major axis
             // source: wyprowadzenie_semimajor.png
-            float centerMassDst = Vector3.Distance(position, body.transform.position);
-            float semimajorAxis = (GM * centerMassDst) / (2 * GM - velMagnitude * velMagnitude * centerMassDst);
+            float semimajorAxis = (GM * posMagnitude) / (2 * GM - velMagnitude * velMagnitude * posMagnitude);
 
             // Eccentricity
             // source: https://en.wikipedia.org/wiki/Eccentricity_vector
-            Vector3 angMomentum = Vector3.Cross(position, velocity);
+            Vector3 angMomentum = Vector3.Cross(relativePosition, velocity);
             float angMomMag = angMomentum.magnitude;
-            Vector3 eccVec = (Vector3.Cross(velocity, angMomentum) / GM) - (position / posMagnitude);
+            Vector3 eccVec = (Vector3.Cross(velocity, angMomentum) / GM) - (relativePosition / posMagnitude);
             float eccentricity = eccVec.magnitude;
 
             // Inclination
@@ -82,8 +84,8 @@ namespace Sim.Math
 
             // True anomaly
             // source: https://en.wikipedia.org/wiki/True_anomaly
-            float trueAnomaly = Mathf.Acos(Vector3.Dot(eccVec, position) / (eccentricity * posMagnitude));
-            if (Vector3.Dot(position, velocity) < 0)
+            float trueAnomaly = Mathf.Acos(Vector3.Dot(eccVec, relativePosition) / (eccentricity * posMagnitude));
+            if (Vector3.Dot(relativePosition, velocity) < 0)
                 trueAnomaly = PI2 - trueAnomaly;
             if (deg) trueAnomaly *= Mathf.Rad2Deg;
 
@@ -96,21 +98,25 @@ namespace Sim.Math
             elements.trueAnomaly = trueAnomaly;
             elements.meanAnomaly = ConvertTrueToMeanAnomaly(trueAnomaly, eccentricity);
 
-            MetaElements meta = new MetaElements();
-            meta.sinLonAcsNode = Mathf.Sin(lonAscNode);
-            meta.cosLonAcsNode = Mathf.Cos(lonAscNode);
-            meta.sinInclination = Mathf.Sin(inclination);
-            meta.cosInclination = Mathf.Cos(inclination);
-            meta.sinArgPeriapsis = Mathf.Sin(argPeriapsis);
-            meta.cosArgPeriapsis = Mathf.Cos(argPeriapsis);
-            meta.semiminorAxis = semimajorAxis * Mathf.Sqrt(1 - eccentricity * eccentricity);
-            meta.trueAnomalyConstant = Mathf.Sqrt((1 + eccentricity) / (1 - eccentricity));
-            meta.meanMotion = Mathf.Sqrt(GM / Mathf.Pow(semimajorAxis, 3));
-            meta.semiLatusRectum = semimajorAxis * (1 - eccentricity * eccentricity);
-
+            MetaElements meta = CalculateMetaElements(elements, celestialMass);
             elements.meta = meta;
 
             return elements;
+        }
+
+        public static MetaElements CalculateMetaElements(Elements elements, float celestialMass)  {
+            MetaElements meta = new MetaElements();
+            meta.sinLonAcsNode = Mathf.Sin(elements.lonAscNode);
+            meta.cosLonAcsNode = Mathf.Cos(elements.lonAscNode);
+            meta.sinInclination = Mathf.Sin(elements.inclination);
+            meta.cosInclination = Mathf.Cos(elements.inclination);
+            meta.sinArgPeriapsis = Mathf.Sin(elements.argPeriapsis);
+            meta.cosArgPeriapsis = Mathf.Cos(elements.argPeriapsis);
+            meta.semiminorAxis = elements.semimajorAxis * Mathf.Sqrt(1 - elements.eccentricity * elements.eccentricity);
+            meta.trueAnomalyConstant = Mathf.Sqrt((1 + elements.eccentricity) / (1 -elements. eccentricity));
+            meta.meanMotion = Mathf.Sqrt(G * celestialMass / Mathf.Pow(elements.semimajorAxis, 3));
+            meta.semiLatusRectum = elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity);
+            return meta;
         }
 
         // source: https://phas.ubc.ca/~newhouse/p210/orbits/cometreport.pdf
@@ -129,10 +135,39 @@ namespace Sim.Math
 
             return new Vector3(x, y, z);
         }
+        public static Vector3 CalculateOrbitalPosition(Elements elements, float trueAnomaly)
+        {
+            float distance = (elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity)) / (1 + elements.eccentricity * Mathf.Cos(trueAnomaly));
+
+            float cosArgTrue = Mathf.Cos(elements.argPeriapsis + trueAnomaly);
+            float sinArgTrue = Mathf.Sin(elements.argPeriapsis + trueAnomaly);
+
+            float x = distance * ((elements.meta.cosLonAcsNode * cosArgTrue) - (elements.meta.sinLonAcsNode * sinArgTrue * elements.meta.cosInclination));
+            float y = distance * ((elements.meta.sinLonAcsNode * cosArgTrue) + (elements.meta.cosLonAcsNode * sinArgTrue * elements.meta.cosInclination));
+            float z = distance * (elements.meta.sinInclination * sinArgTrue);
+
+            return new Vector3(x, y, z);
+        }
+
+        // source: https://www.orbiter-forum.com/threads/calculate-not-derive-orbital-velocity-vector.22367/
+        public static Vector3 CalculateVelocity(Elements elements, Vector3 relativePosition, Vector3 orbitNormal, float celestialMass, out float speed)
+        {
+            float posDst = relativePosition.magnitude;
+            speed = Mathf.Sqrt(KeplerianOrbit.G * celestialMass * (2 / posDst - 1 / elements.semimajorAxis));
+            
+            float e = elements.eccentricity;
+            float k = posDst / elements.semimajorAxis;
+            float alpha = Mathf.Acos((2 - 2 * e * e) / (k * (2 - k)) - 1);
+            float angle = alpha + ((Mathf.PI - alpha) / 2);         
+            if (elements.trueAnomaly < Mathf.PI)
+                angle = Mathf.PI - angle;
+            Vector3 velocity = Quaternion.AngleAxis(angle * Mathf.Rad2Deg, orbitNormal) * (relativePosition / posDst) * speed;
+            return velocity;
+        }
 
         // source: https://en.wikipedia.org/wiki/Eccentric_anomaly
         // numerical method: https://en.wikipedia.org/wiki/Newton%27s_method
-        public static float CalculateEccentricAnomaly(KeplerianOrbit.Elements elements, float time)
+        public static float CalculateEccentricAnomaly(Elements elements, float time)
         {
             float meanAnomaly = elements.meanAnomaly + elements.meta.meanMotion * time;
 
@@ -184,57 +219,5 @@ namespace Sim.Math
 
             return mean;
         }
-
-        // source: https://en.wikipedia.org/wiki/Perifocal_coordinate_system
-        // public static Vector3 CalculateVelocityVector(Elements elements, float celestialMass)
-        // {
-        //     // Obtain Anomaly in Radians
-        //     float anomalyRadians = (float)((Mathf.PI / 180) * elements.trueAnomaly);
-
-        //     // Determine the square root of the standard gravitational parameter divided by the semi-latus rectum.
-        //     float sqrtSgpOverSlr = Mathf.Sqrt(G * celestialMass / elements.meta.semiLatusRectum);
-
-        //     // Determine the P component of the velocity.
-        //     Vector3 pComponent = -Mathf.Sin(anomalyRadians) * p;
-
-        //     // Determine the Q component of the velocity.
-        //     Vector3 qComponent = (elements.eccentricity + Mathf.Cos(anomalyRadians)) * q;
-
-        //     // Sum the vector components.
-        //     Vector3 pq = pComponent + qComponent;
-
-        //     // Multiply by the square root of the standard gravitational parameter divided by the semi latus rectum.
-        //     Vector3 velocity = sqrtSgpOverSlr * pq;
-
-        //     return velocity;
-        // }
-
-        // public static Vector3 ConvertToPerifocalCoords(Elements elements, Vector3 equatorialCoords)
-        // {
-        //     float sinLonAcsNode = elements.meta.sinLonAcsNode;
-        //     float cosLonAcsNode = elements.meta.cosLonAcsNode;
-        //     float sinInclination = elements.meta.sinInclination;
-        //     float cosInclination = elements.meta.cosInclination;
-        //     float sinArgPeriapsis = elements.meta.sinArgPeriapsis;
-        //     float cosArgPeriapsis = elements.meta.cosArgPeriapsis;
-
-        //     float pi = cosLonAcsNode * cosArgPeriapsis - sinLonAcsNode * cosInclination * sinArgPeriapsis;
-        //     float pj = sinLonAcsNode * cosArgPeriapsis + cosLonAcsNode * cosInclination * sinArgPeriapsis;
-        //     float pk = sinInclination * cosArgPeriapsis;
-
-        //     float qi = -cosLonAcsNode * sinArgPeriapsis - sinLonAcsNode * cosInclination * cosArgPeriapsis;
-        //     float qj = -sinLonAcsNode * sinArgPeriapsis + cosLonAcsNode * cosInclination * cosArgPeriapsis;
-        //     float qk = sinInclination * cosArgPeriapsis;
-
-        //     float wi = sinInclination * sinLonAcsNode;
-        //     float wj = -sinInclination * cosLonAcsNode;
-        //     float wk = cosInclination;
-
-        //     float p = Vector3.Dot(new Vector3(pi, pj, pk), equatorialCoords);
-        //     float q = Vector3.Dot(new Vector3(qi, qj, qk), equatorialCoords);
-        //     float w = Vector3.Dot(new Vector3(wi, wj, wk), equatorialCoords);
-
-        //     return new Vector3(p, q, w);
-        // }
     }
 }

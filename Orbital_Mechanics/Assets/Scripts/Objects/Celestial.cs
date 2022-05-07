@@ -1,20 +1,31 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using Sim.Visuals;
 using Sim.Math;
 
 namespace Sim.Objects
 {
-    public class Celestial : MonoBehaviour
+    [RequireComponent(typeof(OrbitDrawer))]
+    public class Celestial : InOrbitObject
     {
-        // Object properties
-        [SerializeField] private float mass;
-        public float Mass { get => mass; set => mass = value; }
-        [SerializeField] private float radius;
-        public float Radius { get => radius; set => radius = value; }
+        [Header("Celestial")]
+        [SerializeField] protected CelestialSO data;
+        public CelestialSO Data { get => data; }
 
-        private void Start() {
-            transform.localScale = Vector3.one * radius;
+        private Transform model;
+
+        private new void Start()
+        {
+            base.Start();
+
+            model = transform.GetChild(0);
+            model.transform.localScale = Vector3.one * data.Radius;
+
+            if (!isStationary)
+            {
+                orbit = data.Orbit;
+                orbit.meta = KeplerianOrbit.CalculateMetaElements(orbit, celestial.Data.Mass);
+                orbitDrawer.DrawOrbit(orbit);
+            }
         }
     }
 }

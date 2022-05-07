@@ -1,83 +1,50 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Sim.Visuals;
 using Sim.Math;
 
 namespace Sim.Objects
 {
     [RequireComponent(typeof(OrbitDrawer))]
-    public class Ship : MonoBehaviour
+    public class Ship : InOrbitObject
     {
-        [SerializeField] private Vector3 startVelocity;
-        [SerializeField] private float thrust;
-        [SerializeField] private Celestial celestial;
-        [SerializeField] private KeplerianOrbit.Elements orbit;
-        [SerializeField] private Vector3 velocity;
-        [SerializeField] private float speed;
-
-        private OrbitDrawer orbitDrawer;
-        private Vector3 lastPosition;
-        private float timeOnOrbit;
+        [Header("Ship")]
+        [SerializeField] protected Vector3 startVelocity;
+        [SerializeField] protected float thrust;
 
         private void Awake()
         {
             ShipManager.Instance.Ships.Add(this);
         }
 
-        private void Start()
+        private new void Start()
         {
-            orbitDrawer = GetComponent<OrbitDrawer>();
-            orbitDrawer.SetupOrbitRenderer(celestial.transform);
+            base.Start();
 
-            this.velocity = Vector3.zero;
-            AddVelocity(startVelocity);
-
-            lastPosition = transform.position;
+            relativePosition = transform.position - celestial.RelativePosition;
+            if (isStationary)
+            {
+                Debug.LogWarning($"Ship object ({gameObject.name}) is stationary!");
+            }
+            else
+            {
+                // move out from start
+                AddVelocity(startVelocity);
+            }
         }
 
-        private void Update()
-        {   
-            this.velocity = CalculateVelocity(out this.speed);
+        private new void Update()
+        {
+            base.Update();
+
             HandleControls();
-            MoveAlongOrbit();
-        }
-
-        private void OnDrawGizmos()
-        {
-            Debug.DrawLine(transform.position, this.velocity + transform.position);
         }
 
         private void AddVelocity(Vector3 d_vel)
         {
             Vector3 newVelocity = this.velocity + d_vel;
-            orbit = KeplerianOrbit.CalculateOrbitElements(transform.position, newVelocity, celestial);
+            orbit = KeplerianOrbit.CalculateOrbitElements(relativePosition, newVelocity, celestial.Data.Mass);
             orbitDrawer.DrawOrbit(orbit);
             timeOnOrbit = 0;
-        }
-
-        private void MoveAlongOrbit()
-        {
-            float eccentricAnomaly = KeplerianOrbit.CalculateEccentricAnomaly(orbit, timeOnOrbit);
-            transform.position = celestial.transform.position + KeplerianOrbit.CalculateOrbitalPosition(orbit, eccentricAnomaly, out orbit.trueAnomaly);
-            timeOnOrbit += Time.deltaTime;
-        }
-
-        // source: https://www.orbiter-forum.com/threads/calculate-not-derive-orbital-velocity-vector.22367/
-        private Vector3 CalculateVelocity(out float speed, bool global = false)
-        {
-            Vector3 localPos = transform.position - celestial.transform.position;
-            speed = Mathf.Sqrt(KeplerianOrbit.G * celestial.Mass * (2 / localPos.magnitude - 1 / orbit.semimajorAxis));
-
-            Vector3 orbitNormal = Vector3.up; // EDIT
-            float e = orbit.eccentricity;
-            float k = localPos.magnitude / orbit.semimajorAxis;
-            float alpha = Mathf.Acos((2 - 2 * e * e) / (k * (2 - k)) - 1);
-            float angle = alpha + ((Mathf.PI - alpha) / 2);         
-            if (orbit.trueAnomaly < Mathf.PI)
-                angle = Mathf.PI - angle;
-            Vector3 velocity = Quaternion.AngleAxis(angle * Mathf.Rad2Deg, orbitNormal) * localPos.normalized * speed;
-            return velocity;
         }
 
         private void HandleControls()

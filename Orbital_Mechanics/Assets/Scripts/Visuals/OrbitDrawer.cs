@@ -6,6 +6,7 @@ namespace Sim.Visuals
     public class OrbitDrawer : MonoBehaviour
     {
         [SerializeField] private int orbitResolution = 30;
+        
         private LineRenderer lineRenderer;
         private GameObject rendererObject;
 
@@ -13,6 +14,7 @@ namespace Sim.Visuals
         {
             rendererObject = new GameObject("Orbit Renderer");
             rendererObject.transform.SetParent(celestial);
+            rendererObject.transform.localPosition = Vector3.zero;
             lineRenderer = rendererObject.AddComponent<LineRenderer>();
             lineRenderer.useWorldSpace = false;
             lineRenderer.startWidth = .1f;
