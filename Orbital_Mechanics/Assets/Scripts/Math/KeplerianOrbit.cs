@@ -20,6 +20,7 @@ namespace Sim.Math
             public float trueAnomalyConstant;
             public float meanMotion;
             public float semiLatusRectum;
+            public float meanAnomalyAtZero;
         }
 
         [System.Serializable]
@@ -58,6 +59,7 @@ namespace Sim.Math
             // source: https://en.wikipedia.org/wiki/Eccentricity_vector
             Vector3 angMomentum = Vector3.Cross(relativePosition, velocity);
             float angMomMag = angMomentum.magnitude;
+            if (angMomMag == 0) angMomMag = .0001f;
             Vector3 eccVec = (Vector3.Cross(velocity, angMomentum) / GM) - (relativePosition / posMagnitude);
             float eccentricity = eccVec.magnitude;
 
@@ -70,6 +72,7 @@ namespace Sim.Math
             // source: https://en.wikipedia.org/wiki/Longitude_of_the_ascending_node
             Vector3 nodeVector = Vector3.Cross(Vector3.forward, angMomentum);
             float nodeMag = nodeVector.magnitude;
+            if (nodeMag == 0) nodeMag = .0001f;
             float lonAscNode = Mathf.Acos(nodeVector.x / nodeMag);
             if (nodeVector.y < 0)
                 lonAscNode = PI2 - lonAscNode;
@@ -116,6 +119,7 @@ namespace Sim.Math
             meta.trueAnomalyConstant = Mathf.Sqrt((1 + elements.eccentricity) / (1 -elements. eccentricity));
             meta.meanMotion = Mathf.Sqrt(G * celestialMass / Mathf.Pow(elements.semimajorAxis, 3));
             meta.semiLatusRectum = elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity);
+            meta.meanAnomalyAtZero = elements.meanAnomaly;
             return meta;
         }
 
@@ -167,9 +171,25 @@ namespace Sim.Math
 
         // source: https://en.wikipedia.org/wiki/Eccentric_anomaly
         // numerical method: https://en.wikipedia.org/wiki/Newton%27s_method
+        public static float CalculateEccentricAnomalyFromMean(Elements elements, float meanAnomaly)
+        {
+            float E1 = meanAnomaly;
+            float difference = float.MaxValue;
+            float sigma = 1e-06f;
+            int maxIterations = 5;
+
+            for (int i = 0; difference > sigma && i < maxIterations; i++)
+            {
+                float E0 = E1;
+                E1 = E0 - Kepler(E0, elements.eccentricity, meanAnomaly) / d_Kepler(E0, elements.eccentricity);
+                difference = Mathf.Abs(E1 - E0);
+            }
+
+            return E1;
+        }
         public static float CalculateEccentricAnomaly(Elements elements, float time)
         {
-            float meanAnomaly = elements.meanAnomaly + elements.meta.meanMotion * time;
+            float meanAnomaly = elements.meta.meanAnomalyAtZero + elements.meta.meanMotion * time;
 
             float E1 = meanAnomaly;
             float difference = float.MaxValue;

@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
   m_Name: Earth
   m_EditorClassIdentifier: 
-  mass: 20
+  mass: 1
   radius: 1
   orbit:
-    semimajorAxis: 6
-    eccentricity: 0.2
-    inclination: 1.57
-    lonAscNode: 3.14
-    argPeriapsis: 3.08
+    semimajorAxis: 30
+    eccentricity: 0.0167
+    inclination: 1.5707964
+    lonAscNode: 0
+    argPeriapsis: 0
     meanAnomaly: 0
     trueAnomaly: 0
     meta:
@@ -33,3 +33,4 @@ MonoBehaviour:
       trueAnomalyConstant: 0
       meanMotion: 0
       semiLatusRectum: 0
+      meanAnomalyAtZero: 0

@@ -8,7 +8,7 @@ namespace Sim.Objects
     public class Ship : InOrbitObject
     {
         [Header("Ship")]
-        [SerializeField] protected Vector3 startVelocity;
+        [SerializeField] protected Vector3 startRelativePosition;
         [SerializeField] protected float thrust;
 
         private void Awake()
@@ -20,7 +20,7 @@ namespace Sim.Objects
         {
             base.Start();
 
-            relativePosition = transform.position - celestial.RelativePosition;
+            relativePosition = startRelativePosition;
             if (isStationary)
             {
                 Debug.LogWarning($"Ship object ({gameObject.name}) is stationary!");
@@ -28,7 +28,7 @@ namespace Sim.Objects
             else
             {
                 // move out from start
-                AddVelocity(startVelocity);
+                InitializeShip();
             }
         }
 
@@ -37,34 +37,57 @@ namespace Sim.Objects
             base.Update();
 
             HandleControls();
+            CheckCelestialInfluence();
+        }
+
+        private void InitializeShip() {
+            transform.position = centralBody.RelativePosition + startRelativePosition;
+            Vector3 velDirection = Vector3.Cross(relativePosition, Vector3.up).normalized;
+            Vector3 startVelocity = velDirection * Mathf.Sqrt(KeplerianOrbit.G * centralBody.Data.Mass / relativePosition.magnitude);
+            AddVelocity(startVelocity);
         }
 
         private void AddVelocity(Vector3 d_vel)
         {
             Vector3 newVelocity = this.velocity + d_vel;
-            orbit = KeplerianOrbit.CalculateOrbitElements(relativePosition, newVelocity, celestial.Data.Mass);
-            orbitDrawer.DrawOrbit(orbit);
+            orbit = KeplerianOrbit.CalculateOrbitElements(relativePosition, newVelocity, centralBody.Data.Mass);
+            orbitDrawer.DrawOrbit(orbit, centralBody.InfluenceRadius);
             timeOnOrbit = 0;
         }
 
         private void HandleControls()
         {
             Vector3 thrustForward = this.velocity.normalized * thrust;
-            if (Input.GetKey(KeyCode.W))
+            if (Input.GetKey(KeyCode.M))
             {
                 AddVelocity(thrustForward);
             }
-            if (Input.GetKey(KeyCode.S))
+            if (Input.GetKey(KeyCode.N))
             {
                 AddVelocity(-thrustForward);
+            }
+
+            if (Input.GetKeyDown(KeyCode.R)) {
+                InitializeShip();
+            }
+        }
+
+        private void CheckCelestialInfluence() {
+            if (relativePosition.sqrMagnitude > centralBody.InfluenceRadius * centralBody.InfluenceRadius) {
+                ExitCelestialInfluence();
             }
         }
 
         // call this later
         private void ExitCelestialInfluence()
         {
-            //celestial = new Celestial...
             orbitDrawer.DestroyOrbitRenderer();
+            Vector3 previousCentralBodyVelocity = centralBody.Velocity;
+            centralBody = centralBody.CentralBody;
+            relativePosition = transform.position - centralBody.RelativePosition;
+            orbitDrawer.SetupOrbitRenderer(centralBody.transform);
+            AddVelocity(previousCentralBodyVelocity);
+            orbitDrawer.DrawOrbit(orbit, centralBody.InfluenceRadius);
         }
 
     }

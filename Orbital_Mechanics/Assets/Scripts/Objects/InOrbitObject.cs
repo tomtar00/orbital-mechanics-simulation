@@ -8,15 +8,17 @@ namespace Sim.Objects
     {
         [Header("Orbit")]
         [SerializeField] protected bool isStationary;
-        [SerializeField] protected Celestial celestial;
+        [SerializeField] protected Celestial centralBody;
         [Space]
         [SerializeField] protected KeplerianOrbit.Elements orbit;
 
         // Moving
         protected Vector3 velocity;
+        public Vector3 Velocity { get => velocity; }
         protected float speed;
 
         // Orbit
+        public Celestial CentralBody { get => centralBody; }
         protected OrbitDrawer orbitDrawer;
         protected float timeOnOrbit;
         protected Vector3 orbitNormal;
@@ -30,7 +32,7 @@ namespace Sim.Objects
         {
             orbitDrawer = GetComponent<OrbitDrawer>();
             if (!isStationary) {
-                orbitDrawer.SetupOrbitRenderer(celestial.transform);
+                orbitDrawer.SetupOrbitRenderer(centralBody.transform);
             }
         }
 
@@ -40,10 +42,10 @@ namespace Sim.Objects
             {
                 MoveAlongOrbit();
        
-                relativePosition = transform.position - celestial.RelativePosition;
+                relativePosition = transform.position - centralBody.RelativePosition;
                 orbitNormal = Vector3.Cross(perpendicularLastPosition, relativePosition).normalized;
 
-                this.velocity = KeplerianOrbit.CalculateVelocity(orbit, relativePosition, orbitNormal, celestial.Data.Mass, out this.speed);
+                this.velocity = KeplerianOrbit.CalculateVelocity(orbit, relativePosition, orbitNormal, centralBody.Data.Mass, out this.speed);
             }    
             else {
                 relativePosition = transform.position;
@@ -54,8 +56,8 @@ namespace Sim.Objects
         {
             timeOnOrbit += Time.deltaTime;
             float eccentricAnomaly = KeplerianOrbit.CalculateEccentricAnomaly(orbit, timeOnOrbit);
-            transform.position = celestial.transform.position + KeplerianOrbit.CalculateOrbitalPosition(orbit, eccentricAnomaly, out orbit.trueAnomaly);
-
+            transform.position = centralBody.transform.position + KeplerianOrbit.CalculateOrbitalPosition(orbit, eccentricAnomaly, out orbit.trueAnomaly);
+            orbit.meanAnomaly = KeplerianOrbit.ConvertTrueToMeanAnomaly(orbit.trueAnomaly, orbit.eccentricity);
             perpendicularLastPosition = KeplerianOrbit.CalculateOrbitalPosition(orbit, orbit.trueAnomaly - Mathf.PI / 2);
         }
 
@@ -66,11 +68,11 @@ namespace Sim.Objects
             Debug.DrawLine(transform.position, this.velocity + transform.position);
 
             /// Draw orbit plane normal vector
-            if (celestial != null)
+            if (centralBody != null)
             {
-                Debug.DrawLine(celestial.transform.position, perpendicularLastPosition + celestial.transform.position, Color.green);
-                Debug.DrawLine(celestial.transform.position, transform.position, Color.red);
-                Debug.DrawLine(celestial.transform.position, orbitNormal + celestial.transform.position, Color.blue);
+                Debug.DrawLine(centralBody.transform.position, perpendicularLastPosition + centralBody.transform.position, Color.green);
+                Debug.DrawLine(centralBody.transform.position, transform.position, Color.red);
+                Debug.DrawLine(centralBody.transform.position, orbitNormal + centralBody.transform.position, Color.blue);
             }
         }
     }

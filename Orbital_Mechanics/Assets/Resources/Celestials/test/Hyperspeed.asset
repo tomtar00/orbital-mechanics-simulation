@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
-  m_Name: Sun
+  m_Name: Hyperspeed
   m_EditorClassIdentifier: 
-  mass: 40
-  radius: 2
+  mass: 0
+  radius: 0.5
   orbit:
-    semimajorAxis: 0
-    eccentricity: 0
-    inclination: 0
-    lonAscNode: 0
-    argPeriapsis: 0
-    meanAnomaly: 0
+    semimajorAxis: 25
+    eccentricity: 0.7
+    inclination: 1.57
+    lonAscNode: 3.14
+    argPeriapsis: 3.08
+    meanAnomaly: 6
     trueAnomaly: 0
     meta:
       sinLonAcsNode: 0
