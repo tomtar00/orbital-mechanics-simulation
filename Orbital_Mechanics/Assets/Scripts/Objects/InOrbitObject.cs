@@ -55,9 +55,9 @@ namespace Sim.Objects
         protected void MoveAlongOrbit()
         {
             timeOnOrbit += Time.deltaTime;
-            float eccentricAnomaly = KeplerianOrbit.CalculateEccentricAnomaly(orbit, timeOnOrbit);
+            float eccentricAnomaly = KeplerianOrbit.CalculateEccentricAnomaly(orbit, timeOnOrbit, out orbit.meanAnomaly);
             transform.position = centralBody.transform.position + KeplerianOrbit.CalculateOrbitalPosition(orbit, eccentricAnomaly, out orbit.trueAnomaly);
-            orbit.meanAnomaly = KeplerianOrbit.ConvertTrueToMeanAnomaly(orbit.trueAnomaly, orbit.eccentricity);
+            //orbit.meanAnomaly = KeplerianOrbit.ConvertTrueToMeanAnomaly(orbit.trueAnomaly, orbit.eccentricity);
             perpendicularLastPosition = KeplerianOrbit.CalculateOrbitalPosition(orbit, orbit.trueAnomaly - Mathf.PI / 2);
         }
 

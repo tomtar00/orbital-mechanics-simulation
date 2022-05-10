@@ -11,18 +11,19 @@ namespace Sim.Objects
         [SerializeField] protected Vector3 startRelativePosition;
         [SerializeField] protected float thrust;
 
-        private void Awake()
-        {
-            ShipManager.Instance.Ships.Add(this);
-        }
+        // private void Awake()
+        // {
+        //     ShipManager.Instance.Ships.Add(this);
+        // }
 
         private new void Start()
         {
             base.Start();
 
-            relativePosition = startRelativePosition;
+            
             if (isStationary)
             {
+                relativePosition = startRelativePosition;
                 Debug.LogWarning($"Ship object ({gameObject.name}) is stationary!");
             }
             else
@@ -33,14 +34,17 @@ namespace Sim.Objects
         }
 
         private new void Update()
-        {
+        {       
             base.Update();
 
             HandleControls();
             CheckCelestialInfluence();
+
+            //Debug.Log(orbit.trueAnomaly + " -- " + orbit.meanAnomaly + " -- " + orbit.eccentricity);
         }
 
         private void InitializeShip() {
+            relativePosition = startRelativePosition;
             transform.position = centralBody.RelativePosition + startRelativePosition;
             Vector3 velDirection = Vector3.Cross(relativePosition, Vector3.up).normalized;
             Vector3 startVelocity = velDirection * Mathf.Sqrt(KeplerianOrbit.G * centralBody.Data.Mass / relativePosition.magnitude);
@@ -51,6 +55,7 @@ namespace Sim.Objects
         {
             Vector3 newVelocity = this.velocity + d_vel;
             orbit = KeplerianOrbit.CalculateOrbitElements(relativePosition, newVelocity, centralBody.Data.Mass);
+            //Debug.Log(orbit.eccentricity);
             orbitDrawer.DrawOrbit(orbit, centralBody.InfluenceRadius);
             timeOnOrbit = 0;
         }

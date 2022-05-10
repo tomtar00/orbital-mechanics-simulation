@@ -53,41 +53,43 @@ namespace Sim.Math
 
             // Semi-major axis
             // source: wyprowadzenie_semimajor.png
-            float semimajorAxis = (GM * posMagnitude) / (2 * GM - velMagnitude * velMagnitude * posMagnitude);
+            float semimajorAxis = (GM * posMagnitude).SafeDivision((2 * GM - velMagnitude * velMagnitude * posMagnitude));
 
             // Eccentricity
             // source: https://en.wikipedia.org/wiki/Eccentricity_vector
             Vector3 angMomentum = Vector3.Cross(relativePosition, velocity);
             float angMomMag = angMomentum.magnitude;
-            if (angMomMag == 0) angMomMag = .0001f;
-            Vector3 eccVec = (Vector3.Cross(velocity, angMomentum) / GM) - (relativePosition / posMagnitude);
+            Vector3 eccVec = (Vector3.Cross(velocity, angMomentum) / GM) - (relativePosition.SafeDivision(posMagnitude));    
             float eccentricity = eccVec.magnitude;
 
             // Inclination
             // source: https://en.wikipedia.org/wiki/Orbital_inclination
-            float inclination = Mathf.Acos(angMomentum.z / angMomMag);
+            float inclination = Mathf.Acos(angMomentum.z.SafeDivision(angMomMag));
             if (deg) inclination *= Mathf.Rad2Deg;
 
             // Longitude of the ascending node
             // source: https://en.wikipedia.org/wiki/Longitude_of_the_ascending_node
             Vector3 nodeVector = Vector3.Cross(Vector3.forward, angMomentum);
             float nodeMag = nodeVector.magnitude;
-            if (nodeMag == 0) nodeMag = .0001f;
-            float lonAscNode = Mathf.Acos(nodeVector.x / nodeMag);
+            float lonAscNode = Mathf.Acos(nodeVector.x.SafeDivision(nodeMag));
             if (nodeVector.y < 0)
                 lonAscNode = PI2 - lonAscNode;
             if (deg) lonAscNode *= Mathf.Rad2Deg;
 
             // Argument of periapsis
             // source: https://en.wikipedia.org/wiki/Argument_of_periapsis
-            float argPeriapsis = Mathf.Acos(Vector3.Dot(nodeVector, eccVec) / (nodeMag * eccentricity));
+            float argPeriapsis = Mathf.Acos(Vector3.Dot(nodeVector, eccVec).SafeDivision(nodeMag * eccentricity));
             if (eccVec.z < 0)
                 argPeriapsis = PI2 - argPeriapsis;
             if (deg) argPeriapsis *= Mathf.Rad2Deg;
 
             // True anomaly
             // source: https://en.wikipedia.org/wiki/True_anomaly
-            float trueAnomaly = Mathf.Acos(Vector3.Dot(eccVec, relativePosition) / (eccentricity * posMagnitude));
+            float x =Vector3.Dot(eccVec, relativePosition);
+            float y = eccentricity;
+            float z = posMagnitude;
+            float trueAnomaly = Mathf.Acos(Mathf.Clamp(x.SafeDivision(eccentricity * posMagnitude), -1f, 1f));
+            //Debug.Log(trueAnomaly + " -- " + x + " -- " + y + " -- " + z);
             if (Vector3.Dot(relativePosition, velocity) < 0)
                 trueAnomaly = PI2 - trueAnomaly;
             if (deg) trueAnomaly *= Mathf.Rad2Deg;
@@ -116,8 +118,8 @@ namespace Sim.Math
             meta.sinArgPeriapsis = Mathf.Sin(elements.argPeriapsis);
             meta.cosArgPeriapsis = Mathf.Cos(elements.argPeriapsis);
             meta.semiminorAxis = elements.semimajorAxis * Mathf.Sqrt(1 - elements.eccentricity * elements.eccentricity);
-            meta.trueAnomalyConstant = Mathf.Sqrt((1 + elements.eccentricity) / (1 -elements. eccentricity));
-            meta.meanMotion = Mathf.Sqrt(G * celestialMass / Mathf.Pow(elements.semimajorAxis, 3));
+            meta.trueAnomalyConstant = Mathf.Sqrt((1 + elements.eccentricity).SafeDivision(1 - elements.eccentricity));
+            meta.meanMotion = Mathf.Sqrt((G * celestialMass).SafeDivision(Mathf.Pow(elements.semimajorAxis, 3)));
             meta.semiLatusRectum = elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity);
             meta.meanAnomalyAtZero = elements.meanAnomaly;
             return meta;
@@ -127,6 +129,8 @@ namespace Sim.Math
         public static Vector3 CalculateOrbitalPosition(Elements elements, float eccentricAnomaly, out float trueAnomaly)
         {
             trueAnomaly = 2 * Mathf.Atan(elements.meta.trueAnomalyConstant * Mathf.Tan(eccentricAnomaly / 2));
+            // if (elements.semimajorAxis < 10)
+            //     Debug.Log(trueAnomaly + " -- " + elements.meta.trueAnomalyConstant + " -- " + eccentricAnomaly);
             if (trueAnomaly < 0) trueAnomaly += 2 * Mathf.PI;
             float distance = elements.semimajorAxis * (1 - elements.eccentricity * Mathf.Cos(eccentricAnomaly));
 
@@ -141,7 +145,7 @@ namespace Sim.Math
         }
         public static Vector3 CalculateOrbitalPosition(Elements elements, float trueAnomaly)
         {
-            float distance = (elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity)) / (1 + elements.eccentricity * Mathf.Cos(trueAnomaly));
+            float distance = (elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity)).SafeDivision(1 + elements.eccentricity * Mathf.Cos(trueAnomaly));
 
             float cosArgTrue = Mathf.Cos(elements.argPeriapsis + trueAnomaly);
             float sinArgTrue = Mathf.Sin(elements.argPeriapsis + trueAnomaly);
@@ -157,15 +161,15 @@ namespace Sim.Math
         public static Vector3 CalculateVelocity(Elements elements, Vector3 relativePosition, Vector3 orbitNormal, float celestialMass, out float speed)
         {
             float posDst = relativePosition.magnitude;
-            speed = Mathf.Sqrt(KeplerianOrbit.G * celestialMass * (2 / posDst - 1 / elements.semimajorAxis));
+            speed = Mathf.Sqrt(KeplerianOrbit.G * celestialMass * ((2f).SafeDivision(posDst) - (1f).SafeDivision(elements.semimajorAxis)));
             
             float e = elements.eccentricity;
-            float k = posDst / elements.semimajorAxis;
-            float alpha = Mathf.Acos((2 - 2 * e * e) / (k * (2 - k)) - 1);
+            float k = posDst.SafeDivision(elements.semimajorAxis);
+            float alpha = Mathf.Acos((2 - 2 * e * e).SafeDivision(k * (2 - k)) - 1);
             float angle = alpha + ((Mathf.PI - alpha) / 2);         
             if (elements.trueAnomaly < Mathf.PI)
                 angle = Mathf.PI - angle;
-            Vector3 velocity = Quaternion.AngleAxis(angle * Mathf.Rad2Deg, orbitNormal) * (relativePosition / posDst) * speed;
+            Vector3 velocity = Quaternion.AngleAxis(angle * Mathf.Rad2Deg, orbitNormal) * (relativePosition.SafeDivision(posDst)) * speed;
             return velocity;
         }
 
@@ -181,15 +185,16 @@ namespace Sim.Math
             for (int i = 0; difference > sigma && i < maxIterations; i++)
             {
                 float E0 = E1;
-                E1 = E0 - Kepler(E0, elements.eccentricity, meanAnomaly) / d_Kepler(E0, elements.eccentricity);
+                E1 = E0 - Kepler(E0, elements.eccentricity, meanAnomaly).SafeDivision(d_Kepler(E0, elements.eccentricity));
                 difference = Mathf.Abs(E1 - E0);
             }
 
             return E1;
         }
-        public static float CalculateEccentricAnomaly(Elements elements, float time)
+        public static float CalculateEccentricAnomaly(Elements elements, float time, out float meanAnomaly)
         {
-            float meanAnomaly = elements.meta.meanAnomalyAtZero + elements.meta.meanMotion * time;
+            meanAnomaly = elements.meta.meanAnomalyAtZero + elements.meta.meanMotion * time;
+            if (meanAnomaly > 2 * Mathf.PI) meanAnomaly -= 2 * Mathf.PI;
 
             float E1 = meanAnomaly;
             float difference = float.MaxValue;
@@ -199,9 +204,13 @@ namespace Sim.Math
             for (int i = 0; difference > sigma && i < maxIterations; i++)
             {
                 float E0 = E1;
-                E1 = E0 - Kepler(E0, elements.eccentricity, meanAnomaly) / d_Kepler(E0, elements.eccentricity);
+                E1 = E0 - Kepler(E0, elements.eccentricity, meanAnomaly).SafeDivision(d_Kepler(E0, elements.eccentricity));
                 difference = Mathf.Abs(E1 - E0);
             }
+
+            // if (elements.semimajorAxis < 10) {
+            //     Debug.Log(meanAnomaly +" -- "+elements.meta.meanAnomalyAtZero+" -- "+elements.meta.meanMotion);
+            // }
 
             return E1;
         }
@@ -223,8 +232,8 @@ namespace Sim.Math
             float cosTrue = Mathf.Cos(trueAnomaly);
             float e = eccentricity;
 
-            float y = (Mathf.Sqrt(1 - e * e) * sinTrue) / (1 + e * cosTrue);
-            float x = (e + cosTrue) / (1 + e * cosTrue);
+            float y = (Mathf.Sqrt(1 - e * e) * sinTrue).SafeDivision(1 + e * cosTrue);
+            float x = (e + cosTrue).SafeDivision(1 + e * cosTrue);
             float mean = Mathf.Atan2(y, x) - e * y;
             float PI2 = 2 * Mathf.PI;
 
