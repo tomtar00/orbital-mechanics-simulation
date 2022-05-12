@@ -43,7 +43,7 @@ namespace Sim.Objects
                 MoveAlongOrbit();
        
                 relativePosition = transform.position - centralBody.RelativePosition;
-                orbitNormal = Vector3.Cross(perpendicularLastPosition, relativePosition).normalized;
+                orbitNormal = Vector3.Cross(perpendicularLastPosition, relativePosition);//.normalized;
 
                 this.velocity = KeplerianOrbit.CalculateVelocity(orbit, relativePosition, orbitNormal, centralBody.Data.Mass, out this.speed);
             }    
