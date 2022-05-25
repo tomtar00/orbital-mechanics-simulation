@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
   m_Name: Sun
   m_EditorClassIdentifier: 
-  mass: 40
+  mass: 200
   radius: 2
   orbit:
     semimajorAxis: 0
@@ -21,16 +21,3 @@ MonoBehaviour:
     lonAscNode: 0
     argPeriapsis: 0
     meanAnomaly: 0
-    trueAnomaly: 0
-    meta:
-      sinLonAcsNode: 0
-      cosLonAcsNode: 0
-      sinInclination: 0
-      cosInclination: 0
-      sinArgPeriapsis: 0
-      cosArgPeriapsis: 0
-      semiminorAxis: 0
-      trueAnomalyConstant: 0
-      meanMotion: 0
-      semiLatusRectum: 0
-      meanAnomalyAtZero: 0

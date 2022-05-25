@@ -7,19 +7,21 @@ namespace Sim.Objects
     [RequireComponent(typeof(OrbitDrawer))]
     public class Celestial : InOrbitObject
     {
-        public const float MIN_INFLUENCE_FORCE = 0.05f;
+        public const float GRAVITY_FALLOFF = 0.05f;
 
         [Header("Celestial")]
         [SerializeField] protected CelestialSO data;
         public CelestialSO Data { get => data; }
 
-        [SerializeField] private float influenceRadius;
+        [SerializeField] private bool infiniteInfluence;
+        private float influenceRadius;
         public float InfluenceRadius { get => influenceRadius; }
 
         private Transform model;
 
         private void Awake() {
-            influenceRadius = Mathf.Sqrt((KeplerianOrbit.G * data.Mass) / MIN_INFLUENCE_FORCE);
+            if (infiniteInfluence) influenceRadius = float.MaxValue;
+            else influenceRadius = Mathf.Sqrt((KeplerianOrbit.G * data.Mass) / GRAVITY_FALLOFF);
         }
 
         private new void Start()
@@ -31,14 +33,17 @@ namespace Sim.Objects
 
             if (!isStationary)
             {
-                orbit = data.Orbit;
-                orbit.meta = KeplerianOrbit.CalculateMetaElements(orbit, centralBody.Data.Mass);
-                orbitDrawer.DrawOrbit(orbit, centralBody.influenceRadius);
+                trajectory.ApplyElementsFromStruct(data.Orbit);
+                orbitDrawer.DrawOrbit(trajectory, centralBody.influenceRadius);
             }
+
+            //CheckOrbitType(); 
         }
 
         private new void OnDrawGizmos() {
             base.OnDrawGizmos();
+
+            if (infiniteInfluence) return;
 
             int res = 30;
             float circleFraction = 1f / res;

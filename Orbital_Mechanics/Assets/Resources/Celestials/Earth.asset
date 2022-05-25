@@ -15,22 +15,9 @@ MonoBehaviour:
   mass: 1
   radius: 1
   orbit:
-    semimajorAxis: 30
-    eccentricity: 0.0167
+    semimajorAxis: 50
+    eccentricity: 0
     inclination: 1.5707964
     lonAscNode: 0
     argPeriapsis: 0
     meanAnomaly: 0
-    trueAnomaly: 0
-    meta:
-      sinLonAcsNode: 0
-      cosLonAcsNode: 0
-      sinInclination: 0
-      cosInclination: 0
-      sinArgPeriapsis: 0
-      cosArgPeriapsis: 0
-      semiminorAxis: 0
-      trueAnomalyConstant: 0
-      meanMotion: 0
-      semiLatusRectum: 0
-      meanAnomalyAtZero: 0

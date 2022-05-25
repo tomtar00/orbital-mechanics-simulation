@@ -7,12 +7,12 @@ namespace Sim.Objects
     {
         public static ShipManager Instance;
 
-        private List<Ship> ships;
-        public List<Ship> Ships { get => ships; }
+        private List<Spacecraft> ships;
+        public List<Spacecraft> Ships { get => ships; }
 
         private void Awake() {
             Instance = this;
-            ships = new List<Ship>();
+            ships = new List<Spacecraft>();
 
             // Sim.Math.KeplerianOrbit.Elements elements = 
             //     Sim.Math.KeplerianOrbit.CalculateOrbitElements(new Vector3(1,2,3), new Vector3(10,6,-5), 1);

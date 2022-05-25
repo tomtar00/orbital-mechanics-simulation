@@ -26,7 +26,7 @@ public class CameraController : MonoBehaviour
         if (Input.GetKey(KeyCode.D)) {
             diff += Vector3.right;
         }
-        transform.position += diff * Time.deltaTime * moveSpeed;
+        transform.position += diff * Time.unscaledDeltaTime * moveSpeed;
     }
 
     private void Zoom() {
@@ -37,6 +37,6 @@ public class CameraController : MonoBehaviour
         if (Input.GetAxis("Mouse ScrollWheel") > 0) {
             diff = Vector3.down;
         }
-        transform.position += diff * Time.deltaTime * zoomSpeed;
+        transform.position += diff * Time.unscaledDeltaTime * zoomSpeed;
     }
 }

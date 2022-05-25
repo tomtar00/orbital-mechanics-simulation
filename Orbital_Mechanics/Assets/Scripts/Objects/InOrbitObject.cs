@@ -6,11 +6,13 @@ namespace Sim.Objects
 {
     public abstract class InOrbitObject : MonoBehaviour
     {
+        public const float EDELTA = 0.001f;
+
         [Header("Orbit")]
         [SerializeField] protected bool isStationary;
         [SerializeField] protected Celestial centralBody;
         [Space]
-        [SerializeField] protected KeplerianOrbit.Elements orbit;
+        [SerializeField] protected KeplerianOrbit trajectory;
 
         // Moving
         protected Vector3 velocity;
@@ -20,7 +22,6 @@ namespace Sim.Objects
         // Orbit
         public Celestial CentralBody { get => centralBody; }
         protected OrbitDrawer orbitDrawer;
-        protected float timeOnOrbit;
         protected Vector3 orbitNormal;
 
         // Position
@@ -32,33 +33,63 @@ namespace Sim.Objects
         {
             orbitDrawer = GetComponent<OrbitDrawer>();
             if (!isStationary) {
-                orbitDrawer.SetupOrbitRenderer(centralBody.transform);
-            }
+                trajectory = new KeplerianOrbit(OrbitType.HYPERBOLIC, centralBody);
+                orbitDrawer.SetupOrbitRenderer(centralBody.transform);               
+            }                 
         }
 
         protected void Update()
         {           
             if (!isStationary)
             {
-                MoveAlongOrbit();
-       
-                relativePosition = transform.position - centralBody.RelativePosition;
-                orbitNormal = Vector3.Cross(perpendicularLastPosition, relativePosition);//.normalized;
-
-                this.velocity = KeplerianOrbit.CalculateVelocity(orbit, relativePosition, orbitNormal, centralBody.Data.Mass, out this.speed);
+                MoveAlongOrbit();   
             }    
             else {
                 relativePosition = transform.position;
-            }
-        }
+            }   
+        }       
 
         protected void MoveAlongOrbit()
         {
-            timeOnOrbit += Time.deltaTime;
-            float eccentricAnomaly = KeplerianOrbit.CalculateEccentricAnomaly(orbit, timeOnOrbit, out orbit.meanAnomaly);
-            transform.position = centralBody.transform.position + KeplerianOrbit.CalculateOrbitalPosition(orbit, eccentricAnomaly, out orbit.trueAnomaly);
-            //orbit.meanAnomaly = KeplerianOrbit.ConvertTrueToMeanAnomaly(orbit.trueAnomaly, orbit.eccentricity);
-            perpendicularLastPosition = KeplerianOrbit.CalculateOrbitalPosition(orbit, orbit.trueAnomaly - Mathf.PI / 2);
+            trajectory.anomaly = trajectory.orbit.CalculateAnomaly(Time.deltaTime);
+            transform.position = centralBody.transform.position + trajectory.orbit.CalculateOrbitalPosition(trajectory.anomaly);
+            relativePosition = transform.position - centralBody.RelativePosition;
+
+            //perpendicularLastPosition = trajectory.orbit.CalculateOrbitalPositionTrue(trajectory.trueAnomaly - MathLib.PI / 2);
+            orbitNormal = trajectory.orbit.angMomentum;//Vector3.Cross(perpendicularLastPosition, relativePosition).normalized;
+            this.velocity = trajectory.orbit.CalculateVelocity(relativePosition, orbitNormal, out this.speed);
+        }
+
+        protected void CheckOrbitType(Vector3 relativePosition, Vector3 velocity) {
+            float e = trajectory.orbit.CalculateEccentricity(relativePosition, velocity);
+            // if (MathLib.Abs(e) < EDELTA) {
+            //     if (!(trajectory.orbit is CircularOrbit)) {
+            //         trajectory.ChangeOrbitType(OrbitType.CIRCULAR);
+            //         Debug.Log($"{gameObject.name} switched to circular");
+            //     }
+            // }
+            // else if (MathLib.Abs(e - 1) < EDELTA) {
+            //     if (!(trajectory.orbit is ParabolicOrbit)) {
+            //         trajectory.ChangeOrbitType(OrbitType.PARABOLIC);
+            //         Debug.Log($"{gameObject.name} switched to parabolic");
+            //     }
+            // }
+            
+            if (e >= 0 && e < 1) {
+                if (!(trajectory.orbit is EllipticOrbit)) {
+                    trajectory.ChangeOrbitType(OrbitType.ELLIPTIC);
+                    Debug.Log($"{gameObject.name} switched to elliptic");
+                }
+            }
+            else if (e >= 1) {
+                if (!(trajectory.orbit is HyperbolicOrbit)) {
+                    trajectory.ChangeOrbitType(OrbitType.HYPERBOLIC);
+                    Debug.Log($"{gameObject.name} switched to hyperbolic");
+                }
+            }
+            else {
+                Debug.LogWarning($"Wrong eccentricity value: {e}");
+            }
         }
 
         // Vector debugging
@@ -73,6 +104,7 @@ namespace Sim.Objects
                 Debug.DrawLine(centralBody.transform.position, perpendicularLastPosition + centralBody.transform.position, Color.green);
                 Debug.DrawLine(centralBody.transform.position, transform.position, Color.red);
                 Debug.DrawLine(centralBody.transform.position, orbitNormal + centralBody.transform.position, Color.blue);
+                // Debug.DrawLine(centralBody.transform.position, trajectory.orbit.eccVec + centralBody.transform.position, Color.yellow);
             }
         }
     }

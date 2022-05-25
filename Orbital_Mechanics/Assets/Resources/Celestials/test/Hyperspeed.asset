@@ -12,25 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
   m_Name: Hyperspeed
   m_EditorClassIdentifier: 
-  mass: 0
+  mass: 1
   radius: 0.5
   orbit:
-    semimajorAxis: 25
-    eccentricity: 0.7
+    semimajorAxis: -3.7
+    eccentricity: 3.6
     inclination: 1.57
     lonAscNode: 3.14
-    argPeriapsis: 3.08
-    meanAnomaly: 6
-    trueAnomaly: 0
-    meta:
-      sinLonAcsNode: 0
-      cosLonAcsNode: 0
-      sinInclination: 0
-      cosInclination: 0
-      sinArgPeriapsis: 0
-      cosArgPeriapsis: 0
-      semiminorAxis: 0
-      trueAnomalyConstant: 0
-      meanMotion: 0
-      semiLatusRectum: 0
-      meanAnomalyAtZero: 0
+    argPeriapsis: 1.57
+    meanAnomaly: 0
