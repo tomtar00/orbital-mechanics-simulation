@@ -15,11 +15,6 @@ namespace Sim.Objects
         [SerializeField] protected Vector3 startRelativePosition;
         [SerializeField] protected float thrust;
 
-        // private void Awake()
-        // {
-        //     ShipManager.Instance.Ships.Add(this);
-        // }
-
         private new void Start()
         {
             base.Start();
@@ -72,6 +67,8 @@ namespace Sim.Objects
             
             trajectory.orbit.CalculateMainOrbitElements(relativePosition, newVelocity);
             orbitDrawer.DrawOrbit(trajectory, centralBody.InfluenceRadius);
+
+            orbitNormal = trajectory.orbit.angMomentum;
         }
 
         private void HandleControls()
@@ -97,6 +94,21 @@ namespace Sim.Objects
             {
                 ExitCelestialInfluence();
             }
+            else {
+                foreach(var orbitingCelestial in centralBody.celestialsOnOrbit) {
+                    if ((transform.position - orbitingCelestial.transform.position).sqrMagnitude < orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius) {
+                        EnterCelestialInfluence(orbitingCelestial);
+                        break;
+                    }
+                }
+            }
+
+            // foreach(var orbitingCelestial in centralBody.celestialsOnOrbit) {
+            //     if ((transform.position - orbitingCelestial.transform.position).sqrMagnitude < orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius) {
+            //         EnterCelestialInfluence(orbitingCelestial);
+            //         break;
+            //     }
+            // }
         }
         private void ExitCelestialInfluence()
         {
@@ -108,6 +120,19 @@ namespace Sim.Objects
             relativePosition = transform.position - centralBody.RelativePosition;
             orbitDrawer.SetupOrbitRenderer(centralBody.transform);
             AddVelocity(previousCentralBodyVelocity);
+        }
+        private void EnterCelestialInfluence(Celestial celestial) {
+            Debug.Log($"{gameObject.name} entered {celestial.gameObject.name}");
+            orbitDrawer.DestroyOrbitRenderer();
+
+            Vector3 previousCentralBodyVelocity = centralBody.Velocity;
+
+            centralBody = celestial;
+            trajectory.orbit.ChangeCentralBody(centralBody);
+            relativePosition = transform.position - centralBody.RelativePosition;
+            orbitDrawer.SetupOrbitRenderer(centralBody.transform);
+
+            AddVelocity(-centralBody.Velocity);
         }
 
         private void OnGUI()
@@ -121,6 +146,7 @@ namespace Sim.Objects
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Inclination: {trajectory.inclination}");
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Longitude of the ascending node: {trajectory.lonAscNode}");
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Argument of periapsis: {trajectory.argPeriapsis}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"SemilatusRectum: {trajectory.semiLatusRectum}");
             i++;
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Mean anomaly: {trajectory.meanAnomaly}");           
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"True anomaly:  {trajectory.trueAnomaly}");

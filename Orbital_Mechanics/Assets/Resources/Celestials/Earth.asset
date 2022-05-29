@@ -16,7 +16,7 @@ MonoBehaviour:
   radius: 1
   orbit:
     semimajorAxis: 50
-    eccentricity: 0
+    eccentricity: 0.1
     inclination: 1.5707964
     lonAscNode: 0
     argPeriapsis: 0

@@ -17,8 +17,7 @@ namespace Sim.Math
             parent.trueAnomaly = MathLib.Acos(eccPosDot.SafeDivision(parent.eccentricity * posMagnitude));
             if (Vector3.Dot(relativePosition, velocity) < 0)
                 parent.trueAnomaly = PI2 - parent.trueAnomaly;
-
-            //parent.trueAnomaly = -MathLib.Acos(-1f / parent.eccentricity) + .2f;
+                
             CalculateOtherElements();
 
             float sqrt = MathLib.Sqrt((parent.eccentricity - 1).SafeDivision(parent.eccentricity + 1));
@@ -39,19 +38,15 @@ namespace Sim.Math
         public override void CalculateTrueAnomaly(float anomaly)
         {
             parent.trueAnomaly = 2 * MathLib.Atan(parent.trueAnomalyConstant * MathLib.Tanh(anomaly / 2f));
-            //if (parent.trueAnomaly < 0) parent.trueAnomaly += 2 * MathLib.PI;
         }
 
         // https://www.orbiter-forum.com/threads/plotting-a-hyperbolic-trajectory.22004/
         public override Vector3 CalculateOrbitalPositionTrue(float trueAnomaly)
         {      
-            float distance = parent.semiLatusRectum / (1 + parent.eccentricity * MathLib.Cos(trueAnomaly));
+            float distance = -parent.semiLatusRectum / (1 + parent.eccentricity * MathLib.Cos(trueAnomaly));
 
-            Vector3 periapsisDir = -eccVec.normalized;
+            Vector3 periapsisDir = eccVec.normalized;
             Vector3 pos = Quaternion.AngleAxis(trueAnomaly * Mathf.Rad2Deg, angMomentum) * periapsisDir;
-            // Vector3 ascNd = Quaternion.AngleAxis(parent.lonAscNode, Vector3.forward) * periapsisDir;
-            // Vector3 rot = Quaternion.AngleAxis(parent.argPeriapsis, angMomentum) * ascNd;
-            // Vector3 pos = Quaternion.AngleAxis(trueAnomaly * Mathf.Rad2Deg, angMomentum) * rot;
 
             return pos * distance;
         }
@@ -59,8 +54,6 @@ namespace Sim.Math
         {
             float posDst = relativePosition.magnitude;
             speed = MathLib.Sqrt(GM * ((2f).SafeDivision(posDst) - (1f).SafeDivision(parent.semimajorAxis)));
-
-            // TODO refactor and fix at periapsis
 
             // https://en.wikipedia.org/wiki/Hyperbolic_trajectory flight path angle
             float e = parent.eccentricity;
@@ -74,18 +67,25 @@ namespace Sim.Math
         public override float CalculateAnomaly(float time)
         {
             parent.meanAnomaly += parent.meanMotion * time;
-            //Debug.Log(parent.meanMotion);
-    
             return CalculateAnomalyFromMean(parent.meanAnomaly);
+        }
+        public override float CalculateAnomalyFromMean(float meanAnomaly)
+        {
+            if (MathLib.Abs(meanAnomaly) > Mathf.PI) {
+                return MathLib.Asinh((meanAnomaly + parent.anomaly) / parent.eccentricity);
+            }
+            else {
+                return base.CalculateAnomalyFromMean(meanAnomaly);
+            }
         }
 
         public override float MeanAnomalyEquation(float H, float e, float M)
         {
-            return M - e * MathLib.Sinh(H) + H;
+            return M - e * MathLib.Sinh(H) + H; // M - e*sinh(H) + H = 0
         }
         public override float d_MeanAnomalyEquation(float H, float e)
         {
-            return -e * MathLib.Cosh(H) + 1f;
+            return -e * MathLib.Cosh(H) + 1f; //  -e*cosh(H) + 1 = 0
         }
     }
 }

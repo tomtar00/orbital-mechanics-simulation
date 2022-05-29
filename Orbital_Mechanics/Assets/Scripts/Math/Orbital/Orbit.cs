@@ -10,14 +10,14 @@ namespace Sim.Math
         protected KeplerianOrbit parent;
 
         public Celestial centralBody { get; private set; }
-        protected float GM;
-        protected float posMagnitude;
-        protected float velMagnitude;
-        public Vector3 angMomentum;
-        protected float angMomMag;
-        public Vector3 eccVec;
-        protected Vector3 nodeVector;      
-        protected float nodeMag;
+        public float GM { get; private set; }
+        public float posMagnitude { get; private set; }
+        public float velMagnitude { get; private set; }
+        public Vector3 angMomentum { get; private set; }
+        public float angMomMag { get; private set; }
+        public Vector3 eccVec { get; private set; }
+        public Vector3 nodeVector { get; private set; }
+        public float nodeMag { get; private set; }
 
         public Orbit(KeplerianOrbit trajectory, Celestial centralBody)
         {
@@ -25,7 +25,8 @@ namespace Sim.Math
             ChangeCentralBody(centralBody);
         }
 
-        public void ChangeCentralBody(Celestial centralBody) {
+        public void ChangeCentralBody(Celestial centralBody)
+        {
             this.centralBody = centralBody;
             this.GM = KeplerianOrbit.G * centralBody.Data.Mass;
         }
@@ -78,10 +79,11 @@ namespace Sim.Math
             parent.sinInclination = MathLib.Sin(parent.inclination);
             parent.cosInclination = MathLib.Cos(parent.inclination);
             parent.sinArgPeriapsis = MathLib.Sin(parent.argPeriapsis);
-            parent.cosArgPeriapsis = MathLib.Cos(parent.argPeriapsis);    
-        }  
-    
-        public float CalculateEccentricity(Vector3 relativePosition, Vector3 velocity) {
+            parent.cosArgPeriapsis = MathLib.Cos(parent.argPeriapsis);
+        }
+
+        public float CalculateEccentricity(Vector3 relativePosition, Vector3 velocity)
+        {
             Vector3 angMomentum = Vector3.Cross(relativePosition, velocity);
             float angMomMag = angMomentum.magnitude;
             Vector3 eccVec = (Vector3.Cross(velocity, angMomentum) / GM) - (relativePosition.SafeDivision(relativePosition.magnitude));
@@ -96,28 +98,30 @@ namespace Sim.Math
         {
             parent.meanAnomaly += parent.meanMotion * time;
             if (parent.meanAnomaly > PI2 / 2) parent.meanAnomaly -= PI2;
-    
+
             return CalculateAnomalyFromMean(parent.meanAnomaly);
         }
-    
+
         // source: https://en.wikipedia.org/wiki/Eccentric_anomaly
         // numerical method: https://en.wikipedia.org/wiki/Newton%27s_method
-        public float CalculateAnomalyFromMean(float meanAnomaly)
+        public virtual float CalculateAnomalyFromMean(float meanAnomaly)
         {
-            float anomaly1 = meanAnomaly;
-            float difference = float.MaxValue;
-            float sigma = 1e-06f;
-            int maxIterations = 10;
+            float a1 = meanAnomaly;
+            float a0 = 2 * meanAnomaly;
 
-            for (int i = 0; difference > sigma && i < maxIterations; i++)
+            // Debug.Log("==============================>");
+            while (MathLib.Abs(a1 - a0) > 0.0001f)
             {
-                float anomaly0 = anomaly1;
-                anomaly1 = anomaly0 - MeanAnomalyEquation(anomaly0, parent.eccentricity, meanAnomaly)
-                    .SafeDivision(d_MeanAnomalyEquation(anomaly0, parent.eccentricity));
-                difference = MathLib.Abs(anomaly1 - anomaly0);
+                a0 = a1;
+                float eq = MeanAnomalyEquation(a0, parent.eccentricity, meanAnomaly); 
+                float deq = d_MeanAnomalyEquation(a0, parent.eccentricity);
+                float sub = eq.SafeDivision(deq); 
+                a1 = a0 - sub;
+                // Debug.Log(a0 + " === " + a1 + " === " + eq + " === " + deq + " === " + sub +  " === " + meanAnomaly);
             }
+            // Debug.Log("<==============================");
 
-            return anomaly1;
+            return a1;
         }
     }
 }

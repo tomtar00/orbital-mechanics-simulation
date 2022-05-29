@@ -110,6 +110,10 @@ namespace Sim.Math
             Func<float, float> Atanh = (float a) => (Mathf.Log(1 + a) - Mathf.Log(1 - a)) / 2;
             return EnsureFunctionConditions(Atanh, x, true, -1f, 1f);
         }
+        public static float Asinh(float x) {
+            Func<float, float> Asinh = (float a) => Mathf.Log(a + Mathf.Sqrt(a*a + 1));
+            return EnsureFunctionConditions(Asinh, x, true);
+        }
 
         public static float Sqrt(float x)
         {

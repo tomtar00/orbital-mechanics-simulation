@@ -25,7 +25,6 @@ namespace Sim.Objects
         protected Vector3 orbitNormal;
 
         // Position
-        protected Vector3 perpendicularLastPosition;
         protected Vector3 relativePosition;
         public Vector3 RelativePosition { get => relativePosition; }
 
@@ -33,16 +32,18 @@ namespace Sim.Objects
         {
             orbitDrawer = GetComponent<OrbitDrawer>();
             if (!isStationary) {
-                trajectory = new KeplerianOrbit(OrbitType.HYPERBOLIC, centralBody);
+                trajectory = new KeplerianOrbit(OrbitType.ELLIPTIC, centralBody);
                 orbitDrawer.SetupOrbitRenderer(centralBody.transform);               
-            }                 
+            }                   
         }
 
         protected void Update()
         {           
             if (!isStationary)
             {
-                MoveAlongOrbit();   
+                if (centralBody == null)
+                    transform.position += this.velocity * Time.deltaTime;
+                else MoveAlongOrbit();   
             }    
             else {
                 relativePosition = transform.position;
@@ -55,8 +56,6 @@ namespace Sim.Objects
             transform.position = centralBody.transform.position + trajectory.orbit.CalculateOrbitalPosition(trajectory.anomaly);
             relativePosition = transform.position - centralBody.RelativePosition;
 
-            //perpendicularLastPosition = trajectory.orbit.CalculateOrbitalPositionTrue(trajectory.trueAnomaly - MathLib.PI / 2);
-            orbitNormal = trajectory.orbit.angMomentum;//Vector3.Cross(perpendicularLastPosition, relativePosition).normalized;
             this.velocity = trajectory.orbit.CalculateVelocity(relativePosition, orbitNormal, out this.speed);
         }
 
@@ -101,7 +100,6 @@ namespace Sim.Objects
             /// Draw orbit plane normal vector
             if (centralBody != null)
             {
-                Debug.DrawLine(centralBody.transform.position, perpendicularLastPosition + centralBody.transform.position, Color.green);
                 Debug.DrawLine(centralBody.transform.position, transform.position, Color.red);
                 Debug.DrawLine(centralBody.transform.position, orbitNormal + centralBody.transform.position, Color.blue);
                 // Debug.DrawLine(centralBody.transform.position, trajectory.orbit.eccVec + centralBody.transform.position, Color.yellow);

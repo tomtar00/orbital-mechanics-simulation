@@ -18,6 +18,8 @@ namespace Sim.Visuals
         private float PI2 = 2 * MathLib.PI;
         private List<Vector3> points = new List<Vector3>();
 
+        private KeplerianOrbit traj;
+
         public void SetupOrbitRenderer(Transform celestial)
         {
             rendererObject = new GameObject("Orbit Renderer");
@@ -39,6 +41,7 @@ namespace Sim.Visuals
             anomalyBeyondInfluence = 0;
             lastAnomaly = 0;
             points = new List<Vector3>();
+            traj = trajectory;
 
             float e = trajectory.eccentricity;
             if (e > 0 && e < 1) {
@@ -91,8 +94,8 @@ namespace Sim.Visuals
             float orbitFraction = 1f / (orbitResolution-1);
             for (int i = 0; i < orbitResolution; i++)
             {               
-                float trueAnomaly = -theta + i * orbitFraction * 2 * theta;
-                //float trueAnomaly = 0 + i * orbitFraction * theta;
+                //float trueAnomaly = -theta + i * orbitFraction * 2 * theta;
+                float trueAnomaly = currentAnomaly + i * orbitFraction * 2 * theta;
 
                 Vector3 position = trajectory.orbit.CalculateOrbitalPositionTrue(trueAnomaly);
 
