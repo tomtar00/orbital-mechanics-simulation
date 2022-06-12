@@ -33,23 +33,19 @@ namespace Sim.Objects
         {
             base.Start();
 
-            influenceSphere.localScale = Vector3.one * influenceRadius * 2;
+            influenceSphere.localScale = Vector3.one * influenceRadius * 2f / 10f;
             model.transform.localScale = Vector3.one * data.Radius;
 
             if (!isStationary)
             {
                 trajectory.ApplyElementsFromStruct(data.Orbit);
-
                 relativePosition = transform.position - centralBody.RelativePosition;
-                Vector3 perpendicularLastPosition = trajectory.orbit.CalculateOrbitalPositionTrue(trajectory.trueAnomaly - MathLib.PI / 2);
-                orbitNormal = Vector3.Cross(perpendicularLastPosition, relativePosition).normalized;
-
+                orbitNormal = trajectory.orbit.angMomentum;
                 orbitDrawer.DrawOrbit(trajectory, centralBody.influenceRadius);
             }
 
             centralBody?.celestialsOnOrbit.Add(this); 
 
-            //CheckOrbitType(); 
         }
 
         private new void OnDrawGizmos() {

@@ -6,13 +6,13 @@ namespace Sim.Objects
 {
     public abstract class InOrbitObject : MonoBehaviour
     {
-        public const float EDELTA = 0.001f;
-
         [Header("Orbit")]
         [SerializeField] protected bool isStationary;
         [SerializeField] protected Celestial centralBody;
         [Space]
         [SerializeField] protected KeplerianOrbit trajectory;
+        
+        public KeplerianOrbit Trajectory { get => trajectory; }
 
         // Moving
         protected Vector3 velocity;
@@ -33,7 +33,7 @@ namespace Sim.Objects
             orbitDrawer = GetComponent<OrbitDrawer>();
             if (!isStationary) {
                 trajectory = new KeplerianOrbit(OrbitType.ELLIPTIC, centralBody);
-                orbitDrawer.SetupOrbitRenderer(centralBody.transform);               
+                orbitDrawer.SetupOrbitRenderer(this, centralBody.transform);               
             }                   
         }
 
@@ -46,49 +46,27 @@ namespace Sim.Objects
                 else MoveAlongOrbit();   
             }    
             else {
-                relativePosition = transform.position;
+                UpdateRelativePosition();
             }   
         }       
 
         protected void MoveAlongOrbit()
-        {
-            trajectory.anomaly = trajectory.orbit.CalculateAnomaly(Time.deltaTime);
-            transform.position = centralBody.transform.position + trajectory.orbit.CalculateOrbitalPosition(trajectory.anomaly);
-            relativePosition = transform.position - centralBody.RelativePosition;
+        {       
+            trajectory.meanAnomaly = trajectory.orbit.CalculateMeanAnomaly(Time.deltaTime);
+            trajectory.anomaly = trajectory.orbit.CalculateAnomaly(trajectory.meanAnomaly);
+            trajectory.trueAnomaly = trajectory.orbit.CalculateTrueAnomaly(trajectory.anomaly);
 
-            this.velocity = trajectory.orbit.CalculateVelocity(relativePosition, orbitNormal, out this.speed);
+            relativePosition = trajectory.orbit.CalculateOrbitalPosition(trajectory.trueAnomaly);
+            transform.position = centralBody.transform.position + relativePosition;
+
+            this.velocity = trajectory.orbit.CalculateVelocity(relativePosition, out this.speed);
         }
 
-        protected void CheckOrbitType(Vector3 relativePosition, Vector3 velocity) {
-            float e = trajectory.orbit.CalculateEccentricity(relativePosition, velocity);
-            // if (MathLib.Abs(e) < EDELTA) {
-            //     if (!(trajectory.orbit is CircularOrbit)) {
-            //         trajectory.ChangeOrbitType(OrbitType.CIRCULAR);
-            //         Debug.Log($"{gameObject.name} switched to circular");
-            //     }
-            // }
-            // else if (MathLib.Abs(e - 1) < EDELTA) {
-            //     if (!(trajectory.orbit is ParabolicOrbit)) {
-            //         trajectory.ChangeOrbitType(OrbitType.PARABOLIC);
-            //         Debug.Log($"{gameObject.name} switched to parabolic");
-            //     }
-            // }
-            
-            if (e >= 0 && e < 1) {
-                if (!(trajectory.orbit is EllipticOrbit)) {
-                    trajectory.ChangeOrbitType(OrbitType.ELLIPTIC);
-                    Debug.Log($"{gameObject.name} switched to elliptic");
-                }
-            }
-            else if (e >= 1) {
-                if (!(trajectory.orbit is HyperbolicOrbit)) {
-                    trajectory.ChangeOrbitType(OrbitType.HYPERBOLIC);
-                    Debug.Log($"{gameObject.name} switched to hyperbolic");
-                }
-            }
-            else {
-                Debug.LogWarning($"Wrong eccentricity value: {e}");
-            }
+        protected void UpdateRelativePosition() {
+            if (centralBody != null)
+                relativePosition = transform.position - centralBody.transform.position;
+            else 
+                relativePosition = transform.position;
         }
 
         // Vector debugging

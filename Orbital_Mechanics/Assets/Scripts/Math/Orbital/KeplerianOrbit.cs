@@ -7,8 +7,10 @@ namespace Sim.Math
     public class KeplerianOrbit
     {
         public const float G = 6.67f;
+        private float GM;
 
         public Orbit orbit { get; set; }
+        public OrbitType orbitType { get; set; }
 
         // Main keplerian orbital elements
         public float semimajorAxis { get; set; }
@@ -40,30 +42,45 @@ namespace Sim.Math
         public KeplerianOrbit(OrbitType type, Celestial centralBody)
         {
             ChangeOrbitType(type, centralBody);
+            if (centralBody != null)
+            {
+                this.GM = G * centralBody.Data.Mass;
+            }
         }
 
         public void ChangeOrbitType(OrbitType type, Celestial centralBody)
         {
             switch (type)
             {
-                case OrbitType.CIRCULAR:
-                    orbit = new CircularOrbit(this, centralBody);
-                    break;
                 case OrbitType.ELLIPTIC:
                     orbit = new EllipticOrbit(this, centralBody);
-                    break;
-                case OrbitType.PARABOLIC:
-                    orbit = new ParabolicOrbit(this, centralBody);
                     break;
                 case OrbitType.HYPERBOLIC:
                     orbit = new HyperbolicOrbit(this, centralBody);
                     break;
             }
+            orbitType = type;
         }
 
         public void ChangeOrbitType(OrbitType type)
         {
             ChangeOrbitType(type, this.orbit.centralBody);
+            // Debug.Log("Changed to " + type);
+        }
+
+        public void CheckOrbitType(float eccentricity)
+        {
+            if (eccentricity >= 0 && eccentricity < 1)
+            {
+                if (orbitType != OrbitType.ELLIPTIC)
+                    ChangeOrbitType(OrbitType.ELLIPTIC);
+            }
+
+            else if (eccentricity >= 1)
+            {
+                if (orbitType != OrbitType.HYPERBOLIC)
+                    ChangeOrbitType(OrbitType.HYPERBOLIC);
+            }
         }
 
         public void ApplyElementsFromStruct(Elements elements)
@@ -73,7 +90,17 @@ namespace Sim.Math
             inclination = elements.inclination;
             lonAscNode = elements.lonAscNode;
             argPeriapsis = elements.argPeriapsis;
-            meanAnomaly = elements.meanAnomaly;
+            trueAnomaly = elements.trueAnomaly;
+
+            CheckOrbitType(eccentricity);
+
+            orbit.angMomentum = Quaternion.AngleAxis(inclination * Mathf.Rad2Deg, Vector3.right) * Vector3.forward;
+            orbit.angMomentum = Quaternion.AngleAxis(lonAscNode * Mathf.Rad2Deg, Vector3.forward) * orbit.angMomentum;
+            orbit.angMomentum = orbit.angMomentum.normalized * MathLib.Sqrt(GM * semimajorAxis * (1 - eccentricity * eccentricity));
+
+            orbit.eccVec = Quaternion.AngleAxis(lonAscNode * Mathf.Rad2Deg, Vector3.forward) * Vector3.right;
+            orbit.eccVec = Quaternion.AngleAxis(argPeriapsis * Mathf.Rad2Deg, orbit.angMomentum) * orbit.eccVec;
+            orbit.eccVec = orbit.eccVec.normalized * eccentricity;
 
             orbit.CalculateOtherElements();
         }
@@ -85,9 +112,8 @@ namespace Sim.Math
             public float inclination;
             public float lonAscNode;
             public float argPeriapsis;
-            public float meanAnomaly;
+            public float trueAnomaly;
         }
-
     }
 
     public enum OrbitType

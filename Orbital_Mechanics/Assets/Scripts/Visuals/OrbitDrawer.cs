@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Sim.Math;
+using Sim.Objects;
 
 namespace Sim.Visuals
 {
@@ -12,16 +14,16 @@ namespace Sim.Visuals
         private LineRenderer lineRenderer;
         private GameObject rendererObject;
 
-        float currentAnomaly = 0;
         private float anomalyBeyondInfluence = 0;
         private float lastAnomaly = 0;
         private float PI2 = 2 * MathLib.PI;
         private List<Vector3> points = new List<Vector3>();
 
-        private KeplerianOrbit traj;
+        private InOrbitObject inOrbitObject;
 
-        public void SetupOrbitRenderer(Transform celestial)
+        public void SetupOrbitRenderer(InOrbitObject obj, Transform celestial)
         {
+            this.inOrbitObject = obj;
             rendererObject = new GameObject("Orbit Renderer");
             rendererObject.transform.SetParent(celestial);
             rendererObject.transform.localPosition = Vector3.zero;
@@ -37,91 +39,147 @@ namespace Sim.Visuals
         }
 
         public void DrawOrbit(KeplerianOrbit trajectory, float influenceRadius)
-        {        
+        {
             anomalyBeyondInfluence = 0;
             lastAnomaly = 0;
             points = new List<Vector3>();
-            traj = trajectory;
 
             float e = trajectory.eccentricity;
-            if (e > 0 && e < 1) {
+            if (e >= 0 && e < 1)
+            {
                 DrawElliptic(trajectory, influenceRadius);
             }
-            else {
+            else if (e >= 1)
+            {
                 DrawHyperbolic(trajectory, influenceRadius);
             }
         }
 
-        private void DrawElliptic(KeplerianOrbit trajectory, float influenceRadius) {    
+        private void DrawElliptic(KeplerianOrbit trajectory, float influenceRadius)
+        {
             lineRenderer.positionCount = 0;
 
-            currentAnomaly = trajectory.anomaly;
+            bool encounter = false;
+            float currentAnomaly = trajectory.anomaly;
+            float currentMean = trajectory.meanAnomaly;
 
             // select points
             float orbitFraction = 1f / orbitResolution;
             for (int i = 0; i < orbitResolution; i++)
-            {               
+            {
                 float eccentricAnomaly = currentAnomaly + i * orbitFraction * PI2;
                 if (eccentricAnomaly > PI2) eccentricAnomaly -= PI2;
 
-                Vector3 position = trajectory.orbit.CalculateOrbitalPosition(eccentricAnomaly);
+                float meanAnomalyAtPoint = eccentricAnomaly - trajectory.eccentricity * MathLib.Sin(eccentricAnomaly);
+                float trueAnomaly = trajectory.orbit.CalculateTrueAnomaly(eccentricAnomaly);
+                Vector3 position = trajectory.orbit.CalculateOrbitalPosition(trueAnomaly);
 
-                if (position.sqrMagnitude < influenceRadius * influenceRadius) {
-                    points.Add(position);
-                    lastAnomaly = eccentricAnomaly;
-                }
-                else {
-                    anomalyBeyondInfluence = eccentricAnomaly;
-                    break;
-                }
-            }
-
-            // check if exited influence
-            AddLastPointBeyondInfluence(trajectory, influenceRadius, false);
-
-            // draw trajectory / orbit
-            lineRenderer.positionCount = points.Count;
-            lineRenderer.SetPositions(points.ToArray());        
-        }
-
-        private void DrawHyperbolic(KeplerianOrbit trajectory, float influenceRadius) {
-            lineRenderer.positionCount = 0;
-
-            currentAnomaly = trajectory.trueAnomaly;
-            float theta = MathLib.Acos(-1.0f / trajectory.eccentricity) - 0.01f;
-
-            // select points
-            float orbitFraction = 1f / (orbitResolution-1);
-            for (int i = 0; i < orbitResolution; i++)
-            {               
-                //float trueAnomaly = -theta + i * orbitFraction * 2 * theta;
-                float trueAnomaly = currentAnomaly + i * orbitFraction * 2 * theta;
-
-                Vector3 position = trajectory.orbit.CalculateOrbitalPositionTrue(trueAnomaly);
-
-                if (position.sqrMagnitude < influenceRadius * influenceRadius) {
+                if (position.sqrMagnitude < influenceRadius * influenceRadius)
+                {
                     points.Add(position);
                     lastAnomaly = trueAnomaly;
                 }
-                else {
+                else
+                {
                     anomalyBeyondInfluence = trueAnomaly;
                     break;
                 }
+
+                // get time in which object is in this spot
+                if (meanAnomalyAtPoint < currentMean) meanAnomalyAtPoint += PI2;
+                float time = (meanAnomalyAtPoint - currentMean) / trajectory.meanMotion;
+                // check if any other object will be in range in that time
+                foreach (var celestial in inOrbitObject.CentralBody.celestialsOnOrbit)
+                {
+                    float _meanAnomaly = celestial.Trajectory.orbit.CalculateMeanAnomaly(time);
+                    float _anomaly = celestial.Trajectory.orbit.CalculateAnomaly(_meanAnomaly);
+                    float _trueAnomaly = celestial.Trajectory.orbit.CalculateTrueAnomaly(_anomaly);
+                    Vector3 pos = celestial.Trajectory.orbit.CalculateOrbitalPosition(_trueAnomaly);
+
+                    if ((position - pos).sqrMagnitude < MathLib.Pow(celestial.InfluenceRadius, 2))
+                    {
+                        // Debug.Log($"Arriving to {celestial.name} in {time}");
+                        encounter = true;
+                        break;
+                    }
+                }
+
+                if (encounter) break;
             }
 
             // check if exited influence
-            AddLastPointBeyondInfluence(trajectory, influenceRadius, true);
+            if (!encounter)
+                AddLastPointBeyondInfluence(trajectory, influenceRadius);
+            else lineRenderer.loop = false;
 
             // draw trajectory / orbit
             lineRenderer.positionCount = points.Count;
             lineRenderer.SetPositions(points.ToArray());
-            lineRenderer.loop = false; 
+        }
+        private void DrawHyperbolic(KeplerianOrbit trajectory, float influenceRadius)
+        {
+            lineRenderer.positionCount = 0;
+
+            bool encounter = false;
+            float currentTrue = trajectory.trueAnomaly;
+            float currentMean = trajectory.meanAnomaly;
+            float theta = MathLib.Acos(-1.0f / trajectory.eccentricity) - 0.01f;
+
+            // select points
+            float orbitFraction = 1f / (orbitResolution - 1);
+            for (int i = 0; i < orbitResolution; i++)
+            {
+                float trueAnomaly = currentTrue + i * orbitFraction * 2 * theta;
+                Vector3 position = trajectory.orbit.CalculateOrbitalPosition(trueAnomaly);
+
+                if (position.sqrMagnitude < influenceRadius * influenceRadius)
+                {
+                    points.Add(position);
+                    lastAnomaly = trueAnomaly;
+                }
+                else
+                {
+                    anomalyBeyondInfluence = trueAnomaly;
+                    break;
+                }
+                
+                // get time in which object is in this spot
+                float e = trajectory.eccentricity;
+                float hyperbolicAnomaly = 2 * MathLib.Atanh(MathLib.Sqrt((e - 1) / (e + 1)) * MathLib.Tan(trueAnomaly / 2));
+                float nextMean = trajectory.eccentricity * MathLib.Sinh(hyperbolicAnomaly) - hyperbolicAnomaly;
+                if (nextMean < currentMean) nextMean += 2*Mathf.PI;
+                float time = (nextMean - currentMean) / trajectory.meanMotion;
+                // check if any other object will be in range in that time
+                foreach (var celestial in inOrbitObject.CentralBody.celestialsOnOrbit)
+                {
+                    float _meanAnomaly = celestial.Trajectory.orbit.CalculateMeanAnomaly(time);
+                    float _anomaly = celestial.Trajectory.orbit.CalculateAnomaly(_meanAnomaly);
+                    float _trueAnomaly = celestial.Trajectory.orbit.CalculateTrueAnomaly(_anomaly);
+                    Vector3 pos = celestial.Trajectory.orbit.CalculateOrbitalPosition(_trueAnomaly);
+
+                    if ((position - pos).sqrMagnitude < MathLib.Pow(celestial.InfluenceRadius, 2))
+                    {
+                        // Debug.Log($"Arriving to {celestial.name} in {time}");
+                        encounter = true;
+                        break;
+                    }
+                }
+
+                if (encounter) break;
+            }
+
+            // check if exited influence
+            if (!encounter)
+                AddLastPointBeyondInfluence(trajectory, influenceRadius);
+
+            // draw trajectory / orbit
+            lineRenderer.positionCount = points.Count;
+            lineRenderer.SetPositions(points.ToArray());
+            lineRenderer.loop = false;
         }
 
-        private void AddLastPointBeyondInfluence(KeplerianOrbit trajectory, float influenceRadius, bool posFromTrue) {
-            Func<float, Vector3> CalculatePosition = posFromTrue ? 
-                (Func<float, Vector3>)trajectory.orbit.CalculateOrbitalPositionTrue : 
-                (Func<float, Vector3>)trajectory.orbit.CalculateOrbitalPosition;
+        private void AddLastPointBeyondInfluence(KeplerianOrbit trajectory, float influenceRadius)
+        {
             if (points.Count != orbitResolution)
             {
                 lineRenderer.loop = false;
@@ -131,9 +189,10 @@ namespace Sim.Visuals
                 float delta = 1f / iter;
                 Vector3 bestPoint = Vector3.zero;
                 float dst = float.MaxValue;
-                for (int i = 0; i < iter; i++) {
+                for (int i = 0; i < iter; i++)
+                {
                     float anomaly = Mathf.Lerp(lastAnomaly, anomalyBeyondInfluence, i * delta);
-                    Vector3 position = CalculatePosition(anomaly);
+                    Vector3 position = trajectory.orbit.CalculateOrbitalPosition(anomaly);
                     float dstDiff = MathLib.Abs(position.sqrMagnitude - influenceRadius * influenceRadius);
                     if (dstDiff < dst)
                     {
@@ -143,7 +202,8 @@ namespace Sim.Visuals
                 }
                 points.Add(bestPoint);
             }
-            else {
+            else
+            {
                 lineRenderer.loop = true;
             }
         }

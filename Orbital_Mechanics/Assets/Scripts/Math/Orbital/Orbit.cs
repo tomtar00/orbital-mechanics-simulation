@@ -13,9 +13,9 @@ namespace Sim.Math
         public float GM { get; private set; }
         public float posMagnitude { get; private set; }
         public float velMagnitude { get; private set; }
-        public Vector3 angMomentum { get; private set; }
+        public Vector3 angMomentum { get; set; }
         public float angMomMag { get; private set; }
-        public Vector3 eccVec { get; private set; }
+        public Vector3 eccVec { get; set; }
         public Vector3 nodeVector { get; private set; }
         public float nodeMag { get; private set; }
 
@@ -28,14 +28,9 @@ namespace Sim.Math
         public void ChangeCentralBody(Celestial centralBody)
         {
             this.centralBody = centralBody;
-            this.GM = KeplerianOrbit.G * centralBody.Data.Mass;
-        }
-
-        public abstract void CalculateTrueAnomaly(float anomaly);
-        public abstract Vector3 CalculateOrbitalPositionTrue(float trueAnomaly);
-        public abstract Vector3 CalculateVelocity(Vector3 relativePosition, Vector3 orbitNormal, out float speed);
-        public abstract float MeanAnomalyEquation(float anomaly, float e, float M);
-        public abstract float d_MeanAnomalyEquation(float anomaly, float e);
+            if (centralBody != null)
+                this.GM = KeplerianOrbit.G * centralBody.Data.Mass;
+        }  
 
         public virtual void CalculateMainOrbitElements(Vector3 relativePosition, Vector3 velocity)
         {
@@ -71,6 +66,15 @@ namespace Sim.Math
             parent.argPeriapsis = MathLib.Acos(Vector3.Dot(nodeVector, eccVec).SafeDivision(nodeMag * parent.eccentricity));
             if (eccVec.z < 0)
                 parent.argPeriapsis = PI2 - parent.argPeriapsis;
+
+            // True anomaly
+            // source: https://en.wikipedia.org/wiki/True_anomaly                
+            float eccPosDot = Vector3.Dot(eccVec, relativePosition);
+            parent.trueAnomaly = MathLib.Acos(eccPosDot.SafeDivision(parent.eccentricity * posMagnitude));
+            if (Vector3.Dot(relativePosition, velocity) < 0)
+                parent.trueAnomaly = PI2 - parent.trueAnomaly; 
+
+            CalculateOtherElements();
         }
         public virtual void CalculateOtherElements()
         {
@@ -81,7 +85,6 @@ namespace Sim.Math
             parent.sinArgPeriapsis = MathLib.Sin(parent.argPeriapsis);
             parent.cosArgPeriapsis = MathLib.Cos(parent.argPeriapsis);
         }
-
         public float CalculateEccentricity(Vector3 relativePosition, Vector3 velocity)
         {
             Vector3 angMomentum = Vector3.Cross(relativePosition, velocity);
@@ -89,39 +92,44 @@ namespace Sim.Math
             Vector3 eccVec = (Vector3.Cross(velocity, angMomentum) / GM) - (relativePosition.SafeDivision(relativePosition.magnitude));
             return eccVec.magnitude;
         }
-        public Vector3 CalculateOrbitalPosition(float anomaly)
+            
+        // source: https://en.wikipedia.org/wiki/Elliptic_orbit#Flight_path_angle
+        public virtual Vector3 CalculateVelocity(Vector3 relativePosition, out float speed)
         {
-            CalculateTrueAnomaly(anomaly);
-            return CalculateOrbitalPositionTrue(parent.trueAnomaly);
-        }
-        public virtual float CalculateAnomaly(float time)
-        {
-            parent.meanAnomaly += parent.meanMotion * time;
-            if (parent.meanAnomaly > PI2 / 2) parent.meanAnomaly -= PI2;
+            float posDst = relativePosition.magnitude;
+            speed = MathLib.Sqrt(GM * ((2f).SafeDivision(posDst) - (1f).SafeDivision(parent.semimajorAxis)));
+        
+            float e = parent.eccentricity;
+            float pathAngle = MathLib.Atan((e * MathLib.Sin(parent.trueAnomaly)) / (1 + e * MathLib.Cos(parent.trueAnomaly)));
+            Vector3 radDir = Quaternion.AngleAxis(90, parent.orbit.angMomentum) * relativePosition.normalized;
+            Vector3 dir = Quaternion.AngleAxis(-pathAngle * MathLib.Rad2Deg, parent.orbit.angMomentum) * radDir;
 
-            return CalculateAnomalyFromMean(parent.meanAnomaly);
-        }
-
-        // source: https://en.wikipedia.org/wiki/Eccentric_anomaly
-        // numerical method: https://en.wikipedia.org/wiki/Newton%27s_method
-        public virtual float CalculateAnomalyFromMean(float meanAnomaly)
+            return dir * speed;
+        } 
+        public abstract Vector3 CalculateOrbitalPosition(float trueAnomaly);
+        
+        public abstract float CalculateMeanAnomaly(float time);
+        public virtual float CalculateAnomaly(float meanAnomaly)
         {
+            // source: https://en.wikipedia.org/wiki/Eccentric_anomaly
+            // numerical method: https://en.wikipedia.org/wiki/Newton%27s_method
+
             float a1 = meanAnomaly;
-            float a0 = 2 * meanAnomaly;
+            float a0 = float.MaxValue;
 
-            // Debug.Log("==============================>");
             while (MathLib.Abs(a1 - a0) > 0.0001f)
             {
                 a0 = a1;
                 float eq = MeanAnomalyEquation(a0, parent.eccentricity, meanAnomaly); 
                 float deq = d_MeanAnomalyEquation(a0, parent.eccentricity);
-                float sub = eq.SafeDivision(deq); 
-                a1 = a0 - sub;
-                // Debug.Log(a0 + " === " + a1 + " === " + eq + " === " + deq + " === " + sub +  " === " + meanAnomaly);
+                a1 = a0 - eq.SafeDivision(deq);
             }
-            // Debug.Log("<==============================");
 
             return a1;
         }
+        public abstract float CalculateTrueAnomaly(float anomaly);
+
+        public abstract float MeanAnomalyEquation(float anomaly, float e, float M);
+        public abstract float d_MeanAnomalyEquation(float anomaly, float e);
     }
 }

@@ -15,9 +15,9 @@ MonoBehaviour:
   mass: 1
   radius: 0.5
   orbit:
-    semimajorAxis: -3.7
-    eccentricity: 3.6
+    semimajorAxis: 10
+    eccentricity: 0.001
     inclination: 1.57
-    lonAscNode: 3.14
-    argPeriapsis: 1.57
-    meanAnomaly: 0
+    lonAscNode: 0
+    argPeriapsis: 0
+    trueAnomaly: -2.2

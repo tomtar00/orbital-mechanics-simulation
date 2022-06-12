@@ -38,7 +38,8 @@ namespace Sim.Objects
             CheckCelestialInfluence();
         }
 
-        private void OnValidate() {
+        private void OnValidate()
+        {
             transform.position = centralBody.transform.position + startRelativePosition;
         }
 
@@ -48,9 +49,9 @@ namespace Sim.Objects
             transform.position = centralBody.RelativePosition + startRelativePosition;
             Vector3 velDirection = Vector3.Cross(relativePosition, Vector3.up).normalized;
             Vector3 startVelocity;
-            if (useCustomStartVelocity) 
+            if (useCustomStartVelocity)
                 startVelocity = this.startVelocity;
-            else 
+            else
                 startVelocity = velDirection * CircularOrbitSpeed();
             AddVelocity(startVelocity);
         }
@@ -63,8 +64,10 @@ namespace Sim.Objects
         private void AddVelocity(Vector3 d_vel)
         {
             Vector3 newVelocity = this.velocity + d_vel;
-            CheckOrbitType(relativePosition, newVelocity);
-            
+
+            float e = trajectory.orbit.CalculateEccentricity(relativePosition, newVelocity);
+            trajectory.CheckOrbitType(e);
+
             trajectory.orbit.CalculateMainOrbitElements(relativePosition, newVelocity);
             orbitDrawer.DrawOrbit(trajectory, centralBody.InfluenceRadius);
 
@@ -90,48 +93,51 @@ namespace Sim.Objects
         }
         private void CheckCelestialInfluence()
         {
+            if (centralBody == null) return;
+
             if (relativePosition.sqrMagnitude > centralBody.InfluenceRadius * centralBody.InfluenceRadius)
             {
                 ExitCelestialInfluence();
             }
-            else {
-                foreach(var orbitingCelestial in centralBody.celestialsOnOrbit) {
-                    if ((transform.position - orbitingCelestial.transform.position).sqrMagnitude < orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius) {
+            else
+            {
+                foreach (var orbitingCelestial in centralBody.celestialsOnOrbit)
+                {
+                    if ((transform.position - orbitingCelestial.transform.position).sqrMagnitude < orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius)
+                    {
                         EnterCelestialInfluence(orbitingCelestial);
                         break;
                     }
                 }
             }
-
-            // foreach(var orbitingCelestial in centralBody.celestialsOnOrbit) {
-            //     if ((transform.position - orbitingCelestial.transform.position).sqrMagnitude < orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius) {
-            //         EnterCelestialInfluence(orbitingCelestial);
-            //         break;
-            //     }
-            // }
         }
         private void ExitCelestialInfluence()
         {
-            Debug.Log($"{gameObject.name} exited {centralBody.gameObject.name}");
+            // Debug.Log($"{gameObject.name} exited {centralBody.gameObject.name}");
             orbitDrawer.DestroyOrbitRenderer();
             Vector3 previousCentralBodyVelocity = centralBody.Velocity;
+
             centralBody = centralBody.CentralBody;
             trajectory.orbit.ChangeCentralBody(centralBody);
-            relativePosition = transform.position - centralBody.RelativePosition;
-            orbitDrawer.SetupOrbitRenderer(centralBody.transform);
-            AddVelocity(previousCentralBodyVelocity);
-        }
-        private void EnterCelestialInfluence(Celestial celestial) {
-            Debug.Log($"{gameObject.name} entered {celestial.gameObject.name}");
-            orbitDrawer.DestroyOrbitRenderer();
 
-            Vector3 previousCentralBodyVelocity = centralBody.Velocity;
+            if (centralBody != null)
+            {
+                UpdateRelativePosition();
+                orbitDrawer.SetupOrbitRenderer(this, centralBody.transform);
+                AddVelocity(previousCentralBodyVelocity);
+            }
+        }
+        private void EnterCelestialInfluence(Celestial celestial)
+        {
+            // Debug.Log($"{gameObject.name} entered {celestial.gameObject.name}");
+            orbitDrawer.DestroyOrbitRenderer();
+            // Vector3 previousCentralBodyVelocity = centralBody.Velocity;
 
             centralBody = celestial;
             trajectory.orbit.ChangeCentralBody(centralBody);
-            relativePosition = transform.position - centralBody.RelativePosition;
-            orbitDrawer.SetupOrbitRenderer(centralBody.transform);
 
+            UpdateRelativePosition();
+            orbitDrawer.SetupOrbitRenderer(this, centralBody.transform);
             AddVelocity(-centralBody.Velocity);
         }
 
@@ -148,7 +154,7 @@ namespace Sim.Objects
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Argument of periapsis: {trajectory.argPeriapsis}");
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"SemilatusRectum: {trajectory.semiLatusRectum}");
             i++;
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Mean anomaly: {trajectory.meanAnomaly}");           
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Mean anomaly: {trajectory.meanAnomaly}");
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"True anomaly:  {trajectory.trueAnomaly}");
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Anomaly:        {trajectory.anomaly}");
             i++;
