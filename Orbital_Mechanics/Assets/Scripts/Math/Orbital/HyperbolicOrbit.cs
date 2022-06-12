@@ -5,51 +5,52 @@ namespace Sim.Math
 {
     public class HyperbolicOrbit : Orbit
     {
-        public HyperbolicOrbit(KeplerianOrbit trajectory, Celestial centralBody) : base(trajectory, centralBody) { }
+        public HyperbolicOrbit(Celestial centralBody) : base(centralBody) { }
 
-        public override void CalculateOtherElements()
+        public override KeplerianOrbit.Elements CalculateOtherElements(KeplerianOrbit.Elements elements)
         {
-            base.CalculateOtherElements();
+            float sqrt = MathLib.Sqrt((elements.eccentricity - 1).SafeDivision(elements.eccentricity + 1));
+            elements.anomaly = 2f * MathLib.Atanh(sqrt * MathLib.Tan(elements.trueAnomaly / 2f));
+            elements.meanAnomaly = elements.eccentricity * MathLib.Sinh(elements.anomaly) - elements.anomaly; 
 
-            float sqrt = MathLib.Sqrt((parent.eccentricity - 1).SafeDivision(parent.eccentricity + 1));
-            parent.anomaly = 2f * MathLib.Atanh(sqrt * MathLib.Tan(parent.trueAnomaly / 2f));
-            parent.meanAnomaly = parent.eccentricity * MathLib.Sinh(parent.anomaly) - parent.anomaly; 
-
-            parent.meanMotion = MathLib.Sqrt((GM).SafeDivision(MathLib.Pow(-parent.semimajorAxis, 3)));
-            parent.semiminorAxis = -parent.semimajorAxis * MathLib.Sqrt(parent.eccentricity * parent.eccentricity - 1f);
-            parent.semiLatusRectum = parent.semimajorAxis * (parent.eccentricity * parent.eccentricity - 1f);
-            parent.trueAnomalyConstant = MathLib.Sqrt((parent.eccentricity + 1f).SafeDivision(parent.eccentricity - 1f));
-        }
+            elements.meanMotion = MathLib.Sqrt((GM).SafeDivision(MathLib.Pow(-elements.semimajorAxis, 3)));
+            elements.semiminorAxis = -elements.semimajorAxis * MathLib.Sqrt(elements.eccentricity * elements.eccentricity - 1f);
+            elements.semiLatusRectum = elements.semimajorAxis * (elements.eccentricity * elements.eccentricity - 1f);
+            elements.trueAnomalyConstant = MathLib.Sqrt((elements.eccentricity + 1f).SafeDivision(elements.eccentricity - 1f));
         
-        // https://www.orbiter-forum.com/threads/plotting-a-hyperbolic-trajectory.22004/
-        public override Vector3 CalculateOrbitalPosition(float trueAnomaly)
-        {      
-            float distance = -parent.semiLatusRectum / (1f + parent.eccentricity * MathLib.Cos(trueAnomaly));
+            return elements;
+        }
 
-            Vector3 periapsisDir = eccVec.normalized;
-            Vector3 pos = Quaternion.AngleAxis(trueAnomaly * Mathf.Rad2Deg, angMomentum) * periapsisDir;
+        // https://www.orbiter-forum.com/threads/plotting-a-hyperbolic-trajectory.22004/
+        public override Vector3 CalculateOrbitalPosition(KeplerianOrbit.Elements elements)
+        {      
+            float distance = -elements.semiLatusRectum / (1f + elements.eccentricity * MathLib.Cos(elements.trueAnomaly));
+
+            Vector3 periapsisDir = elements.eccVec.normalized;
+            Vector3 pos = Quaternion.AngleAxis(elements.trueAnomaly * Mathf.Rad2Deg, elements.angMomentum) * periapsisDir;
 
             return pos * distance;
         }
+        
 
-        public override float CalculateMeanAnomaly(float time)
+        public override float CalculateMeanAnomaly(float currentMean, float meanMotion, float time)
         {
-            float meanAnomaly = parent.meanAnomaly;
-            meanAnomaly += parent.meanMotion * time;
+            float meanAnomaly = currentMean;
+            meanAnomaly += meanMotion * time;
             return meanAnomaly;
         }
-        public override float CalculateAnomaly(float meanAnomaly)
+        public override float CalculateAnomaly(float eccentricity, float meanAnomaly, float anomaly)
         {
             if (MathLib.Abs(meanAnomaly) > Mathf.PI) {
-                return MathLib.Asinh((meanAnomaly + parent.anomaly) / parent.eccentricity);
+                return MathLib.Asinh((meanAnomaly + anomaly) / eccentricity);
             }
             else {
-                return base.CalculateAnomaly(meanAnomaly);
+                return base.CalculateAnomaly(eccentricity, meanAnomaly, anomaly);
             }
         }
-        public override float CalculateTrueAnomaly(float anomaly)
+        public override float CalculateTrueAnomaly(float constant, float anomaly)
         {
-            return 2f * MathLib.Atan(parent.trueAnomalyConstant * MathLib.Tanh(anomaly / 2f));
+            return 2f * MathLib.Atan(constant * MathLib.Tanh(anomaly / 2f));
         }
 
         public override float MeanAnomalyEquation(float H, float e, float M)

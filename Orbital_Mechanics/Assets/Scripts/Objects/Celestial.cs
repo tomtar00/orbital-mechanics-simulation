@@ -40,7 +40,6 @@ namespace Sim.Objects
             {
                 trajectory.ApplyElementsFromStruct(data.Orbit);
                 relativePosition = transform.position - centralBody.RelativePosition;
-                orbitNormal = trajectory.orbit.angMomentum;
                 orbitDrawer.DrawOrbit(trajectory, centralBody.influenceRadius);
             }
 

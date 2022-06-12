@@ -152,10 +152,8 @@ namespace Sim.Visuals
                 // check if any other object will be in range in that time
                 foreach (var celestial in inOrbitObject.CentralBody.celestialsOnOrbit)
                 {
-                    float _meanAnomaly = celestial.Trajectory.orbit.CalculateMeanAnomaly(time);
-                    float _anomaly = celestial.Trajectory.orbit.CalculateAnomaly(_meanAnomaly);
-                    float _trueAnomaly = celestial.Trajectory.orbit.CalculateTrueAnomaly(_anomaly);
-                    Vector3 pos = celestial.Trajectory.orbit.CalculateOrbitalPosition(_trueAnomaly);
+                    var mat = celestial.Trajectory.orbit.UpdateAnomalies(celestial.Trajectory.elements, time);
+                    Vector3 pos = celestial.Trajectory.orbit.CalculateOrbitalPosition(mat.Item3);
 
                     if ((position - pos).sqrMagnitude < MathLib.Pow(celestial.InfluenceRadius, 2))
                     {

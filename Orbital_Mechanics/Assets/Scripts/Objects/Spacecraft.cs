@@ -47,31 +47,28 @@ namespace Sim.Objects
         {
             relativePosition = startRelativePosition;
             transform.position = centralBody.RelativePosition + startRelativePosition;
-            Vector3 velDirection = Vector3.Cross(relativePosition, Vector3.up).normalized;
             Vector3 startVelocity;
             if (useCustomStartVelocity)
                 startVelocity = this.startVelocity;
-            else
-                startVelocity = velDirection * CircularOrbitSpeed();
+            else {
+                Vector3 velDirection = Vector3.Cross(relativePosition, Vector3.up).normalized;
+                float circOrbitSpeed = MathLib.Sqrt(KeplerianOrbit.G * centralBody.Data.Mass / relativePosition.magnitude);
+                startVelocity = velDirection * circOrbitSpeed;
+            }
             AddVelocity(startVelocity);
-        }
-
-        private float CircularOrbitSpeed()
-        {
-            return MathLib.Sqrt(KeplerianOrbit.G * centralBody.Data.Mass / relativePosition.magnitude);
         }
 
         private void AddVelocity(Vector3 d_vel)
         {
             Vector3 newVelocity = this.velocity + d_vel;
 
+            // check if orbit type change
             float e = trajectory.orbit.CalculateEccentricity(relativePosition, newVelocity);
             trajectory.CheckOrbitType(e);
 
-            trajectory.orbit.CalculateMainOrbitElements(relativePosition, newVelocity);
+            // get orbit elements & draw orbits
+            trajectory.elements = trajectory.orbit.ConvertStateVectorsToOrbitElements(relativePosition, newVelocity);
             orbitDrawer.DrawOrbit(trajectory, centralBody.InfluenceRadius);
-
-            orbitNormal = trajectory.orbit.angMomentum;
         }
 
         private void HandleControls()
@@ -84,11 +81,6 @@ namespace Sim.Objects
             if (Input.GetKey(KeyCode.N))
             {
                 AddVelocity(-thrustForward);
-            }
-
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                InitializeShip();
             }
         }
         private void CheckCelestialInfluence()
@@ -131,7 +123,6 @@ namespace Sim.Objects
         {
             // Debug.Log($"{gameObject.name} entered {celestial.gameObject.name}");
             orbitDrawer.DestroyOrbitRenderer();
-            // Vector3 previousCentralBodyVelocity = centralBody.Velocity;
 
             centralBody = celestial;
             trajectory.orbit.ChangeCentralBody(centralBody);
@@ -147,16 +138,18 @@ namespace Sim.Objects
             float space = 20;
             int i = 0;
 
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Semimajor Axis: {trajectory.semimajorAxis}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Eccentricity: {trajectory.eccentricity}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Inclination: {trajectory.inclination}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Longitude of the ascending node: {trajectory.lonAscNode}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Argument of periapsis: {trajectory.argPeriapsis}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"SemilatusRectum: {trajectory.semiLatusRectum}");
+            var el = trajectory.elements;
+
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Semimajor Axis: {el.semimajorAxis}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Eccentricity: {el.eccentricity}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Inclination: {el.inclination}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Longitude of the ascending node: {el.lonAscNode}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Argument of periapsis: {el.argPeriapsis}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"SemilatusRectum: {el.semiLatusRectum}");
             i++;
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Mean anomaly: {trajectory.meanAnomaly}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"True anomaly:  {trajectory.trueAnomaly}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Anomaly:        {trajectory.anomaly}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Mean anomaly: {el.meanAnomaly}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"True anomaly:  {el.trueAnomaly}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Anomaly:        {el.anomaly}");
             i++;
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time: x{Time.timeScale}");
             if (GUI.Button(new Rect(10, startHeight + space * i, 30, 30), "<"))
