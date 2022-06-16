@@ -5,7 +5,7 @@ namespace Sim.Math
 {
     public class EllipticOrbit : Orbit
     {
-        public EllipticOrbit(KeplerianOrbit trajectory, Celestial centralBody) : base(trajectory, centralBody) { }
+        public EllipticOrbit(Celestial centralBody) : base(centralBody) { }
 
         public override void CalculateOtherElements()
         {

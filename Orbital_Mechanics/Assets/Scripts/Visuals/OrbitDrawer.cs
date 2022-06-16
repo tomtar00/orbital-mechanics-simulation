@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Sim.Math;
 using Sim.Objects;
@@ -10,9 +11,9 @@ namespace Sim.Visuals
     public class OrbitDrawer : MonoBehaviour
     {
         [SerializeField] private int orbitResolution = 30;
+        [SerializeField] private int depth = 2;
 
-        private LineRenderer lineRenderer;
-        private GameObject rendererObject;
+        private Queue<LineRenderer> lineRenderers;
 
         private float anomalyBeyondInfluence = 0;
         private float lastAnomaly = 0;
@@ -24,35 +25,51 @@ namespace Sim.Visuals
         public void SetupOrbitRenderer(InOrbitObject obj, Transform celestial)
         {
             this.inOrbitObject = obj;
-            rendererObject = new GameObject("Orbit Renderer");
+
+            var rendererObject = new GameObject("Orbit Renderer");
             rendererObject.transform.SetParent(celestial);
             rendererObject.transform.localPosition = Vector3.zero;
-            lineRenderer = rendererObject.AddComponent<LineRenderer>();
+
+            LineRenderer lineRenderer = rendererObject.AddComponent<LineRenderer>();
             lineRenderer.useWorldSpace = false;
             lineRenderer.startWidth = .1f;
             lineRenderer.loop = true;
+
+            lineRenderers.Enqueue(lineRenderer);
         }
 
         public void DestroyOrbitRenderer()
         {
-            Destroy(rendererObject);
+            Destroy(lineRenderers.Dequeue().gameObject);
         }
 
-        public void DrawOrbit(KeplerianOrbit trajectory, float influenceRadius)
+        public void DrawOrbits(StateVectors stateVectors, float influenceRadius)
         {
-            anomalyBeyondInfluence = 0;
-            lastAnomaly = 0;
-            points = new List<Vector3>();
+            for (int i = 0; i < this.depth; i++)
+            {
+                LineRenderer line = lineRenderers.ElementAt(i);
+                StateVectors gravityChangePoint = DrawOrbit(stateVectors, line);
+                if (gravityChangePoint.Equals(default(StateVectors)))
+                    break;
 
-            float e = trajectory.eccentricity;
-            if (e >= 0 && e < 1)
-            {
-                DrawElliptic(trajectory, influenceRadius);
+                stateVectors = gravityChangePoint;
             }
-            else if (e >= 1)
-            {
-                DrawHyperbolic(trajectory, influenceRadius);
-            }
+        }
+        public StateVectors DrawOrbit(StateVectors stateVectors, LineRenderer line) {
+            Celestial centralBody = inOrbitObject.CentralBody;
+            float mass = centralBody.Data.Mass;
+            float eccentricity = Orbit.CalculateEccentricity(stateVectors, mass);
+            Orbit orbit = KeplerianOrbit.CreateOrbit(eccentricity, centralBody);
+
+            // get orbit points
+            StateVectors gravityChangeVectors;
+            Vector3[] points = orbit.GeneratePoints(orbitResolution, out gravityChangeVectors);
+
+            // loop if no gravity change reported
+            line.loop = gravityChangeVectors.Equals(default(StateVectors));
+            line.SetPositions(points);
+
+            return gravityChangeVectors;
         }
 
         private void DrawElliptic(KeplerianOrbit trajectory, float influenceRadius)
@@ -108,9 +125,8 @@ namespace Sim.Visuals
             }
 
             // check if exited influence
-            if (!encounter)
-                AddLastPointBeyondInfluence(trajectory, influenceRadius);
-            else lineRenderer.loop = false;
+            if (encounter)
+                lineRenderer.loop = false;
 
             // draw trajectory / orbit
             lineRenderer.positionCount = points.Count;
@@ -168,44 +184,10 @@ namespace Sim.Visuals
                 if (encounter) break;
             }
 
-            // check if exited influence
-            if (!encounter)
-                AddLastPointBeyondInfluence(trajectory, influenceRadius);
-
             // draw trajectory / orbit
             lineRenderer.positionCount = points.Count;
             lineRenderer.SetPositions(points.ToArray());
             lineRenderer.loop = false;
-        }
-
-        private void AddLastPointBeyondInfluence(KeplerianOrbit trajectory, float influenceRadius)
-        {
-            if (points.Count != orbitResolution)
-            {
-                lineRenderer.loop = false;
-
-                // choose best exit point
-                int iter = 10;
-                float delta = 1f / iter;
-                Vector3 bestPoint = Vector3.zero;
-                float dst = float.MaxValue;
-                for (int i = 0; i < iter; i++)
-                {
-                    float anomaly = Mathf.Lerp(lastAnomaly, anomalyBeyondInfluence, i * delta);
-                    Vector3 position = trajectory.orbit.CalculateOrbitalPosition(anomaly);
-                    float dstDiff = MathLib.Abs(position.sqrMagnitude - influenceRadius * influenceRadius);
-                    if (dstDiff < dst)
-                    {
-                        dst = dstDiff;
-                        bestPoint = position;
-                    }
-                }
-                points.Add(bestPoint);
-            }
-            else
-            {
-                lineRenderer.loop = true;
-            }
         }
     }
 }
