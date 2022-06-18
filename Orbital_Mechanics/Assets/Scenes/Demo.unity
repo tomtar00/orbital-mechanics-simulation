@@ -255,6 +255,11 @@ PrefabInstance:
         type: 2}
     - target: {fileID: 8389042663809134704, guid: df89030a194ccd5488e4434af43430bb,
         type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8389042663809134704, guid: df89030a194ccd5488e4434af43430bb,
+        type: 3}
       propertyPath: centralBody
       value: 
       objectReference: {fileID: 744311776}
@@ -266,7 +271,7 @@ PrefabInstance:
     - target: {fileID: 8389042663809134705, guid: df89030a194ccd5488e4434af43430bb,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8389042663809134707, guid: df89030a194ccd5488e4434af43430bb,
         type: 3}
@@ -442,6 +447,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   orbitResolution: 100
+  depth: 2
 --- !u!4 &546625451 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8389042663809134707, guid: df89030a194ccd5488e4434af43430bb,

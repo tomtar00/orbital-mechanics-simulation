@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Sim.Math
 {
+    // Mostly based on: http://control.asu.edu/Classes/MAE462/462Lecture05.pdf
     public abstract class Orbit
     {
         public const float PI2 = 6.28318531f;
@@ -10,9 +11,18 @@ namespace Sim.Math
         public Celestial centralBody { get; private set; }
         public float GM { get; private set; }
 
-        public Orbit(Celestial centralBody)
+        public KeplerianOrbit.Elements elements;
+
+        public Orbit(StateVectors stateVectors, Celestial centralBody)
         {
             ChangeCentralBody(centralBody);
+            ConvertStateVectorsToOrbitElements(stateVectors);
+        }
+        public Orbit(KeplerianOrbit.Elements elements, Celestial centralBody)
+        {
+            ChangeCentralBody(centralBody);
+            this.elements = elements;
+            this.elements = CalculateOtherElements(this.elements);
         }
 
         public void ChangeCentralBody(Celestial centralBody)
@@ -22,8 +32,10 @@ namespace Sim.Math
                 this.GM = KeplerianOrbit.G * centralBody.Data.Mass;
         }  
 
-        public virtual KeplerianOrbit.Elements ConvertStateVectorsToOrbitElements(Vector3 relativePosition, Vector3 velocity)
+        public virtual void ConvertStateVectorsToOrbitElements(StateVectors stateVectors)
         {
+            Vector3 relativePosition = stateVectors.position;
+            Vector3 velocity = stateVectors.velocity;
             float posMagnitude = relativePosition.magnitude;
             float velMagnitude = velocity.magnitude;
 
@@ -66,38 +78,44 @@ namespace Sim.Math
             if (Vector3.Dot(relativePosition, velocity) < 0)
                 elements.trueAnomaly = PI2 - elements.trueAnomaly; 
 
-            CalculateOtherElements(elements);
-
-            return elements;
+            elements = CalculateOtherElements(elements);
+            this.elements = elements;
         }
         public abstract KeplerianOrbit.Elements CalculateOtherElements(KeplerianOrbit.Elements elements);
-
-        public static float CalculateEccentricity(Vector3 relativePosition, Vector3 velocity, float centralMass)
+        public static float CalculateEccentricity(StateVectors stateVectors, float centralMass)
         {
+            Vector3 pos = stateVectors.position;
+            Vector3 vel = stateVectors.velocity;
+
             float GM = KeplerianOrbit.G * centralMass;
-            Vector3 angMomentum = Vector3.Cross(relativePosition, velocity);
+            Vector3 angMomentum = Vector3.Cross(pos, vel);
             float angMomMag = angMomentum.magnitude;
-            Vector3 eccVec = (Vector3.Cross(velocity, angMomentum) / GM) - (relativePosition.SafeDivision(relativePosition.magnitude));
+            Vector3 eccVec = (Vector3.Cross(vel, angMomentum) / GM) - (pos.SafeDivision(pos.magnitude));
             return eccVec.magnitude;
         }
             
         // source: https://en.wikipedia.org/wiki/Elliptic_orbit#Flight_path_angle
-        public virtual Vector3 CalculateVelocity(Vector3 relativePosition, out float speed)
+        public virtual Vector3 CalculateVelocity(Vector3 relativePosition)
         {
             float posDst = relativePosition.magnitude;
-            speed = MathLib.Sqrt(GM * ((2f).SafeDivision(posDst) - (1f).SafeDivision(parent.semimajorAxis)));
+            float speed = MathLib.Sqrt(GM * ((2f).SafeDivision(posDst) - (1f).SafeDivision(elements.semimajorAxis)));
         
-            float e = parent.eccentricity;
-            float pathAngle = MathLib.Atan((e * MathLib.Sin(parent.trueAnomaly)) / (1 + e * MathLib.Cos(parent.trueAnomaly)));
-            Vector3 radDir = Quaternion.AngleAxis(90, parent.orbit.angMomentum) * relativePosition.normalized;
-            Vector3 dir = Quaternion.AngleAxis(-pathAngle * MathLib.Rad2Deg, parent.orbit.angMomentum) * radDir;
+            float e = elements.eccentricity;
+            float pathAngle = MathLib.Atan((e * MathLib.Sin(elements.trueAnomaly)) / (1 + e * MathLib.Cos(elements.trueAnomaly)));
+            Vector3 radDir = Quaternion.AngleAxis(90, elements.angMomentum) * relativePosition.normalized;
+            Vector3 dir = Quaternion.AngleAxis(-pathAngle * MathLib.Rad2Deg, elements.angMomentum) * radDir;
 
             return dir * speed;
         } 
         public abstract Vector3 CalculateOrbitalPosition(float trueAnomaly);
-        
+        public StateVectors ConvertOrbitElementsToStateVectors(float trueAnomaly) {
+            var pos = CalculateOrbitalPosition(trueAnomaly);
+            var vel = CalculateVelocity(pos);
+            return new StateVectors(pos, vel);
+        }
+
         public abstract float CalculateMeanAnomaly(float time);
-        public float CalculateAnomaly(float meanAnomaly)
+        public virtual float CalculateAnomaly(float meanAnomaly)
         {
             // source: https://en.wikipedia.org/wiki/Eccentric_anomaly
             // numerical method: https://en.wikipedia.org/wiki/Newton%27s_method
@@ -108,16 +126,24 @@ namespace Sim.Math
             while (MathLib.Abs(a1 - a0) > 0.0001f)
             {
                 a0 = a1;
-                float eq = MeanAnomalyEquation(a0, parent.eccentricity, meanAnomaly); 
-                float deq = d_MeanAnomalyEquation(a0, parent.eccentricity);
+                float eq = MeanAnomalyEquation(a0, elements.eccentricity, meanAnomaly); 
+                float deq = d_MeanAnomalyEquation(a0, elements.eccentricity);
                 a1 = a0 - eq.SafeDivision(deq);
             }
 
             return a1;
         }
         public abstract float CalculateTrueAnomaly(float anomaly);
+        public (float, float, float) GetFutureAnomalies(float time) {
+            float m = CalculateMeanAnomaly(time);
+            float a = CalculateAnomaly(elements.meanAnomaly);
+            float t = CalculateTrueAnomaly(elements.anomaly);
+            return (m, a, t);
+        }
 
         public abstract float MeanAnomalyEquation(float anomaly, float e, float M);
         public abstract float d_MeanAnomalyEquation(float anomaly, float e);
+    
+        public abstract Vector3[] GenerateOrbitPoints(float resolution, InOrbitObject inOrbitObject, out StateVectors stateVectors);
     }
 }

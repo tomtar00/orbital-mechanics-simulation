@@ -3,77 +3,102 @@ using Sim.Objects;
 
 namespace Sim.Math
 {
-    // Mostly based on: http://control.asu.edu/Classes/MAE462/462Lecture05.pdf
     public class KeplerianOrbit
     {
         public const float G = 6.67f;
-        private float GM;
 
         public Orbit orbit { get; set; }
-        public OrbitType orbitType { get; set; }
+        public OrbitType orbitType { get; set; } = OrbitType.NONE;
 
-        public Elements elements;
-
-        public KeplerianOrbit(OrbitType type, Celestial centralBody)
+        public KeplerianOrbit(Celestial centralBody)
         {
-            ChangeOrbitType(type, centralBody);
-            if (centralBody != null)
+            // if (centralBody != null)
+            // {
+            //     this.orbit = new EllipticOrbit()
+            // }
+        }
+
+        public void CheckOrbitType(StateVectors stateVectors, Celestial centralBody)
+        {
+            float centralMass = centralBody.Data.Mass;
+            float eccentricity = Orbit.CalculateEccentricity(stateVectors, centralMass);
+
+            if (eccentricity >= 0 && eccentricity < 1 && orbitType != OrbitType.ELLIPTIC)
             {
-                this.GM = G * centralBody.Data.Mass;
+                this.orbit = new EllipticOrbit(stateVectors, centralBody);
+                orbitType = OrbitType.ELLIPTIC;
+            }
+            else if (eccentricity >= 1 && orbitType != OrbitType.HYPERBOLIC)
+            {
+                this.orbit = new HyperbolicOrbit(stateVectors, centralBody);
+                orbitType = OrbitType.HYPERBOLIC;
             }
         }
 
-        public void ChangeOrbitType(OrbitType type, Celestial centralBody)
+        public static Orbit CreateOrbit(StateVectors stateVectors, Celestial body, out OrbitType type)
         {
-            switch (type)
-            {
-                case OrbitType.ELLIPTIC:
-                    orbit = new EllipticOrbit(centralBody);
-                    break;
-                case OrbitType.HYPERBOLIC:
-                    orbit = new HyperbolicOrbit(centralBody);
-                    break;
-            }
-            orbitType = type;
-        }
+            float centralMass = body.Data.Mass;
+            float eccentricity = Orbit.CalculateEccentricity(stateVectors, centralMass);
 
-        public void CheckOrbitType(float eccentricity)
-        {
             if (eccentricity >= 0 && eccentricity < 1)
             {
-                if (orbitType != OrbitType.ELLIPTIC)
-                    ChangeOrbitType(OrbitType.ELLIPTIC, this.orbit.centralBody);
+                type = OrbitType.ELLIPTIC;
+                return new EllipticOrbit(stateVectors, body);
             }
             else if (eccentricity >= 1)
             {
-                if (orbitType != OrbitType.HYPERBOLIC)
-                    ChangeOrbitType(OrbitType.HYPERBOLIC, this.orbit.centralBody);
+                type = OrbitType.HYPERBOLIC;
+                return new HyperbolicOrbit(stateVectors, body);
             }
-            else {
-                Debug.LogError("Wrong eccentricity value");
+            else
+            {
+                type = OrbitType.NONE;
+                return null;
             }
         }
-
-        public static Orbit CreateOrbit(float eccentricity, Celestial body) {
-            if (eccentricity >= 0 && eccentricity < 1) {
-                return new EllipticOrbit(body);
-            }
-            else if (eccentricity >= 1) {
-                return new HyperbolicOrbit(body);
-            }
-            else return null;
-        }
-
-        public void ApplyElementsFromStruct(Elements elements)
+        public static Orbit CreateOrbit(Elements elements, Celestial body, out OrbitType type)
         {
-            this.elements.semimajorAxis = elements.semimajorAxis;
-            this.elements.eccentricity = elements.eccentricity;
-            this.elements.inclination = elements.inclination;
-            this.elements.lonAscNode = elements.lonAscNode;
-            this.elements.argPeriapsis = elements.argPeriapsis;
-            this.elements.trueAnomaly = elements.trueAnomaly;
+            float centralMass = body.Data.Mass;
+            float eccentricity = elements.eccentricity;
 
-            CheckOrbitType(elements.eccentricity);
+            if (eccentricity >= 0 && eccentricity < 1)
+            {
+                type = OrbitType.ELLIPTIC;
+                return new EllipticOrbit(elements, body);
+            }
+            else if (eccentricity >= 1)
+            {
+                type = OrbitType.HYPERBOLIC;
+                return new HyperbolicOrbit(elements, body);
+            }
+            else
+            {
+                type = OrbitType.NONE;
+                return null;
+            }
+        }
+
+        public (float, float, float) UpdateAnomalies(float time)
+        {
+            (float, float, float) mat = orbit.GetFutureAnomalies(time);
+            orbit.elements.meanAnomaly = mat.Item1;
+            orbit.elements.anomaly = mat.Item2;
+            orbit.elements.trueAnomaly = mat.Item3;
+
+            return (
+                orbit.elements.meanAnomaly,
+                orbit.elements.anomaly,
+                orbit.elements.trueAnomaly
+            );
+        }
+        public StateVectors UpdateStateVectors(float trueAnomaly)
+        {
+            return orbit.ConvertOrbitElementsToStateVectors(trueAnomaly);
+        }
+
+        public void ApplyElementsFromStruct(Elements elements, Celestial centralBody)
+        {
+            float GM = G * centralBody.Data.Mass;
 
             elements.angMomentum = Quaternion.AngleAxis(elements.inclination * Mathf.Rad2Deg, Vector3.right) * Vector3.forward;
             elements.angMomentum = Quaternion.AngleAxis(elements.lonAscNode * Mathf.Rad2Deg, Vector3.forward) * elements.angMomentum;
@@ -83,7 +108,7 @@ namespace Sim.Math
             elements.eccVec = Quaternion.AngleAxis(elements.argPeriapsis * Mathf.Rad2Deg, elements.angMomentum) * elements.eccVec;
             elements.eccVec = elements.eccVec.normalized * elements.eccentricity;
 
-            orbit.CalculateOtherElements(elements);
+            this.orbit = CreateOrbit(elements, centralBody, out _);
         }
         [System.Serializable]
         public struct Elements
@@ -110,11 +135,19 @@ namespace Sim.Math
     public enum OrbitType
     {
         ELLIPTIC,
-        HYPERBOLIC
+        HYPERBOLIC,
+        NONE
     }
 
-    public struct StateVectors {
+    public class StateVectors
+    {
         public Vector3 position;
         public Vector3 velocity;
+
+        public StateVectors(Vector3 pos, Vector3 vel)
+        {
+            this.position = pos;
+            this.velocity = vel;
+        }
     }
 }

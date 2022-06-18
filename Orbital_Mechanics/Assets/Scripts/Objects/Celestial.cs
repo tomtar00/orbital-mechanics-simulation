@@ -38,14 +38,12 @@ namespace Sim.Objects
 
             if (!isStationary)
             {
-                trajectory.ApplyElementsFromStruct(data.Orbit);
-                relativePosition = transform.position - centralBody.RelativePosition;
-                orbitNormal = trajectory.orbit.angMomentum;
-                orbitDrawer.DrawOrbit(trajectory, centralBody.influenceRadius);
+                kepler.ApplyElementsFromStruct(data.Orbit, centralBody);
+                UpdateRelativePosition();
+                orbitDrawer.DrawOrbit(kepler.orbit.elements);
             }
 
             centralBody?.celestialsOnOrbit.Add(this); 
-
         }
 
         private new void OnDrawGizmos() {

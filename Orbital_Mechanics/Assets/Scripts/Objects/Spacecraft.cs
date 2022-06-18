@@ -10,7 +10,10 @@ namespace Sim.Objects
         [Header("Spacecraft")]
 
         [SerializeField] protected bool useCustomStartVelocity;
-        [SerializeField][DrawIf("useCustomStartVelocity", true, ComparisonType.Equals)] protected Vector3 startVelocity;
+
+        [SerializeField]
+        [DrawIf("useCustomStartVelocity", true, ComparisonType.Equals)] 
+        protected Vector3 startVelocity;
 
         [SerializeField] protected Vector3 startRelativePosition;
         [SerializeField] protected float thrust;
@@ -47,13 +50,13 @@ namespace Sim.Objects
         {
             relativePosition = startRelativePosition;
             transform.position = centralBody.RelativePosition + startRelativePosition;
-            Vector3 velDirection = Vector3.Cross(relativePosition, Vector3.up).normalized;
-            Vector3 startVelocity;
+
             if (useCustomStartVelocity)
-                startVelocity = this.startVelocity;
-            else
-                startVelocity = velDirection * CircularOrbitSpeed();
-            AddVelocity(startVelocity);
+                AddVelocity(startVelocity);
+            else {
+                Vector3 velDirection = Vector3.Cross(relativePosition, Vector3.up).normalized;
+                AddVelocity(velDirection * CircularOrbitSpeed());
+            }
         }
 
         private float CircularOrbitSpeed()
@@ -65,13 +68,13 @@ namespace Sim.Objects
         {
             Vector3 newVelocity = this.velocity + d_vel;
 
-            float e = trajectory.orbit.CalculateEccentricity(relativePosition, newVelocity);
-            trajectory.CheckOrbitType(e);
+            StateVectors stateVectors = new StateVectors(relativePosition, newVelocity);
+            kepler.CheckOrbitType(stateVectors, centralBody);
 
-            trajectory.orbit.CalculateMainOrbitElements(relativePosition, newVelocity);
-            orbitDrawer.DrawOrbit(trajectory, centralBody.InfluenceRadius);
+            kepler.orbit.ConvertStateVectorsToOrbitElements(stateVectors);
 
-            orbitNormal = trajectory.orbit.angMomentum;
+            // orbitDrawer.DrawOrbits(stateVectors, centralBody.InfluenceRadius);
+            orbitDrawer.DrawOrbit(kepler.orbit.elements);
         }
 
         private void HandleControls()
@@ -84,11 +87,6 @@ namespace Sim.Objects
             if (Input.GetKey(KeyCode.N))
             {
                 AddVelocity(-thrustForward);
-            }
-
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                InitializeShip();
             }
         }
         private void CheckCelestialInfluence()
@@ -118,7 +116,7 @@ namespace Sim.Objects
             Vector3 previousCentralBodyVelocity = centralBody.Velocity;
 
             centralBody = centralBody.CentralBody;
-            trajectory.orbit.ChangeCentralBody(centralBody);
+            kepler.orbit.ChangeCentralBody(centralBody);
 
             if (centralBody != null)
             {
@@ -134,7 +132,7 @@ namespace Sim.Objects
             // Vector3 previousCentralBodyVelocity = centralBody.Velocity;
 
             centralBody = celestial;
-            trajectory.orbit.ChangeCentralBody(centralBody);
+            kepler.orbit.ChangeCentralBody(centralBody);
 
             UpdateRelativePosition();
             orbitDrawer.SetupOrbitRenderer(this, centralBody.transform);
@@ -147,16 +145,18 @@ namespace Sim.Objects
             float space = 20;
             int i = 0;
 
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Semimajor Axis: {trajectory.semimajorAxis}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Eccentricity: {trajectory.eccentricity}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Inclination: {trajectory.inclination}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Longitude of the ascending node: {trajectory.lonAscNode}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Argument of periapsis: {trajectory.argPeriapsis}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"SemilatusRectum: {trajectory.semiLatusRectum}");
+            KeplerianOrbit.Elements elements = this.kepler.orbit.elements;
+
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Semimajor Axis: {elements.semimajorAxis}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Eccentricity: {elements.eccentricity}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Inclination: {elements.inclination}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Longitude of the ascending node: {elements.lonAscNode}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Argument of periapsis: {elements.argPeriapsis}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"SemilatusRectum: {elements.semiLatusRectum}");
             i++;
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Mean anomaly: {trajectory.meanAnomaly}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"True anomaly:  {trajectory.trueAnomaly}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Anomaly:        {trajectory.anomaly}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Mean anomaly: {elements.meanAnomaly}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"True anomaly:  {elements.trueAnomaly}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Anomaly:        {elements.anomaly}");
             i++;
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time: x{Time.timeScale}");
             if (GUI.Button(new Rect(10, startHeight + space * i, 30, 30), "<"))
