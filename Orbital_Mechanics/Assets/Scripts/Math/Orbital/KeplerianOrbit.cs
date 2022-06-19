@@ -56,7 +56,7 @@ namespace Sim.Math
                 return null;
             }
         }
-        public static Orbit CreateOrbit(Elements elements, Celestial body, out OrbitType type)
+        public static Orbit CreateOrbit(OrbitElements elements, Celestial body, out OrbitType type)
         {
             float centralMass = body.Data.Mass;
             float eccentricity = elements.eccentricity;
@@ -96,7 +96,7 @@ namespace Sim.Math
             return orbit.ConvertOrbitElementsToStateVectors(trueAnomaly);
         }
 
-        public void ApplyElementsFromStruct(Elements elements, Celestial centralBody)
+        public void ApplyElementsFromStruct(OrbitElements elements, Celestial centralBody)
         {
             float GM = G * centralBody.Data.Mass;
 
@@ -110,26 +110,7 @@ namespace Sim.Math
 
             this.orbit = CreateOrbit(elements, centralBody, out _);
         }
-        [System.Serializable]
-        public struct Elements
-        {
-            public float semimajorAxis;
-            public float eccentricity;
-            public float inclination;
-            public float lonAscNode;
-            public float argPeriapsis;
-            public float trueAnomaly;
 
-            public float meanAnomaly { get; set; }
-            public float anomaly { get; set; }
-            public float semiminorAxis { get; set; }
-            public float trueAnomalyConstant { get; set; }
-            public float meanMotion { get; set; }
-            public float semiLatusRectum { get; set; }
-
-            public Vector3 angMomentum { get; set; }
-            public Vector3 eccVec { get; set; }
-        }
     }
 
     public enum OrbitType
@@ -149,5 +130,26 @@ namespace Sim.Math
             this.position = pos;
             this.velocity = vel;
         }
+    }
+
+    [System.Serializable]
+    public struct OrbitElements
+    {
+        public float semimajorAxis;
+        public float eccentricity;
+        public float inclination;
+        public float lonAscNode;
+        public float argPeriapsis;
+        public float trueAnomaly;
+
+        public float meanAnomaly { get; set; }
+        public float anomaly { get; set; }
+        public float semiminorAxis { get; set; }
+        public float trueAnomalyConstant { get; set; }
+        public float meanMotion { get; set; }
+        public float semiLatusRectum { get; set; }
+
+        public Vector3 angMomentum { get; set; }
+        public Vector3 eccVec { get; set; }
     }
 }

@@ -12,8 +12,8 @@ namespace Sim.Objects
         [SerializeField] private float radius;
         public float Radius { get => radius; }
 
-        [SerializeField] private KeplerianOrbit.Elements orbit;
-        public KeplerianOrbit.Elements Orbit { get => orbit; }
+        [SerializeField] private OrbitElements orbit;
+        public OrbitElements Orbit { get => orbit; }
     }
 }
 

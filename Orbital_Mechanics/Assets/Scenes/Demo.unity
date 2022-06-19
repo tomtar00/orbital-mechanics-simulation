@@ -386,7 +386,7 @@ MonoBehaviour:
   useCustomStartVelocity: 0
   startVelocity: {x: 15, y: 0, z: 5}
   startRelativePosition: {x: -20, y: 0, z: 20}
-  thrust: 0.5
+  thrust: 15
 --- !u!23 &493653092
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -446,7 +446,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93168a3fca1644e4290aff80cd9855a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  orbitResolution: 100
+  orbitResolution: 200
   depth: 2
 --- !u!4 &546625451 stripped
 Transform:

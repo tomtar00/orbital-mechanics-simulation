@@ -11,14 +11,14 @@ namespace Sim.Math
         public Celestial centralBody { get; private set; }
         public float GM { get; private set; }
 
-        public KeplerianOrbit.Elements elements;
+        public OrbitElements elements;
 
         public Orbit(StateVectors stateVectors, Celestial centralBody)
         {
             ChangeCentralBody(centralBody);
             ConvertStateVectorsToOrbitElements(stateVectors);
         }
-        public Orbit(KeplerianOrbit.Elements elements, Celestial centralBody)
+        public Orbit(OrbitElements elements, Celestial centralBody)
         {
             ChangeCentralBody(centralBody);
             this.elements = elements;
@@ -39,7 +39,7 @@ namespace Sim.Math
             float posMagnitude = relativePosition.magnitude;
             float velMagnitude = velocity.magnitude;
 
-            var elements = new KeplerianOrbit.Elements();
+            var elements = new OrbitElements();
 
             // Semi-major axis
             // source: wyprowadzenie_semimajor.png
@@ -81,7 +81,7 @@ namespace Sim.Math
             elements = CalculateOtherElements(elements);
             this.elements = elements;
         }
-        public abstract KeplerianOrbit.Elements CalculateOtherElements(KeplerianOrbit.Elements elements);
+        public abstract OrbitElements CalculateOtherElements(OrbitElements elements);
         public static float CalculateEccentricity(StateVectors stateVectors, float centralMass)
         {
             Vector3 pos = stateVectors.position;
@@ -94,23 +94,12 @@ namespace Sim.Math
             return eccVec.magnitude;
         }
             
-        // source: https://en.wikipedia.org/wiki/Elliptic_orbit#Flight_path_angle
-        public virtual Vector3 CalculateVelocity(Vector3 relativePosition)
-        {
-            float posDst = relativePosition.magnitude;
-            float speed = MathLib.Sqrt(GM * ((2f).SafeDivision(posDst) - (1f).SafeDivision(elements.semimajorAxis)));
         
-            float e = elements.eccentricity;
-            float pathAngle = MathLib.Atan((e * MathLib.Sin(elements.trueAnomaly)) / (1 + e * MathLib.Cos(elements.trueAnomaly)));
-            Vector3 radDir = Quaternion.AngleAxis(90, elements.angMomentum) * relativePosition.normalized;
-            Vector3 dir = Quaternion.AngleAxis(-pathAngle * MathLib.Rad2Deg, elements.angMomentum) * radDir;
-
-            return dir * speed;
-        } 
         public abstract Vector3 CalculateOrbitalPosition(float trueAnomaly);
+        public abstract Vector3 CalculateVelocity(Vector3 relativePosition, float trueAnomaly);
         public StateVectors ConvertOrbitElementsToStateVectors(float trueAnomaly) {
             var pos = CalculateOrbitalPosition(trueAnomaly);
-            var vel = CalculateVelocity(pos);
+            var vel = CalculateVelocity(pos, trueAnomaly);
             return new StateVectors(pos, vel);
         }
 
@@ -136,14 +125,14 @@ namespace Sim.Math
         public abstract float CalculateTrueAnomaly(float anomaly);
         public (float, float, float) GetFutureAnomalies(float time) {
             float m = CalculateMeanAnomaly(time);
-            float a = CalculateAnomaly(elements.meanAnomaly);
-            float t = CalculateTrueAnomaly(elements.anomaly);
+            float a = CalculateAnomaly(m);
+            float t = CalculateTrueAnomaly(a);
             return (m, a, t);
         }
 
         public abstract float MeanAnomalyEquation(float anomaly, float e, float M);
         public abstract float d_MeanAnomalyEquation(float anomaly, float e);
     
-        public abstract Vector3[] GenerateOrbitPoints(float resolution, InOrbitObject inOrbitObject, out StateVectors stateVectors);
+        public abstract Vector3[] GenerateOrbitPoints(float resolution, out StateVectors stateVectors, out Celestial nextCelestial);
     }
 }

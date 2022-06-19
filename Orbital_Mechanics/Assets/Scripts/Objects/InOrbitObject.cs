@@ -17,6 +17,7 @@ namespace Sim.Objects
         // Moving
         protected Vector3 velocity;
         public Vector3 Velocity { get => velocity; }
+        public bool IsStationary { get => isStationary; }
 
         // Orbit
         public Celestial CentralBody { get => centralBody; }

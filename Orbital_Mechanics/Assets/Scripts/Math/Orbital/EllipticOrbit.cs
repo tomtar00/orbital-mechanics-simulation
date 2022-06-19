@@ -7,9 +7,9 @@ namespace Sim.Math
     public class EllipticOrbit : Orbit
     {
         public EllipticOrbit(StateVectors stateVectors, Celestial centralBody) : base(stateVectors, centralBody) { }
-        public EllipticOrbit(KeplerianOrbit.Elements elements, Celestial centralBody) : base(elements, centralBody) { }
+        public EllipticOrbit(OrbitElements elements, Celestial centralBody) : base(elements, centralBody) { }
 
-        public override KeplerianOrbit.Elements CalculateOtherElements(KeplerianOrbit.Elements elements)
+        public override OrbitElements CalculateOtherElements(OrbitElements elements)
         {
             float sqrt = MathLib.Sqrt((1 - elements.eccentricity).SafeDivision(1 + elements.eccentricity));
             elements.anomaly = 2 * MathLib.Atan(sqrt * MathLib.Tan(elements.trueAnomaly / 2));
@@ -19,10 +19,10 @@ namespace Sim.Math
             elements.trueAnomalyConstant = MathLib.Sqrt((1 + elements.eccentricity).SafeDivision(1 - elements.eccentricity));
             elements.meanMotion = MathLib.Sqrt((GM).SafeDivision(MathLib.Pow(elements.semimajorAxis, 3)));
             elements.semiLatusRectum = elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity);
-        
+
             return elements;
         }
-        
+
         // source: https://phas.ubc.ca/~newhouse/p210/orbits/cometreport.pdf
         public override Vector3 CalculateOrbitalPosition(float trueAnomaly)
         {
@@ -43,6 +43,20 @@ namespace Sim.Math
 
             return new Vector3(x, y, z);
         }
+        public override Vector3 CalculateVelocity(Vector3 relativePosition, float trueAnomaly)
+        {
+            float distance = (elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity))
+                            .SafeDivision(1 + elements.eccentricity * MathLib.Cos(trueAnomaly));
+            float speed = MathLib.Sqrt(GM * ((2f).SafeDivision(distance) - (1f).SafeDivision(elements.semimajorAxis)));
+
+            // source: https://en.wikipedia.org/wiki/Elliptic_orbit#Flight_path_angle
+            float e = elements.eccentricity;
+            float pathAngle = MathLib.Atan((e * MathLib.Sin(trueAnomaly)) / (1 + e * MathLib.Cos(trueAnomaly)));
+            Vector3 radDir = Quaternion.AngleAxis(90, elements.angMomentum) * relativePosition.normalized;
+            Vector3 dir = Quaternion.AngleAxis(-pathAngle * MathLib.Rad2Deg, elements.angMomentum) * radDir;
+
+            return dir * speed;
+        }
 
         public override float CalculateMeanAnomaly(float time)
         {
@@ -51,7 +65,8 @@ namespace Sim.Math
             if (meanAnomaly > PI2) meanAnomaly -= PI2;
             return meanAnomaly;
         }
-        public override float CalculateTrueAnomaly(float eccentricAnomaly) {
+        public override float CalculateTrueAnomaly(float eccentricAnomaly)
+        {
             float trueAnomaly = 2f * MathLib.Atan(elements.trueAnomalyConstant * MathLib.Tan(eccentricAnomaly / 2f));
             if (trueAnomaly < 0) trueAnomaly += 2f * MathLib.PI;
             return trueAnomaly;
@@ -66,17 +81,17 @@ namespace Sim.Math
             return -1f + e * MathLib.Cos(E); //  -1 + e*cos(E) = 0
         }
 
-        public override Vector3[] GenerateOrbitPoints(float resolution, InOrbitObject inOrbitObject, out StateVectors stateVectors)
+        public override Vector3[] GenerateOrbitPoints(float resolution, out StateVectors stateVectors, out Celestial nextCelestial)
         {
             List<Vector3> points = new List<Vector3>();
-            float influenceRadius = inOrbitObject.CentralBody.InfluenceRadius;
+            float influenceRadius = this.centralBody.InfluenceRadius;
             bool encounter = false;
-            bool outsideInfluence = false;
-            Vector3 lastPosition = Vector3.zero;
+
+            nextCelestial = null;
+            stateVectors = null;
 
             float orbitFraction = 1f / resolution;
-            int i;
-            for (i = 0; i < resolution; i++)
+            for (int i = 0; i < resolution; i++)
             {
                 float eccentricAnomaly = elements.anomaly + i * orbitFraction * PI2;
                 if (eccentricAnomaly > PI2) eccentricAnomaly -= PI2;
@@ -85,27 +100,52 @@ namespace Sim.Math
                 float trueAnomaly = CalculateTrueAnomaly(eccentricAnomaly);
                 Vector3 position = CalculateOrbitalPosition(trueAnomaly);
 
-                if (position.sqrMagnitude < influenceRadius * influenceRadius)
-                {
-                    points.Add(position);
-                    lastPosition = position;
-                }
-                else {
-                    outsideInfluence = true;
-                    break;
-                }
-
                 // get time in which object is in this spot
                 if (meanAnomalyAtPoint < elements.meanAnomaly) meanAnomalyAtPoint += PI2;
                 float time = (meanAnomalyAtPoint - elements.meanAnomaly) / elements.meanMotion;
+
+                // check if outside influence
+                if (position.sqrMagnitude < influenceRadius * influenceRadius)
+                {
+                    points.Add(position);
+                }
+                else
+                {
+                    // get escape state vectors
+                    Vector3 spacecraftVelocity = CalculateVelocity(position, trueAnomaly);
+
+                    if (!this.centralBody.IsStationary)
+                    {
+                        (float, float, float) mat = this.centralBody.Kepler.orbit.GetFutureAnomalies(time);
+                        Vector3 celestialPosition = this.centralBody.Kepler.orbit.CalculateOrbitalPosition(mat.Item3);
+                        Vector3 celestialVelocity = this.centralBody.Kepler.orbit.CalculateVelocity(celestialPosition, trueAnomaly);
+
+                        stateVectors = new StateVectors(position + celestialPosition, spacecraftVelocity + celestialVelocity);
+                    }
+                    else 
+                        stateVectors = new StateVectors(position, spacecraftVelocity);
+                    nextCelestial = this.centralBody.CentralBody;
+                    break;
+                }
+
+
                 // check if any other object will be in range in that time
-                foreach (var celestial in inOrbitObject.CentralBody.celestialsOnOrbit)
+                foreach (var celestial in this.centralBody.celestialsOnOrbit)
                 {
                     (float, float, float) mat = celestial.Kepler.orbit.GetFutureAnomalies(time);
-                    Vector3 pos = celestial.Kepler.orbit.CalculateOrbitalPosition(mat.Item3);
-                    if ((position - pos).sqrMagnitude < MathLib.Pow(celestial.InfluenceRadius, 2))
+                    Vector3 celestialPosition = celestial.Kepler.orbit.CalculateOrbitalPosition(mat.Item3);
+                    Vector3 relativePosition = (position - celestialPosition);
+
+                    if (relativePosition.sqrMagnitude < MathLib.Pow(celestial.InfluenceRadius, 2))
                     {
                         encounter = true;
+Debug.Log("eeee");
+                        // get encounter state vectors
+                        Vector3 spacecraftVelocity = CalculateVelocity(position, trueAnomaly);
+                        Vector3 celestialVelocity = celestial.Kepler.orbit.CalculateVelocity(celestialPosition, mat.Item3);
+                        stateVectors = new StateVectors(relativePosition, spacecraftVelocity - celestialVelocity);
+                        nextCelestial = celestial;
+
                         break;
                     }
                 }
@@ -113,12 +153,6 @@ namespace Sim.Math
                 if (encounter) break;
             }
 
-            if (outsideInfluence || encounter) {
-                Vector3 velocity = CalculateVelocity(lastPosition);
-                stateVectors = new StateVectors(lastPosition, velocity);
-            }
-            else
-                stateVectors = null;
             return points.ToArray();
         }
     }
