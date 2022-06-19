@@ -73,18 +73,18 @@ namespace Sim.Objects
 
             kepler.orbit.ConvertStateVectorsToOrbitElements(stateVectors);
 
-            // orbitDrawer.DrawOrbits(stateVectors, centralBody.InfluenceRadius);
-            orbitDrawer.DrawOrbit(kepler.orbit.elements);
+            orbitDrawer.DrawOrbits(stateVectors);
+            //orbitDrawer.DrawOrbit(kepler.orbit.elements);
         }
 
         private void HandleControls()
         {
             Vector3 thrustForward = this.velocity.normalized * thrust * Time.deltaTime;
-            if (Input.GetKey(KeyCode.M))
+            if (Input.GetKeyDown(KeyCode.M))
             {
                 AddVelocity(thrustForward);
             }
-            if (Input.GetKey(KeyCode.N))
+            if (Input.GetKeyDown(KeyCode.N))
             {
                 AddVelocity(-thrustForward);
             }
@@ -121,7 +121,7 @@ namespace Sim.Objects
             if (centralBody != null)
             {
                 UpdateRelativePosition();
-                orbitDrawer.SetupOrbitRenderer(this, centralBody.transform);
+                //orbitDrawer.SetupOrbitRenderer(this, centralBody.transform);
                 AddVelocity(previousCentralBodyVelocity);
             }
         }
@@ -129,13 +129,12 @@ namespace Sim.Objects
         {
             // Debug.Log($"{gameObject.name} entered {celestial.gameObject.name}");
             orbitDrawer.DestroyOrbitRenderer();
-            // Vector3 previousCentralBodyVelocity = centralBody.Velocity;
 
             centralBody = celestial;
             kepler.orbit.ChangeCentralBody(centralBody);
 
             UpdateRelativePosition();
-            orbitDrawer.SetupOrbitRenderer(this, centralBody.transform);
+            //orbitDrawer.SetupOrbitRenderer(this, centralBody.transform);
             AddVelocity(-centralBody.Velocity);
         }
 
@@ -145,7 +144,7 @@ namespace Sim.Objects
             float space = 20;
             int i = 0;
 
-            KeplerianOrbit.Elements elements = this.kepler.orbit.elements;
+            OrbitElements elements = this.kepler.orbit.elements;
 
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Semimajor Axis: {elements.semimajorAxis}");
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Eccentricity: {elements.eccentricity}");
