@@ -81,7 +81,7 @@ namespace Sim.Math
             return -1f + e * MathLib.Cos(E); //  -1 + e*cos(E) = 0
         }
 
-        public override Vector3[] GenerateOrbitPoints(float resolution, out StateVectors stateVectors, out Celestial nextCelestial)
+        public override Vector3[] GenerateOrbitPoints(float resolution, InOrbitObject self, float timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out float timeToGravityChange)
         {
             List<Vector3> points = new List<Vector3>();
             float influenceRadius = this.centralBody.InfluenceRadius;
@@ -89,13 +89,12 @@ namespace Sim.Math
 
             nextCelestial = null;
             stateVectors = null;
+            timeToGravityChange = -1f;
 
             float orbitFraction = 1f / resolution;
             for (int i = 0; i < resolution; i++)
             {
                 float eccentricAnomaly = elements.anomaly + i * orbitFraction * PI2;
-                if (eccentricAnomaly > PI2) eccentricAnomaly -= PI2;
-
                 float meanAnomalyAtPoint = eccentricAnomaly - elements.eccentricity * MathLib.Sin(eccentricAnomaly);
                 float trueAnomaly = CalculateTrueAnomaly(eccentricAnomaly);
                 Vector3 position = CalculateOrbitalPosition(trueAnomaly);
@@ -103,6 +102,7 @@ namespace Sim.Math
                 // get time in which object is in this spot
                 if (meanAnomalyAtPoint < elements.meanAnomaly) meanAnomalyAtPoint += PI2;
                 float time = (meanAnomalyAtPoint - elements.meanAnomaly) / elements.meanMotion;
+                time += timePassed;
 
                 // check if outside influence
                 if (position.sqrMagnitude < influenceRadius * influenceRadius)
@@ -111,6 +111,8 @@ namespace Sim.Math
                 }
                 else
                 {
+                    //TODO: improve precision of the last point
+
                     // get escape state vectors
                     Vector3 spacecraftVelocity = CalculateVelocity(position, trueAnomaly);
 
@@ -124,7 +126,9 @@ namespace Sim.Math
                     }
                     else 
                         stateVectors = new StateVectors(position, spacecraftVelocity);
+
                     nextCelestial = this.centralBody.CentralBody;
+                    timeToGravityChange = time;
                     break;
                 }
 
@@ -132,6 +136,9 @@ namespace Sim.Math
                 // check if any other object will be in range in that time
                 foreach (var celestial in this.centralBody.celestialsOnOrbit)
                 {
+                    if (celestial == self)
+                        continue;
+
                     (float, float, float) mat = celestial.Kepler.orbit.GetFutureAnomalies(time);
                     Vector3 celestialPosition = celestial.Kepler.orbit.CalculateOrbitalPosition(mat.Item3);
                     Vector3 relativePosition = (position - celestialPosition);
@@ -139,12 +146,13 @@ namespace Sim.Math
                     if (relativePosition.sqrMagnitude < MathLib.Pow(celestial.InfluenceRadius, 2))
                     {
                         encounter = true;
-Debug.Log("eeee");
                         // get encounter state vectors
                         Vector3 spacecraftVelocity = CalculateVelocity(position, trueAnomaly);
                         Vector3 celestialVelocity = celestial.Kepler.orbit.CalculateVelocity(celestialPosition, mat.Item3);
                         stateVectors = new StateVectors(relativePosition, spacecraftVelocity - celestialVelocity);
                         nextCelestial = celestial;
+
+                        timeToGravityChange = time;
 
                         break;
                     }

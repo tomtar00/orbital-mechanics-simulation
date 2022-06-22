@@ -386,7 +386,7 @@ MonoBehaviour:
   useCustomStartVelocity: 0
   startVelocity: {x: 15, y: 0, z: 5}
   startRelativePosition: {x: -20, y: 0, z: 20}
-  thrust: 15
+  thrust: 0.5
 --- !u!23 &493653092
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -447,7 +447,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   orbitResolution: 200
-  depth: 2
+  depth: 3
 --- !u!4 &546625451 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8389042663809134707, guid: df89030a194ccd5488e4434af43430bb,
@@ -556,7 +556,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8389042663809134706, guid: df89030a194ccd5488e4434af43430bb, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: df89030a194ccd5488e4434af43430bb, type: 3}
 --- !u!4 &1242043886 stripped
 Transform:

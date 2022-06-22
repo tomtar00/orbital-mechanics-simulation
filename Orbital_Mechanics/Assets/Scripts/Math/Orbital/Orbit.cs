@@ -133,6 +133,6 @@ namespace Sim.Math
         public abstract float MeanAnomalyEquation(float anomaly, float e, float M);
         public abstract float d_MeanAnomalyEquation(float anomaly, float e);
     
-        public abstract Vector3[] GenerateOrbitPoints(float resolution, out StateVectors stateVectors, out Celestial nextCelestial);
+        public abstract Vector3[] GenerateOrbitPoints(float resolution, InOrbitObject self, float timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out float timeToGravityChange);
     }
 }

@@ -18,9 +18,8 @@ namespace Sim.Objects
         [SerializeField] protected Vector3 startRelativePosition;
         [SerializeField] protected float thrust;
 
-        private new void Start()
+        private void Start()
         {
-            base.Start();
             if (isStationary)
             {
                 relativePosition = startRelativePosition;
@@ -74,17 +73,16 @@ namespace Sim.Objects
             kepler.orbit.ConvertStateVectorsToOrbitElements(stateVectors);
 
             orbitDrawer.DrawOrbits(stateVectors);
-            //orbitDrawer.DrawOrbit(kepler.orbit.elements);
         }
 
         private void HandleControls()
         {
             Vector3 thrustForward = this.velocity.normalized * thrust * Time.deltaTime;
-            if (Input.GetKeyDown(KeyCode.M))
+            if (Input.GetKey(KeyCode.M))
             {
                 AddVelocity(thrustForward);
             }
-            if (Input.GetKeyDown(KeyCode.N))
+            if (Input.GetKey(KeyCode.N))
             {
                 AddVelocity(-thrustForward);
             }
@@ -111,8 +109,6 @@ namespace Sim.Objects
         }
         private void ExitCelestialInfluence()
         {
-            // Debug.Log($"{gameObject.name} exited {centralBody.gameObject.name}");
-            orbitDrawer.DestroyOrbitRenderer();
             Vector3 previousCentralBodyVelocity = centralBody.Velocity;
 
             centralBody = centralBody.CentralBody;
@@ -121,20 +117,15 @@ namespace Sim.Objects
             if (centralBody != null)
             {
                 UpdateRelativePosition();
-                //orbitDrawer.SetupOrbitRenderer(this, centralBody.transform);
                 AddVelocity(previousCentralBodyVelocity);
             }
         }
         private void EnterCelestialInfluence(Celestial celestial)
         {
-            // Debug.Log($"{gameObject.name} entered {celestial.gameObject.name}");
-            orbitDrawer.DestroyOrbitRenderer();
-
             centralBody = celestial;
             kepler.orbit.ChangeCentralBody(centralBody);
 
             UpdateRelativePosition();
-            //orbitDrawer.SetupOrbitRenderer(this, centralBody.transform);
             AddVelocity(-centralBody.Velocity);
         }
 

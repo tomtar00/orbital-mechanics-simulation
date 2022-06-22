@@ -27,12 +27,11 @@ namespace Sim.Objects
         protected Vector3 relativePosition;
         public Vector3 RelativePosition { get => relativePosition; }
 
-        protected void Start()
+        protected void Awake()
         {
             orbitDrawer = GetComponent<OrbitDrawer>();
             if (!isStationary) {
-                kepler = new KeplerianOrbit(centralBody);
-                orbitDrawer.SetupOrbitRenderer(this, centralBody.transform);               
+                kepler = new KeplerianOrbit(centralBody);              
             }                   
         }
 
