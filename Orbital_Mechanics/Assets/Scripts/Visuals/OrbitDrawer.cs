@@ -10,7 +10,7 @@ namespace Sim.Visuals
 {
     public class OrbitDrawer : MonoBehaviour
     {
-        [SerializeField] private int orbitResolution = 30;
+        [SerializeField][Range(1, 10)] private int orbitResolution = 3;
         [SerializeField]
         [Range(1, 3)]
         private int depth = 2;

@@ -78,7 +78,7 @@ namespace Sim.Math
             return -e * MathLib.Cosh(H) + 1f; //  -e*cosh(H) + 1 = 0
         }
 
-        public override Vector3[] GenerateOrbitPoints(float resolution, InOrbitObject self, float timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out float timeToGravityChange)
+        public override Vector3[] GenerateOrbitPoints(int resolution, InOrbitObject self, float timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out float timeToGravityChange)
         {
             List<Vector3> points = new List<Vector3>();
             float influenceRadius = this.centralBody.InfluenceRadius;
@@ -91,7 +91,8 @@ namespace Sim.Math
             stateVectors = null;
             timeToGravityChange = -1f;
 
-            float orbitFraction = 1f / (resolution - 1);
+            resolution *= (int)influenceRadius;
+            float orbitFraction = 1f / resolution;
             for (int i = 0; i < resolution; i++)
             {
                 float trueAnomaly = elements.trueAnomaly + i * orbitFraction * 2 * theta;

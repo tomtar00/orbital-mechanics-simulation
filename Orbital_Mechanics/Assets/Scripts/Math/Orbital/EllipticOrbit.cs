@@ -16,9 +16,11 @@ namespace Sim.Math
             elements.meanAnomaly = elements.anomaly - elements.eccentricity * MathLib.Sin(elements.anomaly);
 
             elements.semiminorAxis = elements.semimajorAxis * MathLib.Sqrt(1 - elements.eccentricity * elements.eccentricity);
-            elements.trueAnomalyConstant = MathLib.Sqrt((1 + elements.eccentricity).SafeDivision(1 - elements.eccentricity));
             elements.meanMotion = MathLib.Sqrt((GM).SafeDivision(MathLib.Pow(elements.semimajorAxis, 3)));
             elements.semiLatusRectum = elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity);
+
+            elements.trueAnomalyConstant = MathLib.Sqrt((1 + elements.eccentricity).SafeDivision(1 - elements.eccentricity));
+            elements.periodConstant = MathLib.Sqrt((MathLib.Pow(elements.semimajorAxis, 3) / GM));
 
             return elements;
         }
@@ -81,7 +83,7 @@ namespace Sim.Math
             return -1f + e * MathLib.Cos(E); //  -1 + e*cos(E) = 0
         }
 
-        public override Vector3[] GenerateOrbitPoints(float resolution, InOrbitObject self, float timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out float timeToGravityChange)
+        public override Vector3[] GenerateOrbitPoints(int resolution, InOrbitObject self, float timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out float timeToGravityChange)
         {
             List<Vector3> points = new List<Vector3>();
             float influenceRadius = this.centralBody.InfluenceRadius;
@@ -91,6 +93,7 @@ namespace Sim.Math
             stateVectors = null;
             timeToGravityChange = -1f;
 
+            resolution *= (int)elements.semimajorAxis;
             float orbitFraction = 1f / resolution;
             for (int i = 0; i < resolution; i++)
             {

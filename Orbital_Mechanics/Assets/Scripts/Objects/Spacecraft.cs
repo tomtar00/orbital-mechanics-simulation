@@ -18,6 +18,8 @@ namespace Sim.Objects
         [SerializeField] protected Vector3 startRelativePosition;
         [SerializeField] protected float thrust;
 
+        private bool canUpdateOrbit = true;
+
         private void Start()
         {
             if (isStationary)
@@ -36,6 +38,8 @@ namespace Sim.Objects
         {
             base.Update();
 
+            UpdateOrbitRenderer();
+            
             HandleControls();
             CheckCelestialInfluence();
         }
@@ -128,6 +132,16 @@ namespace Sim.Objects
             UpdateRelativePosition();
             AddVelocity(-centralBody.Velocity);
         }
+        private void UpdateOrbitRenderer() {
+            if (kepler.orbit.elements.timeToPeriapsis < 0.1f && 
+                kepler.orbitType == OrbitType.ELLIPTIC &&
+                canUpdateOrbit) {
+                StateVectors stateVectors = new StateVectors(relativePosition, velocity);
+                orbitDrawer.DrawOrbits(stateVectors);
+                canUpdateOrbit = false;
+            }
+            else canUpdateOrbit = true;
+        }
 
         private void OnGUI()
         {
@@ -147,6 +161,8 @@ namespace Sim.Objects
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Mean anomaly: {elements.meanAnomaly}");
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"True anomaly:  {elements.trueAnomaly}");
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Anomaly:        {elements.anomaly}");
+            i++;
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time to periapsis: {elements.timeToPeriapsis}");
             i++;
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time: x{Time.timeScale}");
             if (GUI.Button(new Rect(10, startHeight + space * i, 30, 30), "<"))

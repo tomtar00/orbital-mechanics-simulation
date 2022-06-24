@@ -52,6 +52,7 @@ namespace Sim.Objects
         {       
             (float, float, float) mat = kepler.UpdateAnomalies(Time.deltaTime);
             StateVectors stateVectors = kepler.UpdateStateVectors(mat.Item3);
+            kepler.UpdateTimeToPeriapsis();
 
             relativePosition = stateVectors.position;
             velocity = stateVectors.velocity;

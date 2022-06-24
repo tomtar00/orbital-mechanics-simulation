@@ -95,6 +95,9 @@ namespace Sim.Math
         {
             return orbit.ConvertOrbitElementsToStateVectors(trueAnomaly);
         }
+        public void UpdateTimeToPeriapsis() {
+            orbit.elements.timeToPeriapsis = orbit.CalculateTimeToPeriapsis(orbit.elements.meanAnomaly);
+        }
 
         public void ApplyElementsFromStruct(OrbitElements elements, Celestial centralBody)
         {
@@ -145,9 +148,12 @@ namespace Sim.Math
         public float meanAnomaly { get; set; }
         public float anomaly { get; set; }
         public float semiminorAxis { get; set; }
-        public float trueAnomalyConstant { get; set; }
         public float meanMotion { get; set; }
         public float semiLatusRectum { get; set; }
+        public float timeToPeriapsis { get; set; }
+
+        public float trueAnomalyConstant { get; set; }
+        public float periodConstant { get; set; }
 
         public Vector3 angMomentum { get; set; }
         public Vector3 eccVec { get; set; }

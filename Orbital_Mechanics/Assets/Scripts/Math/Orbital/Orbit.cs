@@ -92,8 +92,7 @@ namespace Sim.Math
             float angMomMag = angMomentum.magnitude;
             Vector3 eccVec = (Vector3.Cross(vel, angMomentum) / GM) - (pos.SafeDivision(pos.magnitude));
             return eccVec.magnitude;
-        }
-            
+        }      
         
         public abstract Vector3 CalculateOrbitalPosition(float trueAnomaly);
         public abstract Vector3 CalculateVelocity(Vector3 relativePosition, float trueAnomaly);
@@ -130,9 +129,13 @@ namespace Sim.Math
             return (m, a, t);
         }
 
+        public float CalculateTimeToPeriapsis(float meanAnomaly) {
+            return (PI2 - meanAnomaly) * elements.periodConstant;
+        }
+
         public abstract float MeanAnomalyEquation(float anomaly, float e, float M);
         public abstract float d_MeanAnomalyEquation(float anomaly, float e);
     
-        public abstract Vector3[] GenerateOrbitPoints(float resolution, InOrbitObject self, float timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out float timeToGravityChange);
+        public abstract Vector3[] GenerateOrbitPoints(int resolution, InOrbitObject self, float timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out float timeToGravityChange);
     }
 }
