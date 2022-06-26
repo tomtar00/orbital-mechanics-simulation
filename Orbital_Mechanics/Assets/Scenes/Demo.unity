@@ -451,7 +451,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93168a3fca1644e4290aff80cd9855a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  orbitResolution: 3
+  orbitResolution: 200
   depth: 3
 --- !u!4 &546625451 stripped
 Transform:
@@ -1061,7 +1061,7 @@ PrefabInstance:
     - target: {fileID: 8389042663809134706, guid: df89030a194ccd5488e4434af43430bb,
         type: 3}
       propertyPath: orbitResolution
-      value: 3
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8389042663809134707, guid: df89030a194ccd5488e4434af43430bb,
         type: 3}

@@ -78,90 +78,14 @@ namespace Sim.Math
             return -e * MathLib.Cosh(H) + 1f; //  -e*cosh(H) + 1 = 0
         }
 
-        public override Vector3[] GenerateOrbitPoints(int resolution, InOrbitObject self, float timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out float timeToGravityChange)
+        public override Vector3 GetPointOnOrbit(int i, float orbitFraction, out float meanAnomaly, out float trueAnomaly)
         {
-            List<Vector3> points = new List<Vector3>();
-            float influenceRadius = this.centralBody.InfluenceRadius;
-            bool encounter = false;
-
-            float e = elements.eccentricity;
             float theta = MathLib.Acos(-1.0f / elements.eccentricity) - 0.01f;
-
-            nextCelestial = null;
-            stateVectors = null;
-            timeToGravityChange = -1f;
-
-            resolution *= (int)influenceRadius;
-            float orbitFraction = 1f / resolution;
-            for (int i = 0; i < resolution; i++)
-            {
-                float trueAnomaly = elements.trueAnomaly + i * orbitFraction * 2 * theta;
-                float hyperbolicAnomaly = 2 * MathLib.Atanh(MathLib.Sqrt((e - 1) / (e + 1)) * MathLib.Tan(trueAnomaly / 2));
-                float meanAnomalyAtPoint = e * MathLib.Sinh(hyperbolicAnomaly) - hyperbolicAnomaly;
-                Vector3 position = CalculateOrbitalPosition(trueAnomaly);
-                
-                // get time in which object is in this spot
-                if (meanAnomalyAtPoint < elements.meanAnomaly) meanAnomalyAtPoint += PI2;
-                float time = (meanAnomalyAtPoint - elements.meanAnomaly) / elements.meanMotion;
-                time += timePassed;
-
-                // check if outside influence
-                if (position.sqrMagnitude < influenceRadius * influenceRadius)
-                {
-                    points.Add(position);
-                }
-                else
-                {
-                    //TODO: improve precision of the last point
-
-                    // get escape state vectors
-                    Vector3 spacecraftVelocity = CalculateVelocity(position, trueAnomaly);
-                    
-                    if (!this.centralBody.IsStationary)
-                    {
-                        (float, float, float) mat = this.centralBody.Kepler.orbit.GetFutureAnomalies(time);
-                        Vector3 celestialPosition = this.centralBody.Kepler.orbit.CalculateOrbitalPosition(mat.Item3);
-                        Vector3 celestialVelocity = this.centralBody.Kepler.orbit.CalculateVelocity(celestialPosition, trueAnomaly);
-
-                        stateVectors = new StateVectors(position + celestialPosition, spacecraftVelocity + celestialVelocity);
-                    }
-                    else
-                        stateVectors = new StateVectors(position, spacecraftVelocity);
-
-                    nextCelestial = this.centralBody.CentralBody;
-                    timeToGravityChange = time;
-                    break;
-                }
-
-                // check if any other object will be in range in that time
-                foreach (var celestial in this.centralBody.celestialsOnOrbit)
-                {
-                    if (celestial == self)
-                        continue;
-
-                    (float, float, float) mat = celestial.Kepler.orbit.GetFutureAnomalies(time);
-                    Vector3 celestialPosition = celestial.Kepler.orbit.CalculateOrbitalPosition(mat.Item3);
-                    Vector3 relativePosition = (position - celestialPosition);
-
-                    if (relativePosition.sqrMagnitude < MathLib.Pow(celestial.InfluenceRadius, 2))
-                    {
-                        encounter = true;
-                        // get encounter state vectors
-                        Vector3 spacecraftVelocity = CalculateVelocity(position, trueAnomaly);
-                        Vector3 celestialVelocity = celestial.Kepler.orbit.CalculateVelocity(celestialPosition, mat.Item3);
-                        stateVectors = new StateVectors(relativePosition, spacecraftVelocity - celestialVelocity);
-                        nextCelestial = celestial;
-
-                        timeToGravityChange = time;
-
-                        break;
-                    }
-                }
-
-                if (encounter) break;
-            }
-
-            return points.ToArray();
+            float e = elements.eccentricity;
+            trueAnomaly = elements.trueAnomaly + i * orbitFraction * 2 * theta;
+            float hyperbolicAnomaly = 2 * MathLib.Atanh(MathLib.Sqrt((e - 1) / (e + 1)) * MathLib.Tan(trueAnomaly / 2));
+            meanAnomaly = e * MathLib.Sinh(hyperbolicAnomaly) - hyperbolicAnomaly;
+            return CalculateOrbitalPosition(trueAnomaly);
         }
     }
 }

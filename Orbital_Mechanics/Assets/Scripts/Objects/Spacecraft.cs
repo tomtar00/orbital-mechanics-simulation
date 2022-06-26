@@ -82,11 +82,12 @@ namespace Sim.Objects
         private void HandleControls()
         {
             Vector3 thrustForward = this.velocity.normalized * thrust * Time.deltaTime;
-            if (Input.GetKey(KeyCode.M))
+            thrustForward = new Vector3(thrustForward.x, 0f, thrustForward.z); //TODO: remove
+            if (Input.GetKeyDown(KeyCode.M))
             {
                 AddVelocity(thrustForward);
             }
-            if (Input.GetKey(KeyCode.N))
+            if (Input.GetKeyDown(KeyCode.N))
             {
                 AddVelocity(-thrustForward);
             }
@@ -115,6 +116,8 @@ namespace Sim.Objects
         {
             Vector3 previousCentralBodyVelocity = centralBody.Velocity;
 
+            Debug.Log($"Exiting {centralBody.name} with vectors: R = {transform.position - centralBody.CentralBody.transform.position}, V = {velocity + previousCentralBodyVelocity}");
+
             centralBody = centralBody.CentralBody;
             kepler.orbit.ChangeCentralBody(centralBody);
 
@@ -123,6 +126,7 @@ namespace Sim.Objects
                 UpdateRelativePosition();
                 AddVelocity(previousCentralBodyVelocity);
             }
+
         }
         private void EnterCelestialInfluence(Celestial celestial)
         {
@@ -131,11 +135,14 @@ namespace Sim.Objects
 
             UpdateRelativePosition();
             AddVelocity(-centralBody.Velocity);
+
+            Debug.Log($"Entering {celestial.name} with vectors: R = {relativePosition}, V = {velocity - centralBody.Velocity}");
         }
         private void UpdateOrbitRenderer() {
             if (kepler.orbit.elements.timeToPeriapsis < 0.1f && 
                 kepler.orbitType == OrbitType.ELLIPTIC &&
-                canUpdateOrbit) {
+                canUpdateOrbit) 
+            {
                 StateVectors stateVectors = new StateVectors(relativePosition, velocity);
                 orbitDrawer.DrawOrbits(stateVectors);
                 canUpdateOrbit = false;
