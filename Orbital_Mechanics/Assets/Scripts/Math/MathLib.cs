@@ -29,6 +29,27 @@ namespace Sim.Math
                 throw new ArithmeticException("Result of function is NaN!");
             return result;
         }
+        public static double d_EnsureFunctionConditions(Func<float, double> func, float param, bool clampInDomain = false, float domainStart = float.MinValue, float domainEnd = float.MaxValue)
+        {
+            if (float.IsNaN(param))
+                throw new ArgumentException("Parameter is NaN!");
+
+            if (param < domainStart || param > domainEnd)
+            {
+                if (clampInDomain)
+                {
+                    var clamp = Mathf.Clamp(param, domainStart, domainEnd);
+                    Debug.Log($"Need to clamp param in domain: {param} -> {clamp}");
+                    param = clamp;
+                }
+                else throw new ArgumentOutOfRangeException($"Parameter out of function domain! Passed: {param}");
+            }
+
+            double result = func(param);
+            if (double.IsNaN(result))
+                throw new ArithmeticException("Result of function is NaN!");
+            return result;
+        }
 
         public static float EnsureFunctionConditions2(Func<float, float, float> func, float param1, float param2, bool clampInDomain = false, float domainStart = float.MinValue, float domainEnd = float.MaxValue)
         {
@@ -76,9 +97,9 @@ namespace Sim.Math
         {
             return EnsureFunctionConditions(Mathf.Tan, x);
         }
-        public static float Sinh(float x)
+        public static double Sinh(float x)
         {
-            return EnsureFunctionConditions((float a) => (float)System.Math.Sinh(a), x);
+            return d_EnsureFunctionConditions((a) => System.Math.Sinh(a), x);
         }
         public static float Cosh(float x)
         {
@@ -108,10 +129,11 @@ namespace Sim.Math
         public static float Atanh(float x)
         {
             Func<float, float> Atanh = (float a) => (Mathf.Log(1 + a) - Mathf.Log(1 - a)) / 2;
-            return EnsureFunctionConditions(Atanh, x, true, -1f, 1f);
+            return EnsureFunctionConditions(Atanh, x, true, -.99f, .99f);
         }
-        public static float Asinh(float x) {
-            Func<float, float> Asinh = (float a) => Mathf.Log(a + Mathf.Sqrt(a*a + 1));
+        public static float Asinh(float x)
+        {
+            Func<float, float> Asinh = (float a) => Mathf.Log(a + Mathf.Sqrt(a * a + 1));
             return EnsureFunctionConditions(Asinh, x, true);
         }
 

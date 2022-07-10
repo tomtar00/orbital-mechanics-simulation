@@ -13,7 +13,7 @@ namespace Sim.Math
         {
             float sqrt = MathLib.Sqrt((elements.eccentricity - 1).SafeDivision(elements.eccentricity + 1));
             elements.anomaly = 2f * MathLib.Atanh(sqrt * MathLib.Tan(elements.trueAnomaly / 2f));
-            elements.meanAnomaly = elements.eccentricity * MathLib.Sinh(elements.anomaly) - elements.anomaly;
+            elements.meanAnomaly = (float)(elements.eccentricity * MathLib.Sinh(elements.anomaly) - elements.anomaly);
 
             elements.meanMotion = MathLib.Sqrt((GM).SafeDivision(MathLib.Pow(-elements.semimajorAxis, 3)));
             elements.semiminorAxis = -elements.semimajorAxis * MathLib.Sqrt(elements.eccentricity * elements.eccentricity - 1f);
@@ -53,27 +53,16 @@ namespace Sim.Math
             meanAnomaly += elements.meanMotion * time;
             return meanAnomaly;
         }
-        public override float CalculateAnomaly(float meanAnomaly)
-        {
-            if (MathLib.Abs(meanAnomaly) > Mathf.PI)
-            {
-                return MathLib.Asinh((meanAnomaly + elements.anomaly) / elements.eccentricity);
-            }
-            else
-            {
-                return base.CalculateAnomaly(meanAnomaly);
-            }
-        }
         public override float CalculateTrueAnomaly(float anomaly)
         {
             return 2f * MathLib.Atan(elements.trueAnomalyConstant * MathLib.Tanh(anomaly / 2f));
         }
 
-        public override float MeanAnomalyEquation(float H, float e, float M)
+        public override double MeanAnomalyEquation(float H, float e, float M)
         {
             return M - e * MathLib.Sinh(H) + H; // M - e*sinh(H) + H = 0
         }
-        public override float d_MeanAnomalyEquation(float H, float e)
+        public override double d_MeanAnomalyEquation(float H, float e)
         {
             return -e * MathLib.Cosh(H) + 1f; //  -e*cosh(H) + 1 = 0
         }
@@ -84,7 +73,7 @@ namespace Sim.Math
             float e = elements.eccentricity;
             trueAnomaly = elements.trueAnomaly + i * orbitFraction * 2 * theta;
             float hyperbolicAnomaly = 2 * MathLib.Atanh(MathLib.Sqrt((e - 1) / (e + 1)) * MathLib.Tan(trueAnomaly / 2));
-            meanAnomaly = e * MathLib.Sinh(hyperbolicAnomaly) - hyperbolicAnomaly;
+            meanAnomaly = (float)(e * MathLib.Sinh(hyperbolicAnomaly) - hyperbolicAnomaly);
             return CalculateOrbitalPosition(trueAnomaly);
         }
     }

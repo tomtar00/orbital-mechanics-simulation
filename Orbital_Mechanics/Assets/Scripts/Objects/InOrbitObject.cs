@@ -11,7 +11,7 @@ namespace Sim.Objects
         [SerializeField] protected Celestial centralBody;
         [Space]
         [SerializeField] protected KeplerianOrbit kepler;
-        
+
         public KeplerianOrbit Kepler { get => kepler; }
 
         // Moving
@@ -30,55 +30,61 @@ namespace Sim.Objects
         protected void Awake()
         {
             orbitDrawer = GetComponent<OrbitDrawer>();
-            if (!isStationary) {
-                kepler = new KeplerianOrbit(centralBody);              
-            }                   
+            if (!isStationary)
+            {
+                kepler = new KeplerianOrbit(centralBody);
+            }
         }
 
         protected void Update()
-        {           
+        {
             if (!isStationary)
             {
                 if (centralBody == null)
                     transform.position += this.velocity * Time.deltaTime;
-                else MoveAlongOrbit();   
-            }    
-            else {
+                else MoveAlongOrbit();
+            }
+            else
+            {
                 UpdateRelativePosition();
-            }   
-        }       
+            }
+        }
 
         protected void MoveAlongOrbit()
-        {       
+        {
             (float, float, float) mat = kepler.UpdateAnomalies(Time.deltaTime);
             StateVectors stateVectors = kepler.UpdateStateVectors(mat.Item3);
             kepler.UpdateTimeToPeriapsis();
 
             relativePosition = stateVectors.position;
             velocity = stateVectors.velocity;
-            
+
             transform.position = centralBody.transform.position + relativePosition;
         }
 
-        protected void UpdateRelativePosition() {
+        protected void UpdateRelativePosition()
+        {
             if (centralBody != null)
                 relativePosition = transform.position - centralBody.transform.position;
-            else 
+            else
                 relativePosition = transform.position;
         }
 
         // Vector debugging
         protected void OnDrawGizmos()
         {
-            /// Draw velocity vector
-            Debug.DrawLine(transform.position, this.velocity + transform.position);
-
-            /// Draw orbit plane normal vector
-            if (centralBody != null)
+            if (Application.isPlaying)
             {
-                Debug.DrawLine(centralBody.transform.position, transform.position, Color.red);
-                Debug.DrawLine(centralBody.transform.position, kepler.orbit.elements.angMomentum + centralBody.transform.position, Color.blue);
-                // Debug.DrawLine(centralBody.transform.position, trajectory.orbit.eccVec + centralBody.transform.position, Color.yellow);
+                /// Draw velocity vector
+                Debug.DrawLine(transform.position, this.velocity + transform.position);
+
+                /// Draw orbit plane normal vector
+                if (centralBody != null)
+                {
+                    Debug.DrawLine(centralBody.transform.position, transform.position, Color.red);
+                    Debug.DrawLine(centralBody.transform.position, kepler.orbit.elements.angMomentum + centralBody.transform.position, Color.blue);
+                    // Debug.DrawLine(centralBody.transform.position, trajectory.orbit.eccVec + centralBody.transform.position, Color.yellow);
+                }
             }
         }
     }

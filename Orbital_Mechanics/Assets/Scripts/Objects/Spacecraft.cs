@@ -82,12 +82,12 @@ namespace Sim.Objects
         private void HandleControls()
         {
             Vector3 thrustForward = this.velocity.normalized * thrust * Time.deltaTime;
-            thrustForward = new Vector3(thrustForward.x, 0f, thrustForward.z); //TODO: remove
-            if (Input.GetKeyDown(KeyCode.M))
+            thrustForward = new Vector3(thrustForward.x, 0f, thrustForward.z); // TODO: remove
+            if (Input.GetKey(KeyCode.M))
             {
                 AddVelocity(thrustForward);
             }
-            if (Input.GetKeyDown(KeyCode.N))
+            if (Input.GetKey(KeyCode.N))
             {
                 AddVelocity(-thrustForward);
             }
@@ -96,7 +96,7 @@ namespace Sim.Objects
         {
             if (centralBody == null) return;
 
-            if (relativePosition.sqrMagnitude > centralBody.InfluenceRadius * centralBody.InfluenceRadius)
+            if (relativePosition.sqrMagnitude - centralBody.InfluenceRadius * centralBody.InfluenceRadius > 0) // FIXME: change 0 to something else
             {
                 ExitCelestialInfluence();
             }
@@ -104,7 +104,7 @@ namespace Sim.Objects
             {
                 foreach (var orbitingCelestial in centralBody.celestialsOnOrbit)
                 {
-                    if ((transform.position - orbitingCelestial.transform.position).sqrMagnitude < orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius)
+                    if ((transform.position - orbitingCelestial.transform.position).sqrMagnitude - orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius < -0.5f)
                     {
                         EnterCelestialInfluence(orbitingCelestial);
                         break;
@@ -141,6 +141,7 @@ namespace Sim.Objects
         private void UpdateOrbitRenderer() {
             if (kepler.orbit.elements.timeToPeriapsis < 0.1f && 
                 kepler.orbitType == OrbitType.ELLIPTIC &&
+                orbitDrawer.lineRenderers[0].loop &&
                 canUpdateOrbit) 
             {
                 StateVectors stateVectors = new StateVectors(relativePosition, velocity);

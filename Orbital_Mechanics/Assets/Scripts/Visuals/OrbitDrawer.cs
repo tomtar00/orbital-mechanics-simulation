@@ -12,10 +12,10 @@ namespace Sim.Visuals
     {
         [SerializeField][Range(1, 200)] private int orbitResolution = 200;
         [SerializeField]
-        [Range(1, 3)]
+        [Range(1, 5)]
         private int depth = 2;
 
-        private LineRenderer[] lineRenderers;
+        public LineRenderer[] lineRenderers { get; private set; }
         private InOrbitObject inOrbitObject;
         private Celestial centralBody;
 

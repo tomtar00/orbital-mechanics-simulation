@@ -76,11 +76,11 @@ namespace Sim.Math
             return trueAnomaly;
         }
 
-        public override float MeanAnomalyEquation(float E, float e, float M)
+        public override double MeanAnomalyEquation(float E, float e, float M)
         {
             return M - E + e * MathLib.Sin(E); // M - E + e*sin(E) = 0
         }
-        public override float d_MeanAnomalyEquation(float E, float e)
+        public override double d_MeanAnomalyEquation(float E, float e)
         {
             return -1f + e * MathLib.Cos(E); //  -1 + e*cos(E) = 0
         }

@@ -8,6 +8,7 @@ namespace Sim.Math
     public abstract class Orbit
     {
         public const float PI2 = 6.28318531f;
+        public const float FUTURE_PRECISION = .5f;
 
         public Celestial centralBody { get; private set; }
         public float GM { get; private set; }
@@ -116,9 +117,9 @@ namespace Sim.Math
             while (MathLib.Abs(a1 - a0) > 0.0001f)
             {
                 a0 = a1;
-                float eq = MeanAnomalyEquation(a0, elements.eccentricity, meanAnomaly);
-                float deq = d_MeanAnomalyEquation(a0, elements.eccentricity);
-                a1 = a0 - eq.SafeDivision(deq);
+                double eq = MeanAnomalyEquation(a0, elements.eccentricity, meanAnomaly);
+                double deq = d_MeanAnomalyEquation(a0, elements.eccentricity);
+                a1 = a0 - (float)(eq.SafeDivision(deq));
             }
 
             return a1;
@@ -137,8 +138,8 @@ namespace Sim.Math
             return (PI2 - meanAnomaly) * elements.periodConstant;
         }
 
-        public abstract float MeanAnomalyEquation(float anomaly, float e, float M);
-        public abstract float d_MeanAnomalyEquation(float anomaly, float e);
+        public abstract double MeanAnomalyEquation(float anomaly, float e, float M);
+        public abstract double d_MeanAnomalyEquation(float anomaly, float e);
 
         public Vector3[] GenerateOrbitPoints(int resolution, InOrbitObject self, float timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out float timeToGravityChange)
         {
@@ -161,56 +162,38 @@ namespace Sim.Math
                 // get time in which object is in this spot
                 if (meanAnomaly < elements.meanAnomaly) meanAnomaly += PI2;
                 float time = (meanAnomaly - elements.meanAnomaly) / elements.meanMotion;
-                time += timePassed;
 
                 // check if outside influence
-                if (position.sqrMagnitude < influenceRadius * influenceRadius)
+                if (position.sqrMagnitude > influenceRadius * influenceRadius)
                 {
-                    points.Add(position);
-                }
-                else
-                {
-                    // move last point closer to influence border
-                    //FIXME: fix exiting influence precision
-                    float t1 = time;
-                    float t2 = lastTime;
-                    int iter = 0;
-                    Debug.Log((position.sqrMagnitude - influenceRadius * influenceRadius));
-                    while (Mathf.Abs(position.sqrMagnitude - influenceRadius * influenceRadius) > 0.001f)
-                    {
-                        timeToGravityChange = (t1 + t2) / 2f;
+                    // move last point closer to influence border         
+                    timeToGravityChange = GetTimeToOutsideInfluence(lastTime, time, influenceRadius, 50);
 
-                        (float, float, float) mat = GetFutureAnomalies(timeToGravityChange);
-                        position = CalculateOrbitalPosition(mat.Item3);
-
-                        if (position.sqrMagnitude < influenceRadius * influenceRadius)
-                        {
-                            t1 = timeToGravityChange;
-                        }
-                        else t2 = timeToGravityChange;
-
-                        if (++iter > 1000) break;
-                    }
-                    Debug.Log(iter + " === " + time + " === " + timeToGravityChange + " ======= " + (position.sqrMagnitude - influenceRadius * influenceRadius));
-
+                    (float, float, float) _mat = GetFutureAnomalies(timeToGravityChange);
+                    position = CalculateOrbitalPosition(_mat.Item3);
                     points.Add(position);
 
                     // get escape state vectors
-                    Vector3 spacecraftVelocity = CalculateVelocity(position, trueAnomaly);
+                    Vector3 spacecraftVelocity = CalculateVelocity(position, _mat.Item3);
 
                     if (!this.centralBody.IsStationary)
                     {
-                        (float, float, float) mat = this.centralBody.Kepler.orbit.GetFutureAnomalies(timeToGravityChange);
-                        Vector3 celestialPosition = this.centralBody.Kepler.orbit.CalculateOrbitalPosition(mat.Item3);
-                        Vector3 celestialVelocity = this.centralBody.Kepler.orbit.CalculateVelocity(celestialPosition, trueAnomaly);
+                        Orbit centralBodyOrbit = this.centralBody.Kepler.orbit;
+                        (float, float, float) mat = centralBodyOrbit.GetFutureAnomalies(timeToGravityChange + timePassed);
+                        Vector3 celestialPosition = centralBodyOrbit.CalculateOrbitalPosition(mat.Item3);
+                        Vector3 celestialVelocity = centralBodyOrbit.CalculateVelocity(celestialPosition, mat.Item3);
 
                         stateVectors = new StateVectors(position + celestialPosition, spacecraftVelocity + celestialVelocity);
                     }
                     else
                         stateVectors = new StateVectors(position, spacecraftVelocity);
 
-                    Debug.Log($"Will exit {this.centralBody.name} with vectors: R = {stateVectors.position}, V = {stateVectors.velocity}");
+                    Debug.Log($"Will exit {this.centralBody.name} with vectors: R = {stateVectors.position}, V = {stateVectors.velocity} after {timeToGravityChange}");
                     nextCelestial = this.centralBody.CentralBody;
+
+                    // TODO: delete
+                    // Time.timeScale = 0;
+
                     break;
                 }
 
@@ -220,7 +203,7 @@ namespace Sim.Math
                     if (celestial == self)
                         continue;
 
-                    (float, float, float) mat = celestial.Kepler.orbit.GetFutureAnomalies(time);
+                    (float, float, float) mat = celestial.Kepler.orbit.GetFutureAnomalies(time + timePassed);
                     Vector3 celestialPosition = celestial.Kepler.orbit.CalculateOrbitalPosition(mat.Item3);
                     Vector3 relativePosition = (position - celestialPosition);
 
@@ -228,35 +211,46 @@ namespace Sim.Math
                     {
                         float t1 = time;
                         float t2 = lastTime;
+
                         int iter = 0;
-                        while (MathLib.Abs(relativePosition.sqrMagnitude - MathLib.Pow(celestial.InfluenceRadius, 2)) > 0.0001f)
+                        float diff = 1;
+                        Vector3 spacecraftPosition = Vector3.zero;
+                        (float, float, float) _mat = (0, 0, 0);
+
+                        while (MathLib.Abs(diff) > FUTURE_PRECISION || diff > 0)
                         {
+                            if (++iter > 50)
+                            {
+                                break;
+                            }
+
                             timeToGravityChange = (t1 + t2) / 2f;
 
-                            var _mat = GetFutureAnomalies(timeToGravityChange);
-                            var spacecraftPosition = CalculateOrbitalPosition(_mat.Item3);
+                            _mat = GetFutureAnomalies(timeToGravityChange);
+                            spacecraftPosition = CalculateOrbitalPosition(_mat.Item3);
 
-                            mat = celestial.Kepler.orbit.GetFutureAnomalies(timeToGravityChange);
+                            mat = celestial.Kepler.orbit.GetFutureAnomalies(timeToGravityChange + timePassed);
                             celestialPosition = celestial.Kepler.orbit.CalculateOrbitalPosition(mat.Item3);
-                            relativePosition = (spacecraftPosition - celestialPosition);
 
-                            if (relativePosition.sqrMagnitude < MathLib.Pow(celestial.InfluenceRadius, 2))
+                            relativePosition = (spacecraftPosition - celestialPosition);
+                            diff = relativePosition.sqrMagnitude - MathLib.Pow(celestial.InfluenceRadius, 2);           
+
+                            if (diff < 0)
                             {
                                 t1 = timeToGravityChange;
                             }
                             else t2 = timeToGravityChange;
-
-                            if (++iter > 1000) break;
                         }
 
+                        points.Add(relativePosition + celestialPosition);
                         encounter = true;
                         // get encounter state vectors
-                        Vector3 spacecraftVelocity = CalculateVelocity(relativePosition + celestialPosition, trueAnomaly);
+                        Vector3 spacecraftVelocity = CalculateVelocity(spacecraftPosition, _mat.Item3);
                         Vector3 celestialVelocity = celestial.Kepler.orbit.CalculateVelocity(celestialPosition, mat.Item3);
                         stateVectors = new StateVectors(relativePosition, spacecraftVelocity - celestialVelocity);
                         nextCelestial = celestial;
 
-                        Debug.Log($"Will enter {nextCelestial.name} with vectors: R = {stateVectors.position}, V = {stateVectors.velocity}");
+                        Debug.Log($"Will enter {nextCelestial.name} with vectors: R = {stateVectors.position}, V = {stateVectors.velocity} after {timeToGravityChange}");
 
                         break;
                     }
@@ -264,33 +258,41 @@ namespace Sim.Math
 
                 lastTime = time;
                 if (encounter) break;
+                points.Add(position);
             }
 
             return points.ToArray();
         }
         public abstract Vector3 GetPointOnOrbit(int i, float orbitFraction, out float meanAnomaly, out float trueAnomaly);
-        protected Vector3 GetBorderPoint(float t1, float t2, Vector3 influenceOffset, float influenceRadius, int steps)
+
+        protected float GetTimeToOutsideInfluence(float lastTime, float time, float influenceRadius, int steps)
         {
             // Bisection method
-            Vector3 a = Vector3.zero;
-            float middle;
+            float diff = 1;
+            float timeToChange = 0;
             int i = 0;
-            influenceRadius += 0.01f;
-            while (Mathf.Abs(a.sqrMagnitude - influenceRadius * influenceRadius) > 0.0001f)
+            Vector3 pos = Vector3.zero;
+
+            while (Mathf.Abs(diff) > FUTURE_PRECISION || diff < 0)
             {
-                middle = (t1 + t2) / 2f;
-                a = CalculateOrbitalPosition(middle) - influenceOffset;
-
-                if (a.sqrMagnitude < influenceRadius * influenceRadius)
+                if (++i > steps)
                 {
-                    t1 = middle;
+                    break;
                 }
-                else t2 = middle;
 
-                if (++i > steps) break;
+                timeToChange = (lastTime + time) / 2f;
+                (float, float, float) mat = GetFutureAnomalies(timeToChange);
+                pos = CalculateOrbitalPosition(mat.Item3);
+                diff = pos.sqrMagnitude - influenceRadius * influenceRadius;
+
+                if (diff < 0)
+                {
+                    lastTime = timeToChange;
+                }
+                else time = timeToChange;
             }
 
-            return a;
+            return timeToChange;
         }
     }
 }

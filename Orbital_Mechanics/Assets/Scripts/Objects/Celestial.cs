@@ -37,6 +37,8 @@ namespace Sim.Objects
             if (!isStationary)
             {
                 kepler.ApplyElementsFromStruct(data.Orbit, centralBody);
+                transform.position = centralBody.transform.position + kepler.orbit.CalculateOrbitalPosition(data.Orbit.trueAnomaly);
+        
                 UpdateRelativePosition();
             }
         }

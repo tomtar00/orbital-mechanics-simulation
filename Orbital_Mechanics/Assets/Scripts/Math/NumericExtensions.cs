@@ -9,6 +9,10 @@ namespace Sim.Math
         {
             return (Denominator == 0) ? 0 : Numerator / Denominator;
         }
+        public static double SafeDivision(this double Numerator, double Denominator)
+        {
+            return (Denominator == 0) ? 0 : Numerator / Denominator;
+        }
 
         public static Vector3 SafeDivision(this Vector3 Numerator, float Denominator)
         {
