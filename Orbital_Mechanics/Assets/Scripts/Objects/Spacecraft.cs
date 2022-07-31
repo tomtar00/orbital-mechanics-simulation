@@ -75,6 +75,7 @@ namespace Sim.Objects
             kepler.CheckOrbitType(stateVectors, centralBody);
 
             kepler.orbit.ConvertStateVectorsToOrbitElements(stateVectors);
+            Debug.Log(JsonUtility.ToJson(kepler.orbit.elements, true)); // TODO: Move to enter/exit influence
 
             orbitDrawer.DrawOrbits(stateVectors);
         }
