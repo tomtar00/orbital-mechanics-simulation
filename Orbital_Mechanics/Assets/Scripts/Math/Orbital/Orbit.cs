@@ -188,7 +188,7 @@ namespace Sim.Math
                     else
                         stateVectors = new StateVectors(position, spacecraftVelocity);
 
-                    Debug.Log($"Will exit {this.centralBody.name} with vectors: R = {stateVectors.position}, V = {stateVectors.velocity} after {timeToGravityChange}");
+                    //Debug.Log($"Will exit {this.centralBody.name} with vectors: R = {stateVectors.position}, V = {stateVectors.velocity} after {timeToGravityChange}");
                     nextCelestial = this.centralBody.CentralBody;
 
                     // TODO: delete
@@ -250,7 +250,7 @@ namespace Sim.Math
                         stateVectors = new StateVectors(relativePosition, spacecraftVelocity - celestialVelocity);
                         nextCelestial = celestial;
 
-                        Debug.Log($"Will enter {nextCelestial.name} with vectors: R = {stateVectors.position}, V = {stateVectors.velocity} after {timeToGravityChange}");
+                        //Debug.Log($"Will enter {nextCelestial.name} with vectors: R = {stateVectors.position}, V = {stateVectors.velocity} after {timeToGravityChange}");
 
                         break;
                     }

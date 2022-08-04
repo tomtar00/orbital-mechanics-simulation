@@ -2,6 +2,10 @@
 using Sim.Visuals;
 using Sim.Math;
 
+// failing at
+// v = 0, 0, 8
+// r = 45, 0, -15
+
 namespace Sim.Objects
 {
     [RequireComponent(typeof(OrbitDrawer))]
@@ -75,7 +79,7 @@ namespace Sim.Objects
             kepler.CheckOrbitType(stateVectors, centralBody);
 
             kepler.orbit.ConvertStateVectorsToOrbitElements(stateVectors);
-            Debug.Log(JsonUtility.ToJson(kepler.orbit.elements, true)); // TODO: Move to enter/exit influence
+            //Debug.Log(JsonUtility.ToJson(kepler.orbit.elements, true)); // TODO: Move to enter/exit influence
 
             orbitDrawer.DrawOrbits(stateVectors);
         }
@@ -117,7 +121,7 @@ namespace Sim.Objects
         {
             Vector3 previousCentralBodyVelocity = centralBody.Velocity;
 
-            Debug.Log($"Exiting {centralBody.name} with vectors: R = {transform.position - centralBody.CentralBody.transform.position}, V = {velocity + previousCentralBodyVelocity}");
+            //Debug.Log($"Exiting {centralBody.name} with vectors: R = {transform.position - centralBody.CentralBody.transform.position}, V = {velocity + previousCentralBodyVelocity}");
 
             centralBody = centralBody.CentralBody;
             kepler.orbit.ChangeCentralBody(centralBody);
@@ -128,6 +132,7 @@ namespace Sim.Objects
                 AddVelocity(previousCentralBodyVelocity);
             }
 
+            orbitDrawer.onEnterExitInfluence();
         }
         private void EnterCelestialInfluence(Celestial celestial)
         {
@@ -137,7 +142,9 @@ namespace Sim.Objects
             UpdateRelativePosition();
             AddVelocity(-centralBody.Velocity);
 
-            Debug.Log($"Entering {celestial.name} with vectors: R = {relativePosition}, V = {velocity - centralBody.Velocity}");
+            orbitDrawer.onEnterExitInfluence();
+
+            //Debug.Log($"Entering {celestial.name} with vectors: R = {relativePosition}, V = {velocity - centralBody.Velocity}");
         }
         private void UpdateOrbitRenderer() {
             if (kepler.orbit.elements.timeToPeriapsis < 0.1f && 
