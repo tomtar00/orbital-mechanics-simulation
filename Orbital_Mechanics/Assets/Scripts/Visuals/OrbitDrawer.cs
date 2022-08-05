@@ -13,32 +13,18 @@ namespace Sim.Visuals
     {
         [SerializeField][Range(1, 200)] private int orbitResolution = 200;
         [SerializeField][Range(1, 5)] private int depth = 2;
-        [SerializeField] private Color[] futureColors;
-
+        
         public LineRenderer[] lineRenderers { get; private set; }
+        private Color[] futureColors;
         private InOrbitObject inOrbitObject;
         private Celestial centralBody;
-
-        private IEnumerator<Color> startColors;
-        private IEnumerator<Color> endColors;
 
         private void Awake()
         {
             inOrbitObject = GetComponent<InOrbitObject>();
-
+            futureColors = SimulationSettings.Instance.futureOrbitColors;
             lineRenderers = new LineRenderer[depth];
             SetupOrbitRenderers();
-
-            startColors = futureColors.RepeatIndefinitely();
-            endColors = futureColors.RepeatIndefinitely();
-            endColors.MoveNext();
-
-            onEnterExitInfluence();
-        }
-
-        public void onEnterExitInfluence() {
-            startColors.MoveNext();
-            endColors.MoveNext();
         }
 
         private void SetupOrbitRenderers()
@@ -47,17 +33,39 @@ namespace Sim.Visuals
                 GameObject rendererObject = new GameObject(inOrbitObject.name + " - Orbit Renderer " + i);
                 rendererObject.transform.SetParent(inOrbitObject.CentralBody.transform);
                 rendererObject.transform.localPosition = Vector3.zero;
+                var lineButton = rendererObject.AddComponent<LineButton>();
+                lineButton.showPointIndication = true;
+                lineButton.indicationPrefab = SimulationSettings.Instance.indicationPrefab;
 
-                LineRenderer lineRenderer = rendererObject.AddComponent<LineRenderer>();
+                LineRenderer lineRenderer = rendererObject.GetComponent<LineRenderer>();
                 lineRenderer.useWorldSpace = false;
                 lineRenderer.startWidth = .1f;
                 lineRenderer.loop = true;
                 lineRenderer.material = SimulationSettings.Instance.trajectoryMat;
+                lineRenderer.startWidth = 1;
 
                 lineRenderers[i] = lineRenderer;
+                lineRenderer.colorGradient = CreateLineGradient(i);
 
                 rendererObject.SetActive(false);
             }
+        }
+        private Gradient CreateLineGradient(int lineIdx) {
+            Gradient gradient = new Gradient();
+            LineRenderer line = lineRenderers[lineIdx];
+            Color startColor = futureColors[lineIdx];
+            Color endColor = (depth > 1 && !line.loop) ? futureColors[lineIdx + 1] : startColor;
+            gradient.SetKeys(
+                new GradientColorKey[] { 
+                    new GradientColorKey(startColor, 0.8f), 
+                    new GradientColorKey(endColor, 1.0f) 
+                },
+                new GradientAlphaKey[] { 
+                    new GradientAlphaKey(startColor.a, 0.8f), 
+                    new GradientAlphaKey(endColor.a, 1.0f) 
+                }
+            );
+            return gradient;
         }
 
         public void TurnOffRenderersFrom(int idx)
@@ -82,27 +90,12 @@ namespace Sim.Visuals
 
                 float timeToGravityChange;
                 StateVectors gravityChangePoint = DrawOrbit(stateVectors, line, currentCelestial, timePassed, out nextCelestial, out timeToGravityChange);
+                line.colorGradient = CreateLineGradient(i);
                 if (gravityChangePoint == null || nextCelestial == null) {
                     TurnOffRenderersFrom(i + 1);
-                    line.material.color = futureColors[0];
                     return;
                 }
-
-                Color startColor = startColors.Current;
-                Color endColor = endColors.Current;
-                Gradient gradient = new Gradient();
-                gradient.SetKeys(
-                    new GradientColorKey[] { 
-                        new GradientColorKey(startColor, 0.8f), 
-                        new GradientColorKey(endColor, 1.0f) 
-                    },
-                    new GradientAlphaKey[] { 
-                        new GradientAlphaKey(startColor.a, 0.8f), 
-                        new GradientAlphaKey(endColor.a, 1.0f) 
-                    }
-                );
-                line.colorGradient = gradient;
-
+                
                 stateVectors = gravityChangePoint;
                 currentCelestial = nextCelestial;
                 timePassed += timeToGravityChange;
@@ -148,6 +141,7 @@ namespace Sim.Visuals
 
             // loop if no gravity change reported
             LineRenderer line = lineRenderers[0];
+            line.colorGradient = CreateLineGradient(0);
             line.gameObject.SetActive(true);
             line.loop = gravityChangeVectors == null;
             line.positionCount = points.Length;

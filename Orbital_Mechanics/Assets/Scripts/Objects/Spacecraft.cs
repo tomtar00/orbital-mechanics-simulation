@@ -131,8 +131,6 @@ namespace Sim.Objects
                 UpdateRelativePosition();
                 AddVelocity(previousCentralBodyVelocity);
             }
-
-            orbitDrawer.onEnterExitInfluence();
         }
         private void EnterCelestialInfluence(Celestial celestial)
         {
@@ -141,8 +139,6 @@ namespace Sim.Objects
 
             UpdateRelativePosition();
             AddVelocity(-centralBody.Velocity);
-
-            orbitDrawer.onEnterExitInfluence();
 
             //Debug.Log($"Entering {celestial.name} with vectors: R = {relativePosition}, V = {velocity - centralBody.Velocity}");
         }

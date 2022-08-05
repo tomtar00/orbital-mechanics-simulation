@@ -6,6 +6,8 @@ namespace Sim {
     public class SimulationSettings : MonoBehaviour
     {
         public Material trajectoryMat;
+        public Color[] futureOrbitColors;
+        public GameObject indicationPrefab;
 
         public static SimulationSettings Instance;
         private void Awake() {

@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
   m_Name: Moon
   m_EditorClassIdentifier: 
-  mass: 0.1
+  mass: 0.05
   radius: 0.5
   orbit:
-    semimajorAxis: 5
+    semimajorAxis: 7
     eccentricity: 0
     inclination: 1.5707964
     lonAscNode: 0
