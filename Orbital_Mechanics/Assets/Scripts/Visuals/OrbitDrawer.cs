@@ -15,6 +15,7 @@ namespace Sim.Visuals
         [SerializeField][Range(1, 5)] private int depth = 2;
         
         public LineRenderer[] lineRenderers { get; private set; }
+        private LineButton[] lineButtons;
         private Color[] futureColors;
         private InOrbitObject inOrbitObject;
         private Celestial centralBody;
@@ -24,6 +25,7 @@ namespace Sim.Visuals
             inOrbitObject = GetComponent<InOrbitObject>();
             futureColors = SimulationSettings.Instance.futureOrbitColors;
             lineRenderers = new LineRenderer[depth];
+            lineButtons = new LineButton[depth];
             SetupOrbitRenderers();
         }
 
@@ -33,9 +35,12 @@ namespace Sim.Visuals
                 GameObject rendererObject = new GameObject(inOrbitObject.name + " - Orbit Renderer " + i);
                 rendererObject.transform.SetParent(inOrbitObject.CentralBody.transform);
                 rendererObject.transform.localPosition = Vector3.zero;
-                var lineButton = rendererObject.AddComponent<LineButton>();
+                
+                LineButton lineButton = rendererObject.AddComponent<LineButton>();
                 lineButton.showPointIndication = true;
                 lineButton.indicationPrefab = SimulationSettings.Instance.indicationPrefab;
+                lineButton.Enabled = inOrbitObject is Spacecraft;
+                lineButtons[i] = lineButton;
 
                 LineRenderer lineRenderer = rendererObject.GetComponent<LineRenderer>();
                 lineRenderer.useWorldSpace = false;
@@ -50,11 +55,18 @@ namespace Sim.Visuals
                 rendererObject.SetActive(false);
             }
         }
-        private Gradient CreateLineGradient(int lineIdx) {
+        private Gradient CreateLineGradient(int lineIdx, bool celestial = false) {
             Gradient gradient = new Gradient();
             LineRenderer line = lineRenderers[lineIdx];
-            Color startColor = futureColors[lineIdx];
-            Color endColor = (depth > 1 && !line.loop) ? futureColors[lineIdx + 1] : startColor;
+            Color startColor, endColor;
+            if (!celestial) {
+                startColor = futureColors[lineIdx];
+                endColor = (depth > 1 && !line.loop) ? futureColors[lineIdx + 1] : startColor;
+            }
+            else {
+                startColor = SimulationSettings.Instance.celestialOrbitColor;
+                endColor = SimulationSettings.Instance.celestialOrbitColor;
+            }
             gradient.SetKeys(
                 new GradientColorKey[] { 
                     new GradientColorKey(startColor, 0.8f), 
@@ -89,7 +101,7 @@ namespace Sim.Visuals
                 line.transform.localPosition = Vector3.zero;
 
                 float timeToGravityChange;
-                StateVectors gravityChangePoint = DrawOrbit(stateVectors, line, currentCelestial, timePassed, out nextCelestial, out timeToGravityChange);
+                StateVectors gravityChangePoint = DrawOrbit(stateVectors, i, currentCelestial, timePassed, out nextCelestial, out timeToGravityChange);
                 line.colorGradient = CreateLineGradient(i);
                 if (gravityChangePoint == null || nextCelestial == null) {
                     TurnOffRenderersFrom(i + 1);
@@ -101,7 +113,7 @@ namespace Sim.Visuals
                 timePassed += timeToGravityChange;
             }
         }
-        private StateVectors DrawOrbit(StateVectors stateVectors, LineRenderer line, Celestial currentCelestial, float timePassed, out Celestial nextCelestial, out float timeToGravityChange)
+        private StateVectors DrawOrbit(StateVectors stateVectors, int lineIdx, Celestial currentCelestial, float timePassed, out Celestial nextCelestial, out float timeToGravityChange)
         {
             Orbit orbit = KeplerianOrbit.CreateOrbit(stateVectors, currentCelestial, out _);
 
@@ -116,7 +128,16 @@ namespace Sim.Visuals
                 out timeToGravityChange
             );
 
+            // make indicator show always on the orbit
+            var lineButton = lineButtons[lineIdx];
+            lineButton.SetCustomIndicatorPositionConverter(pressWorldPosition => {
+                var pressLocalPosition = pressWorldPosition - currentCelestial.transform.position;
+                float angleToPoint = Vector3.SignedAngle(orbit.elements.eccVec, pressLocalPosition, orbit.elements.angMomentum);
+                return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad) + currentCelestial.transform.position;
+            });
+
             // loop if no gravity change reported
+            var line = lineRenderers[lineIdx];
             line.loop = gravityChangeVectors == null;
             line.positionCount = points.Length;
             line.SetPositions(points);
@@ -141,7 +162,7 @@ namespace Sim.Visuals
 
             // loop if no gravity change reported
             LineRenderer line = lineRenderers[0];
-            line.colorGradient = CreateLineGradient(0);
+            line.colorGradient = CreateLineGradient(0, true);
             line.gameObject.SetActive(true);
             line.loop = gravityChangeVectors == null;
             line.positionCount = points.Length;

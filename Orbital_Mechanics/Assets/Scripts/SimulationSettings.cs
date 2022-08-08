@@ -7,6 +7,7 @@ namespace Sim {
     {
         public Material trajectoryMat;
         public Color[] futureOrbitColors;
+        public Color celestialOrbitColor;
         public GameObject indicationPrefab;
 
         public static SimulationSettings Instance;

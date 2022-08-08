@@ -20,13 +20,18 @@ namespace Sim.Visuals
         private bool hovering = false;
         private LineRenderer line;
         private MeshCollider _collider;
+        private new bool enabled = true;
 
         private Func<Vector3, Vector3> converterFunction;
 
+        public bool Enabled {
+            get => enabled;
+            set => enabled = value;
+        }
+
         private void Start() {
             line = GetComponent<LineRenderer>();
-            _collider = line.GetComponent<MeshCollider>(); 
-            //BakeMesh(); 
+            _collider = line.GetComponent<MeshCollider>();  
 
             if (showPointIndication) {
                 indicator = Instantiate(indicationPrefab, transform);
@@ -35,6 +40,8 @@ namespace Sim.Visuals
         }
 
         private void Update() {
+            if (!enabled) return;
+
             if (Input.GetMouseButtonUp(0)) {
                 BakeMesh(); 
             }
@@ -54,6 +61,7 @@ namespace Sim.Visuals
 
         public void OnPointerClick(PointerEventData pointerEventData)
         {
+            if (!enabled) return;
             if (onLinePressed == null) return;
 
             var worldPos = pointerEventData.pointerCurrentRaycast.worldPosition;
@@ -61,6 +69,7 @@ namespace Sim.Visuals
         }
         public void OnPointerEnter(PointerEventData pointerEventData)
         {
+            if (!enabled) return;
             hovering = true;
             pointerData = pointerEventData;
             if (showPointIndication) {
@@ -69,6 +78,7 @@ namespace Sim.Visuals
         }
         public void OnPointerExit(PointerEventData pointerEventData)
         {
+            if (!enabled) return;
             hovering = false;
             if (showPointIndication) {
                 indicator.SetActive(false);

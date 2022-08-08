@@ -176,6 +176,7 @@ MonoBehaviour:
   - {r: 0.02666688, g: 1, b: 0, a: 0.5019608}
   - {r: 0, g: 1, b: 0.9820709, a: 0.5019608}
   - {r: 0.93859005, g: 1, b: 0, a: 0.5019608}
+  celestialOrbitColor: {r: 1, g: 1, b: 1, a: 0.2509804}
   indicationPrefab: {fileID: 4719440009590465397, guid: 73434a6245f2fe74f82e70e8342cb730,
     type: 3}
 --- !u!1001 &215710737
