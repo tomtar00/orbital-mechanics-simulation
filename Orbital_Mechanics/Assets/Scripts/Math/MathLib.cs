@@ -101,9 +101,9 @@ namespace Sim.Math
         {
             return d_EnsureFunctionConditions((a) => System.Math.Sinh(a), x);
         }
-        public static float Cosh(float x)
+        public static double Cosh(float x)
         {
-            return EnsureFunctionConditions((float a) => (float)System.Math.Cosh(a), x);
+            return d_EnsureFunctionConditions((a) => System.Math.Cosh(a), x);
         }
         public static float Tanh(float x)
         {

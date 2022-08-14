@@ -145,17 +145,18 @@ namespace Sim.Math
         public float argPeriapsis;
         public float trueAnomaly;
 
-        public float meanAnomaly { get; set; }
-        public float anomaly { get; set; }
-        public float semiminorAxis { get; set; }
-        public float meanMotion { get; set; }
-        public float semiLatusRectum { get; set; }
-        public float timeToPeriapsis { get; set; }
+        public float meanAnomaly;
+        public float anomaly;
 
-        public float trueAnomalyConstant { get; set; }
-        public float periodConstant { get; set; }
+        public float semiminorAxis;
+        public float meanMotion;
+        public float semiLatusRectum;
+        public float timeToPeriapsis;
 
-        public Vector3 angMomentum { get; set; }
-        public Vector3 eccVec { get; set; }
+        public float trueAnomalyConstant;
+        public float periodConstant;
+
+        public Vector3 angMomentum;
+        public Vector3 eccVec;
     }
 }

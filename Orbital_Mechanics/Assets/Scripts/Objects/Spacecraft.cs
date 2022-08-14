@@ -6,6 +6,10 @@ using Sim.Math;
 // v = 0, 0, 8
 // r = 45, 0, -15
 
+// encounter at
+// v = 0, 0, 7.7
+// r = 30, 0, 0
+
 namespace Sim.Objects
 {
     [RequireComponent(typeof(OrbitDrawer))]
@@ -79,7 +83,6 @@ namespace Sim.Objects
             kepler.CheckOrbitType(stateVectors, centralBody);
 
             kepler.orbit.ConvertStateVectorsToOrbitElements(stateVectors);
-            //Debug.Log(JsonUtility.ToJson(kepler.orbit.elements, true)); // TODO: Move to enter/exit influence
 
             orbitDrawer.DrawOrbits(stateVectors);
         }

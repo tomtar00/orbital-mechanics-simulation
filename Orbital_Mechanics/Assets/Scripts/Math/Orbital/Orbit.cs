@@ -119,7 +119,7 @@ namespace Sim.Math
                 a0 = a1;
                 double eq = MeanAnomalyEquation(a0, elements.eccentricity, meanAnomaly);
                 double deq = d_MeanAnomalyEquation(a0, elements.eccentricity);
-                a1 = a0 - (float)(eq.SafeDivision(deq));
+                a1 = a0 - (float)eq.SafeDivision(deq);
             }
 
             return a1;
@@ -190,9 +190,6 @@ namespace Sim.Math
 
                     //Debug.Log($"Will exit {this.centralBody.name} with vectors: R = {stateVectors.position}, V = {stateVectors.velocity} after {timeToGravityChange}");
                     nextCelestial = this.centralBody.CentralBody;
-
-                    // TODO: delete
-                    // Time.timeScale = 0;
 
                     break;
                 }
