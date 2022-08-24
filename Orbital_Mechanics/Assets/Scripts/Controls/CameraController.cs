@@ -2,13 +2,28 @@
 
 public class CameraController : MonoBehaviour
 {
+    [Header("Fly")]
     [SerializeField] private float acceleration = 50;       
     [SerializeField] private float accSprintMultiplier = 4; 
     [SerializeField] private float sensitivity = 1; 
     [SerializeField] private float damping = 5; 
     [SerializeField] private bool focusOnEnable = true; 
+    [Header("Orbit")]
+    [SerializeField] private float distance = 5;
+    [SerializeField] private float rotationSpeed = 90;
+    [SerializeField] private float rotationDamping = 10;
+    [SerializeField, Range(-89f, 89f)] float minVerticalAngle = -80f, maxVerticalAngle = 80f;
+    [SerializeField] private float scrollSensitivity = 7;
+    [SerializeField] private float scrollDamping = 10;
+    [SerializeField] private float minDistance, maxDistance;
 
-    Vector3 velocity;
+    private Vector3 velocity;
+    private float targetDistance;
+    private Vector3 targetPosition;
+
+    private Transform focusObject;
+    private Vector2 orbitAngles = new Vector2(45f, 0f);
+    public bool focusingOnObject { get; private set; } = false;
 
     static bool Focused
     {
@@ -27,18 +42,33 @@ public class CameraController : MonoBehaviour
 
     void OnDisable() => Focused = false;
 
-    void Update()
+    public static CameraController Instance;
+    private void Awake() {
+        Instance = this;
+    }
+    private void Start() {
+        targetDistance = distance;
+    }
+    private void Update()
     {
-        if (Focused)
-            UpdateInput();
-        else if (Input.GetMouseButtonDown(0) && !GUIHoverListener.focusingOnGUI)
+        if (Focused) {
+            if (focusingOnObject) {
+                Orbit();
+            }
+            else {
+                Fly();
+            }
+        }
+        else if (Input.GetMouseButtonDown(0) && !GUIHoverListener.focusingOnGUI) { // TODO: and not pointing on line button
             Focused = true;
+        }
 
-        velocity = Vector3.Lerp(velocity, Vector3.zero, damping * Time.deltaTime);
-        transform.position += velocity * Time.deltaTime;
+        // Leave cursor lock
+        if (Input.GetKeyDown(KeyCode.Escape))
+            Focused = false;
     }
 
-    void UpdateInput()
+    void Fly()
     {
         // Position
         velocity += GetAccelerationVector() * Time.deltaTime;
@@ -50,11 +80,9 @@ public class CameraController : MonoBehaviour
         Quaternion vertical = Quaternion.AngleAxis(mouseDelta.y, Vector3.right);
         transform.rotation = horizontal * rotation * vertical;
 
-        // Leave cursor lock
-        if (Input.GetKeyDown(KeyCode.Escape))
-            Focused = false;
+        velocity = Vector3.Lerp(velocity, Vector3.zero, damping * Time.deltaTime);
+        transform.position += velocity * Time.deltaTime;
     }
-
     Vector3 GetAccelerationVector()
     {
         Vector3 moveInput = default;
@@ -78,8 +106,49 @@ public class CameraController : MonoBehaviour
         return direction * acceleration;
     }
 
+    private void Orbit() {
+        UpdateRotation();
+        ConstrainAngles();
+        UpdateDistance();
+    }
+    void UpdateRotation() {
+        Vector2 input = new Vector2(
+			-Input.GetAxis("Mouse Y"),
+			Input.GetAxis("Mouse X")
+		);
+		orbitAngles += rotationSpeed * Time.unscaledDeltaTime * input;
+        Quaternion lookRotation = Quaternion.Euler(orbitAngles);
+		Vector3 lookDirection = lookRotation * Vector3.forward;
+		Vector3 lookPosition = focusObject.position - lookDirection * distance;
+		transform.SetPositionAndRotation(lookPosition, lookRotation);
+    }
+    void UpdateDistance() {
+        targetDistance -= Input.GetAxis("Mouse ScrollWheel") * scrollSensitivity;
+        targetDistance = Mathf.Clamp(targetDistance, minDistance, maxDistance);
+        distance = Mathf.Lerp(distance, targetDistance, Time.unscaledDeltaTime * scrollDamping);
+    }
+    void ConstrainAngles() {
+		orbitAngles.x =
+			Mathf.Clamp(orbitAngles.x, minVerticalAngle, maxVerticalAngle);
+
+		if (orbitAngles.y < 0f) {
+			orbitAngles.y += 360f;
+		}
+		else if (orbitAngles.y >= 360f) {
+			orbitAngles.y -= 360f;
+		}
+	}
+
     public void FocusOnShip() {
-        GameObject ship = GameObject.FindGameObjectWithTag("Player");
-        transform.SetParent(ship.transform);
+        if (!focusingOnObject) {
+            Debug.Log("Focus ON");
+            focusObject = GameObject.FindGameObjectWithTag("Player").transform;
+            focusingOnObject = true;
+        }
+        else {
+            Debug.Log("Focus OFF");
+            focusingOnObject = false;
+        }
+        Focused = true;
     }
 }

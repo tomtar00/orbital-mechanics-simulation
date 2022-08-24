@@ -24,6 +24,8 @@ namespace Sim.Objects
         protected Vector3 startVelocity;
 
         [SerializeField] protected Vector3 startRelativePosition;
+        [Header("Controls")]
+        [SerializeField] protected float rotationSpeed = 50;
         [SerializeField] protected float thrust;
 
         private bool canUpdateOrbit = true;
@@ -89,15 +91,20 @@ namespace Sim.Objects
 
         private void HandleControls()
         {
-            Vector3 thrustForward = this.velocity.normalized * thrust * Time.deltaTime;
-            thrustForward = new Vector3(thrustForward.x, 0f, thrustForward.z); // TODO: remove
-            if (Input.GetKey(KeyCode.M))
-            {
-                AddVelocity(thrustForward);
-            }
-            if (Input.GetKey(KeyCode.N))
-            {
-                AddVelocity(-thrustForward);
+            if (CameraController.Instance.focusingOnObject) {
+                if (Input.GetKey(KeyCode.A)){
+                    transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
+                } else if (Input.GetKey(KeyCode.D)) {
+                    transform.Rotate(-Vector3.up, rotationSpeed * Time.deltaTime);
+                }
+                if (Input.GetKey(KeyCode.W)){
+                    transform.Rotate(Vector3.right, rotationSpeed * Time.deltaTime);
+                } else if (Input.GetKey(KeyCode.S)) {
+                    transform.Rotate(-Vector3.right, rotationSpeed * Time.deltaTime);
+                }
+                if (Input.GetKey(KeyCode.Space)) {
+                    AddVelocity(transform.forward * thrust * Time.deltaTime);
+                }
             }
         }
         private void CheckCelestialInfluence()
