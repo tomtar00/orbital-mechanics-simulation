@@ -42,7 +42,7 @@ namespace Sim.Visuals
         private void Update() {
             if (!enabled) return;
 
-            if (Input.GetMouseButtonUp(0)) {
+            if (Input.GetKey(KeyCode.Space)) {
                 BakeMesh(); 
             }
 

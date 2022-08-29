@@ -11,7 +11,6 @@ public class CameraController : MonoBehaviour
     [Header("Orbit")]
     [SerializeField] private float distance = 5;
     [SerializeField] private float rotationSpeed = 90;
-    [SerializeField] private float rotationDamping = 10;
     [SerializeField, Range(-89f, 89f)] float minVerticalAngle = -80f, maxVerticalAngle = 80f;
     [SerializeField] private float scrollSensitivity = 7;
     [SerializeField] private float scrollDamping = 10;
@@ -51,27 +50,27 @@ public class CameraController : MonoBehaviour
     }
     private void Update()
     {
-        if (Focused) {
-            if (focusingOnObject) {
-                Orbit();
-            }
-            else {
-                Fly();
-            }
+        if (focusingOnObject) {
+            Orbit();
         }
-        else if (Input.GetMouseButtonDown(0) && !GUIHoverListener.focusingOnGUI) { // TODO: and not pointing on line button
+        else {
+            if (Focused)
+                Fly();
+        }
+        
+        if (!Focused && Input.GetMouseButtonDown(0) && !GUIHoverListener.focusingOnGUI) { // TODO: and not pointing on line button
             Focused = true;
         }
 
         // Leave cursor lock
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Q))
             Focused = false;
     }
 
     void Fly()
     {
         // Position
-        velocity += GetAccelerationVector() * Time.deltaTime;
+        velocity += GetAccelerationVector() * Time.unscaledDeltaTime;
 
         // Rotation
         Vector2 mouseDelta = sensitivity * new Vector2(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y"));
@@ -80,8 +79,8 @@ public class CameraController : MonoBehaviour
         Quaternion vertical = Quaternion.AngleAxis(mouseDelta.y, Vector3.right);
         transform.rotation = horizontal * rotation * vertical;
 
-        velocity = Vector3.Lerp(velocity, Vector3.zero, damping * Time.deltaTime);
-        transform.position += velocity * Time.deltaTime;
+        velocity = Vector3.Lerp(velocity, Vector3.zero, damping * Time.unscaledDeltaTime);
+        transform.position += velocity * Time.unscaledDeltaTime;
     }
     Vector3 GetAccelerationVector()
     {
@@ -112,10 +111,10 @@ public class CameraController : MonoBehaviour
         UpdateDistance();
     }
     void UpdateRotation() {
-        Vector2 input = new Vector2(
+        Vector2 input = Focused ? new Vector2(
 			-Input.GetAxis("Mouse Y"),
 			Input.GetAxis("Mouse X")
-		);
+		) : Vector2.zero;
 		orbitAngles += rotationSpeed * Time.unscaledDeltaTime * input;
         Quaternion lookRotation = Quaternion.Euler(orbitAngles);
 		Vector3 lookDirection = lookRotation * Vector3.forward;
@@ -141,12 +140,10 @@ public class CameraController : MonoBehaviour
 
     public void FocusOnShip() {
         if (!focusingOnObject) {
-            Debug.Log("Focus ON");
             focusObject = GameObject.FindGameObjectWithTag("Player").transform;
             focusingOnObject = true;
         }
         else {
-            Debug.Log("Focus OFF");
             focusingOnObject = false;
         }
         Focused = true;

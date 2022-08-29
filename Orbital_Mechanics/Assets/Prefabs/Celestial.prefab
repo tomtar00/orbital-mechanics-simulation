@@ -65,6 +65,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   orbitResolution: 100
+  depth: 2
 --- !u!1 &8389042664487157931
 GameObject:
   m_ObjectHideFlags: 0

@@ -185,12 +185,6 @@ namespace Sim.Objects
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Anomaly:        {elements.anomaly}");
             i++;
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time to periapsis: {elements.timeToPeriapsis}");
-            i++;
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time: x{Time.timeScale}");
-            if (GUI.Button(new Rect(10, startHeight + space * i, 30, 30), "<"))
-                Time.timeScale -= 1;
-            if (GUI.Button(new Rect(45, startHeight + space * i++, 30, 30), ">"))
-                Time.timeScale += 1;
         }
 
     }

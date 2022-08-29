@@ -21,3 +21,13 @@ MonoBehaviour:
     lonAscNode: 0
     argPeriapsis: 0
     trueAnomaly: 1.57
+    meanAnomaly: 0
+    anomaly: 0
+    semiminorAxis: 0
+    meanMotion: 0
+    semiLatusRectum: 0
+    timeToPeriapsis: 0
+    trueAnomalyConstant: 0
+    periodConstant: 0
+    angMomentum: {x: 0, y: 0, z: 0}
+    eccVec: {x: 0, y: 0, z: 0}
