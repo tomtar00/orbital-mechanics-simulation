@@ -264,6 +264,7 @@ GameObject:
   m_Component:
   - component: {fileID: 153973663}
   - component: {fileID: 153973664}
+  - component: {fileID: 153973665}
   m_Layer: 0
   m_Name: Stable System
   m_TagString: Untagged
@@ -286,6 +287,7 @@ Transform:
   - {fileID: 1293309786}
   - {fileID: 1242043886}
   - {fileID: 1484928216}
+  - {fileID: 162445125}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -312,6 +314,51 @@ MonoBehaviour:
   celestialOrbitColor: {r: 1, g: 1, b: 1, a: 0.2509804}
   indicationPrefab: {fileID: 4719440009590465397, guid: 73434a6245f2fe74f82e70e8342cb730,
     type: 3}
+--- !u!114 &153973665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 153973662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df840f2a4ac13514fbb9635a920856b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maneuverPrefab: {fileID: 679991950141599679, guid: 6c52bfeba38cf264c8395d844bae1974,
+    type: 3}
+  maneuverHolder: {fileID: 162445125}
+--- !u!1 &162445124
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 162445125}
+  m_Layer: 0
+  m_Name: Maneuvers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &162445125
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 162445124}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 153973663}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &215710737
 PrefabInstance:
   m_ObjectHideFlags: 0

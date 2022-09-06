@@ -86,7 +86,7 @@ namespace Sim.Objects
 
             kepler.orbit.ConvertStateVectorsToOrbitElements(stateVectors);
 
-            orbitDrawer.DrawOrbits(stateVectors);
+            orbitDrawer.DrawOrbits(stateVectors, centralBody);
         }
 
         private void HandleControls()
@@ -159,7 +159,7 @@ namespace Sim.Objects
                 canUpdateOrbit) 
             {
                 StateVectors stateVectors = new StateVectors(relativePosition, velocity);
-                orbitDrawer.DrawOrbits(stateVectors);
+                orbitDrawer.DrawOrbits(stateVectors, centralBody);
                 canUpdateOrbit = false;
             }
             else canUpdateOrbit = true;

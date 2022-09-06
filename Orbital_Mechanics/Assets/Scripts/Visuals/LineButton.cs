@@ -10,6 +10,7 @@ namespace Sim.Visuals
     {
         public delegate void OnClick(Vector3 worldPosition);
         public event OnClick onLinePressed;
+        public event OnClick onLineHovering;
 
         public bool showPointIndication;
         [DrawIf("showPointIndication", true, ComparisonType.Equals)] 
@@ -42,16 +43,16 @@ namespace Sim.Visuals
         private void Update() {
             if (!enabled) return;
 
-            if (Input.GetKey(KeyCode.Space)) {
+            if (Input.GetKey(KeyCode.Q)) {
                 BakeMesh(); 
             }
 
             if (hovering && showPointIndication) {
                 var worldPos = pointerData.pointerCurrentRaycast.worldPosition;
-                if (converterFunction == null)
-                    indicator.transform.position = worldPos;
-                else
-                    indicator.transform.position = converterFunction(worldPos);
+                var convertedPos = converterFunction == null ? worldPos : converterFunction(worldPos);
+                indicator.transform.position = convertedPos;
+                if (onLineHovering != null)
+                    onLineHovering(convertedPos);
             }
         }
 

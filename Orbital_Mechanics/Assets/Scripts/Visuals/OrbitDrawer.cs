@@ -25,20 +25,21 @@ namespace Sim.Visuals
             futureColors = SimulationSettings.Instance.futureOrbitColors;
             lineRenderers = new LineRenderer[depth];
             lineButtons = new LineButton[depth];
-            SetupOrbitRenderers();
+            SetupOrbitRenderers(inOrbitObject == null);
         }
 
-        private void SetupOrbitRenderers()
+        private void SetupOrbitRenderers(bool isManeuver)
         {
             for (int i = 0; i < depth; i++) {
-                GameObject rendererObject = new GameObject(inOrbitObject.name + " - Orbit Renderer " + i);
-                rendererObject.transform.SetParent(inOrbitObject.CentralBody.transform);
+                string lineName = isManeuver ? "Maneuver " + i : inOrbitObject.name + " - Orbit Renderer " + i;
+                GameObject rendererObject = new GameObject(lineName);
+                rendererObject.transform.SetParent(isManeuver ? gameObject.transform : inOrbitObject.CentralBody.transform);
                 rendererObject.transform.localPosition = Vector3.zero;
                 
                 LineButton lineButton = rendererObject.AddComponent<LineButton>();
                 lineButton.showPointIndication = true;
                 lineButton.indicationPrefab = SimulationSettings.Instance.indicationPrefab;
-                lineButton.Enabled = inOrbitObject is Spacecraft;
+                lineButton.Enabled = isManeuver || inOrbitObject is Spacecraft;
                 lineButtons[i] = lineButton;
 
                 LineRenderer lineRenderer = rendererObject.GetComponent<LineRenderer>();
@@ -86,11 +87,10 @@ namespace Sim.Visuals
             }
         }
 
-        public void DrawOrbits(StateVectors stateVectors)
+        public void DrawOrbits(StateVectors stateVectors, Celestial centralBody, float timeToDraw = 0)
         {
-            Celestial currentCelestial = inOrbitObject.CentralBody;
-            Celestial nextCelestial;
-            float timePassed = 0;
+            Celestial currentCelestial = centralBody;
+            float timePassed = timeToDraw;
 
             for (int i = 0; i < this.depth; i++)
             {
@@ -100,6 +100,7 @@ namespace Sim.Visuals
                 line.transform.localPosition = Vector3.zero;
 
                 float timeToGravityChange;
+                Celestial nextCelestial;
                 StateVectors gravityChangePoint = DrawOrbit(stateVectors, i, currentCelestial, timePassed, out nextCelestial, out timeToGravityChange);
                 line.colorGradient = CreateLineGradient(i);
                 if (gravityChangePoint == null || nextCelestial == null) {
@@ -134,6 +135,14 @@ namespace Sim.Visuals
                 float angleToPoint = Vector3.SignedAngle(orbit.elements.eccVec, pressLocalPosition, orbit.elements.angMomentum);
                 return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad) + currentCelestial.transform.position;
             });
+            lineButton.onLinePressed += (worldPos) => {
+                var maneuver = ManeuverManager.Instance.CreateManeuver(orbit);
+                var pressLocalPosition = worldPos - currentCelestial.transform.position;
+                float angleToPoint = Vector3.SignedAngle(orbit.elements.eccVec, pressLocalPosition, orbit.elements.angMomentum);
+                var clickVelocity = orbit.CalculateVelocity(pressLocalPosition, angleToPoint * Mathf.Deg2Rad);
+                StateVectors newVectors = new StateVectors(pressLocalPosition, clickVelocity * 1.1f);
+                maneuver.Draw(newVectors, 0);
+            };
 
             // loop if no gravity change reported
             var line = lineRenderers[lineIdx];

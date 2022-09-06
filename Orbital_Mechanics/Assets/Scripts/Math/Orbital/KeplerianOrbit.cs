@@ -133,6 +133,11 @@ namespace Sim.Math
             this.position = pos;
             this.velocity = vel;
         }
+
+        public StateVectors(StateVectors vectors) {
+            this.position = vectors.position;
+            this.velocity = vectors.velocity;
+        }
     }
 
     [System.Serializable]
