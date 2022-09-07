@@ -136,12 +136,8 @@ namespace Sim.Visuals
                 return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad) + currentCelestial.transform.position;
             });
             lineButton.onLinePressed += (worldPos) => {
-                var maneuver = ManeuverManager.Instance.CreateManeuver(orbit);
-                var pressLocalPosition = worldPos - currentCelestial.transform.position;
-                float angleToPoint = Vector3.SignedAngle(orbit.elements.eccVec, pressLocalPosition, orbit.elements.angMomentum);
-                var clickVelocity = orbit.CalculateVelocity(pressLocalPosition, angleToPoint * Mathf.Deg2Rad);
-                StateVectors newVectors = new StateVectors(pressLocalPosition, clickVelocity * 1.1f);
-                maneuver.Draw(newVectors, 0);
+                var pressRelativePosition = worldPos - currentCelestial.transform.position;
+                ManeuverManager.Instance.CreateManeuver(inOrbitObject, pressRelativePosition);
             };
 
             // loop if no gravity change reported

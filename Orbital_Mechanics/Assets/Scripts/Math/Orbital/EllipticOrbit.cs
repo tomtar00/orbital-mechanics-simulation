@@ -69,11 +69,19 @@ namespace Sim.Math
             if (meanAnomaly > PI2) meanAnomaly -= PI2;
             return meanAnomaly;
         }
+        public override float CalculateMeanAnomalyFromAnomaly(float anomaly) {
+            return anomaly - elements.eccentricity * MathLib.Sin(anomaly);
+        }
         public override float CalculateTrueAnomaly(float eccentricAnomaly)
         {
             float trueAnomaly = 2f * MathLib.Atan(elements.trueAnomalyConstant * MathLib.Tan(eccentricAnomaly / 2f));
             if (trueAnomaly < 0) trueAnomaly += 2f * MathLib.PI;
             return trueAnomaly;
+        }
+        public override float CalculateAnomalyFromTrueAnomaly(float trueAnomaly) {
+            float anomaly = 2f * MathLib.Atan(MathLib.Tan(trueAnomaly / 2f) / elements.trueAnomalyConstant);
+            if (anomaly < 0) anomaly += 2f * MathLib.PI;
+            return anomaly;
         }
 
         public override double MeanAnomalyEquation(float E, float e, float M)

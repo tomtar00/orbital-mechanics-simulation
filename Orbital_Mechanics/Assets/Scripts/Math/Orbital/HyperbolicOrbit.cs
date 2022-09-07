@@ -53,9 +53,15 @@ namespace Sim.Math
             meanAnomaly += elements.meanMotion * time;
             return meanAnomaly;
         }
+        public override float CalculateMeanAnomalyFromAnomaly(float anomaly) {
+            return (float)((double)elements.eccentricity * MathLib.Sinh(anomaly) - (double)anomaly);
+        }
         public override float CalculateTrueAnomaly(float anomaly)
         {
             return 2f * MathLib.Atan(elements.trueAnomalyConstant * MathLib.Tanh(anomaly / 2f));
+        }
+        public override float CalculateAnomalyFromTrueAnomaly(float trueAnomaly) {
+            return 2f * MathLib.Atan(MathLib.Tanh(trueAnomaly / 2f) / elements.trueAnomalyConstant);
         }
 
         public override double MeanAnomalyEquation(float H, float e, float M)

@@ -124,7 +124,9 @@ namespace Sim.Math
 
             return a1;
         }
+        public abstract float CalculateAnomalyFromTrueAnomaly(float trueAnomaly);
         public abstract float CalculateTrueAnomaly(float anomaly);
+        public abstract float CalculateMeanAnomalyFromAnomaly(float anomaly);
         public (float, float, float) GetFutureAnomalies(float time)
         {
             float m = CalculateMeanAnomaly(time);

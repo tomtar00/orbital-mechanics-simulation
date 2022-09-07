@@ -10,7 +10,8 @@ namespace Sim.Visuals
     {
         public delegate void OnClick(Vector3 worldPosition);
         public event OnClick onLinePressed;
-        public event OnClick onLineHovering;
+        public delegate void OnHover(LineButton lineButton, Vector3 worldPosition);
+        public static event OnHover onLineHovering;
 
         public bool showPointIndication;
         [DrawIf("showPointIndication", true, ComparisonType.Equals)] 
@@ -52,7 +53,7 @@ namespace Sim.Visuals
                 var convertedPos = converterFunction == null ? worldPos : converterFunction(worldPos);
                 indicator.transform.position = convertedPos;
                 if (onLineHovering != null)
-                    onLineHovering(convertedPos);
+                    onLineHovering(this, convertedPos);
             }
         }
 
