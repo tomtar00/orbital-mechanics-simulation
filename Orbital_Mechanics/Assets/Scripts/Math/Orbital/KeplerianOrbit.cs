@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Sim.Objects;
+using Sim.Visuals;
 
 namespace Sim.Math
 {

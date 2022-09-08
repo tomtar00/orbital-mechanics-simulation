@@ -21,13 +21,23 @@ namespace Sim.Visuals {
 
         public Maneuver CreateManeuver(InOrbitObject inOrbitObject, Vector3 relativePressPosition) {
 
-            Orbit orbit = inOrbitObject.Kepler.orbit;
+            Orbit orbit = null;
+            if (maneuvers.Count == 0) {
+                Debug.Log("object orbit");
+                orbit = inOrbitObject.Kepler.orbit;
+            }
+            else {
+                Debug.Log("last maneuver orbit");
+                orbit = maneuvers[maneuvers.Count - 1].Orbit;
+            }
+
+            if (orbit.maneuver != null) return null;
 
             // create prefab
             GameObject maneuverObj = Instantiate(maneuverPrefab, maneuverHolder);
             maneuverObj.transform.position = relativePressPosition + orbit.centralBody.transform.position;
             OrbitDrawer drawer = maneuverObj.GetComponent<OrbitDrawer>();
-            ManeuverEditor editor = maneuverObj.transform.GetChild(0).GetComponent<ManeuverEditor>();
+            ManeuverEditor editor = maneuverObj.GetComponent<ManeuverEditor>();
 
             // calculate state vectors of pressed point
             float trueAnomaly = Vector3.SignedAngle(orbit.elements.eccVec, relativePressPosition, orbit.elements.angMomentum) * Mathf.Deg2Rad;
@@ -38,10 +48,13 @@ namespace Sim.Visuals {
             float anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);
             float meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
             float timeToManeuver = (meanAnomaly - orbit.elements.meanAnomaly) / orbit.elements.meanMotion;
+            
+            Debug.Log(timeToManeuver);
 
             // create new maneuver
             Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, timeToManeuver);
             maneuvers.Add(maneuver);
+            orbit.maneuver = maneuver;
             editor.maneuver = maneuver;
             return maneuver;
         }
@@ -64,6 +77,9 @@ namespace Sim.Visuals {
         private OrbitDrawer drawer;
         private StateVectors startStateVectors;
         private float timeToManeuver;
+
+        public Orbit Orbit { get => orbit; }
+        public OrbitDrawer Drawer { get => drawer; }
 
         public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors, float timeToManeuver) {
             this.orbit = orbit;

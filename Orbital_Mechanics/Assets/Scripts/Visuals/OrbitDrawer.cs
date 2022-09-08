@@ -12,6 +12,7 @@ namespace Sim.Visuals
     {
         [SerializeField][Range(1, 200)] private int orbitResolution = 200;
         [SerializeField][Range(1, 5)] private int depth = 2;
+        [SerializeField] private bool isManeuver;
         
         public LineRenderer[] lineRenderers { get; private set; }
         private LineButton[] lineButtons;
@@ -25,7 +26,7 @@ namespace Sim.Visuals
             futureColors = SimulationSettings.Instance.futureOrbitColors;
             lineRenderers = new LineRenderer[depth];
             lineButtons = new LineButton[depth];
-            SetupOrbitRenderers(inOrbitObject == null);
+            SetupOrbitRenderers(isManeuver);
         }
 
         private void SetupOrbitRenderers(bool isManeuver)
@@ -53,6 +54,12 @@ namespace Sim.Visuals
                 lineRenderer.colorGradient = CreateLineGradient(i);
 
                 rendererObject.SetActive(false);
+            }
+        }
+        public void EnableLineButtons(bool enabled) {
+            foreach (var lineButton in lineButtons)
+            {
+                lineButton.Enabled = enabled;
             }
         }
         private Gradient CreateLineGradient(int lineIdx, bool celestial = false) {

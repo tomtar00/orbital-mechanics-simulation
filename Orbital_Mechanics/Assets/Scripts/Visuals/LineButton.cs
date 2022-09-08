@@ -28,7 +28,11 @@ namespace Sim.Visuals
 
         public bool Enabled {
             get => enabled;
-            set => enabled = value;
+            set {
+                enabled = value;
+                if (_collider != null)
+                    _collider.enabled = value;
+            }
         }
 
         private void Start() {
