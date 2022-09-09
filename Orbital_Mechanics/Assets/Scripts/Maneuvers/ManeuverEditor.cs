@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 namespace Sim.Visuals {
     public class ManeuverEditor : MonoBehaviour
@@ -8,7 +9,7 @@ namespace Sim.Visuals {
         [SerializeField] private Transform parent;
 
         public Maneuver maneuver { get; set; }
-        private bool isDragging = false;
+        public static bool isDragging { get; private set; } = false;
         private LineButton lineButton = null;
 
         private void Start() {
@@ -16,35 +17,35 @@ namespace Sim.Visuals {
                 if (lineButton == null) lineButton = line;
                 if (isDragging && lineButton == line) {
                     parent.position = worldPos;
-                    maneuver.Draw(worldPos, Vector3.up);
+                    maneuver.UpdateOnDrag(worldPos);
                 }
             };
         }
 
         private void Update() {
-            RaycastHit hit;
             if (Input.GetMouseButtonDown(0))
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+                Ray ray = CameraController.Instance.cam.ScreenPointToRay(Input.mousePosition);
+                int layer_mask = LayerMask.GetMask("Maneuvers");
+
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, Mathf.Infinity, layer_mask, QueryTriggerInteraction.Collide))
                 {
-                    isDragging = true;
-                    //maneuver.Drawer.EnableLineButtons(false);
+                    Debug.Log("hit on layer     " + hit.collider.gameObject);
+
+                    // Debug.Log("CLICK " + hit.collider.gameObject);
+                    if (hit.collider.gameObject.CompareTag("ManeuverNode")) {
+                        Debug.Log("pressing node");
+                        isDragging = true;
+                        maneuver.drawer.EnableLineButtons(false);
+                    }
                 }
-            }
-            else if (Input.GetMouseButton(0))
-            {
-                isDragging = true;
             }
             else if (Input.GetMouseButtonUp(0))
             {
                 isDragging = false;
-                //maneuver.Drawer.EnableLineButtons(true);
+                maneuver.drawer.EnableLineButtons(true);
             }
-        }
-
-        public void ChangeVelocity(Vector3 velDifference) {
-            maneuver.Draw(parent.position, velDifference);
         }
     }
 }

@@ -15,7 +15,6 @@ namespace Sim.Math
         public float GM { get; private set; }
 
         public OrbitElements elements;
-        public Maneuver maneuver { get; set; }
 
         public Orbit(StateVectors stateVectors, Celestial centralBody)
         {

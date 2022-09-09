@@ -19,19 +19,15 @@ namespace Sim.Visuals {
             maneuvers = new List<Maneuver>();
         }
 
-        public Maneuver CreateManeuver(InOrbitObject inOrbitObject, Vector3 relativePressPosition) {
+        public Maneuver CreateManeuver(OrbitDrawer baseDrawer, InOrbitObject inOrbitObject, Vector3 relativePressPosition) {
 
-            Orbit orbit = null;
-            if (maneuvers.Count == 0) {
-                Debug.Log("object orbit");
-                orbit = inOrbitObject.Kepler.orbit;
+            if (baseDrawer.hasManeuver) {
+                return null;
             }
-            else {
-                Debug.Log("last maneuver orbit");
-                orbit = maneuvers[maneuvers.Count - 1].Orbit;
-            }
+            else baseDrawer.hasManeuver = true;
 
-            if (orbit.maneuver != null) return null;
+            Maneuver lastManeuver = maneuvers.Count > 0 ? maneuvers[maneuvers.Count - 1] : null;
+            Orbit orbit = inOrbitObject == null ? maneuvers[maneuvers.Count - 1].orbit : inOrbitObject.Kepler.orbit;
 
             // create prefab
             GameObject maneuverObj = Instantiate(maneuverPrefab, maneuverHolder);
@@ -44,18 +40,14 @@ namespace Sim.Visuals {
             var relativePressVelocity = orbit.CalculateVelocity(relativePressPosition, trueAnomaly);
             StateVectors pressStateVectors = new StateVectors(relativePressPosition, relativePressVelocity);
 
-            // calculate time to maneuver
-            float anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);
-            float meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
-            float timeToManeuver = (meanAnomaly - orbit.elements.meanAnomaly) / orbit.elements.meanMotion;
-            
-            Debug.Log(timeToManeuver);
-
             // create new maneuver
-            Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, timeToManeuver);
+            Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors);
             maneuvers.Add(maneuver);
-            orbit.maneuver = maneuver;
             editor.maneuver = maneuver;
+            if (lastManeuver != null) {
+                lastManeuver.NextManeuver = maneuver;
+                lastManeuver.TimeToNextManeuver = maneuver.timeToManeuver;
+            }
             return maneuver;
         }
 
@@ -73,23 +65,56 @@ namespace Sim.Visuals {
     }
 
     public class Maneuver {
-        private Orbit orbit;
-        private OrbitDrawer drawer;
-        private StateVectors startStateVectors;
-        private float timeToManeuver;
+        public Orbit orbit { get; private set; }
+        public OrbitDrawer drawer { get; private set; }
+        public float timeToManeuver { get; private set; }
+        public StateVectors stateVectors { get; private set; }
 
-        public Orbit Orbit { get => orbit; }
-        public OrbitDrawer Drawer { get => drawer; }
+        public float TimeToNextManeuver { get; set; }
+        public Maneuver NextManeuver { get; set; }
 
-        public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors, float timeToManeuver) {
+        public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors) {
             this.orbit = orbit;
             this.drawer = drawer;
-            this.startStateVectors = startStateVectors;
-            this.timeToManeuver = timeToManeuver;
+            this.stateVectors = startStateVectors;
+
+            // TODO: delete
+            this.stateVectors.velocity += Random.insideUnitSphere;
+            
+            UpdateOnDrag(this.stateVectors.position);
         }
 
-        public void Draw(Vector3 newPosition, Vector3 addedVelocity) {
-            StateVectors newVectors = new StateVectors(newPosition, startStateVectors.velocity + addedVelocity);
+        public void UpdateOnDrag(Vector3 newRelativeWorldPosition) {
+            float currentTruAnomaly = GetTrueAnomaly(newRelativeWorldPosition);
+            timeToManeuver = GetTimeToManeuver(currentTruAnomaly);
+            ChangePosition(newRelativeWorldPosition);
+            UpdateNextManeuver();
+        }
+        public void UpdateNextManeuver() {
+            if (NextManeuver == null) return;
+            Vector3 newPosition = NextManeuver.GetPositionAfterTime(TimeToNextManeuver);
+            NextManeuver.ChangePosition(newPosition);
+        }
+
+        public Vector3 GetPositionAfterTime(float time) {
+            var mat = orbit.GetFutureAnomalies(time);
+            return orbit.CalculateOrbitalPosition(mat.Item3);
+        }
+        public float GetTrueAnomaly(Vector3 relativePressPosition) {
+            return Vector3.SignedAngle(orbit.elements.eccVec, relativePressPosition, orbit.elements.angMomentum) * Mathf.Deg2Rad;
+        }
+        public float GetTimeToManeuver(float trueAnomaly) {
+            float anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);
+            float meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
+            return (meanAnomaly - orbit.elements.meanAnomaly) / orbit.elements.meanMotion;
+        }
+
+        public void ChangeVelocity(Vector3 dV) {
+            stateVectors.velocity += dV;
+            drawer.DrawOrbits(stateVectors, orbit.centralBody, timeToManeuver);
+        }
+        public void ChangePosition(Vector3 newPosition) {
+            StateVectors newVectors = new StateVectors(newPosition, stateVectors.velocity);
             drawer.DrawOrbits(newVectors, orbit.centralBody, timeToManeuver);
         }
 

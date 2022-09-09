@@ -23,6 +23,7 @@ public class CameraController : MonoBehaviour
     private Transform focusObject;
     private Vector2 orbitAngles = new Vector2(45f, 0f);
     public bool focusingOnObject { get; private set; } = false;
+    public Camera cam { get; private set; }
 
     static bool Focused
     {
@@ -47,6 +48,7 @@ public class CameraController : MonoBehaviour
     }
     private void Start() {
         targetDistance = distance;
+        cam = GetComponent<Camera>();
     }
     private void Update()
     {

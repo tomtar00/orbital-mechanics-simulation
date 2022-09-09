@@ -15,6 +15,8 @@ namespace Sim.Visuals
         [SerializeField] private bool isManeuver;
         
         public LineRenderer[] lineRenderers { get; private set; }
+        public bool hasManeuver { get; set; }
+
         private LineButton[] lineButtons;
         private Color[] futureColors;
         private InOrbitObject inOrbitObject;
@@ -144,7 +146,7 @@ namespace Sim.Visuals
             });
             lineButton.onLinePressed += (worldPos) => {
                 var pressRelativePosition = worldPos - currentCelestial.transform.position;
-                ManeuverManager.Instance.CreateManeuver(inOrbitObject, pressRelativePosition);
+                ManeuverManager.Instance.CreateManeuver(this, inOrbitObject, pressRelativePosition);
             };
 
             // loop if no gravity change reported
