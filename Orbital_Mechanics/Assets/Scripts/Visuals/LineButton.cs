@@ -20,7 +20,7 @@ namespace Sim.Visuals
         private GameObject indicator;
         private PointerEventData pointerData;
         private bool hovering = false;
-        private LineRenderer line;
+        public LineRenderer line {get; private set;}
         private MeshCollider _collider;
         private new bool enabled = true;
 
@@ -91,7 +91,7 @@ namespace Sim.Visuals
             }
         }
 
-        private void BakeMesh() {
+        public void BakeMesh() {
             Mesh lineMesh = new Mesh();
             line.BakeMesh(lineMesh, true);
             _collider.sharedMesh = lineMesh;

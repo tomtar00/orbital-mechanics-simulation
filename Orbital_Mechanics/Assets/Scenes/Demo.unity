@@ -20,11 +20,11 @@ RenderSettings:
   m_FogDensity: 0.05
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientSkyColor: {r: 0.4245283, g: 0.4245283, b: 0.4245283, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 0
+  m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.13296545, g: 0.19145328, b: 0.33962262, a: 1}
   m_SkyboxMaterial: {fileID: 2100000, guid: 860a66ca4259b384f9ec01b687f71c3c, type: 2}
   m_HaloStrength: 0.5
@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 2138677392}
-  m_IndirectSpecularColor: {r: 0.001505592, g: 0.0013019211, b: 0.0016038049, a: 1}
+  m_IndirectSpecularColor: {r: 0.0014822877, g: 0.0013037389, b: 0.0015789905, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -710,6 +710,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   orbitResolution: 200
   depth: 5
+  isManeuver: 0
 --- !u!1 &497184229
 GameObject:
   m_ObjectHideFlags: 0
@@ -1436,6 +1437,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8389042665677919027, guid: df89030a194ccd5488e4434af43430bb,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 8389042663809134706, guid: df89030a194ccd5488e4434af43430bb, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: df89030a194ccd5488e4434af43430bb, type: 3}
@@ -1934,9 +1940,10 @@ GameObject:
   - component: {fileID: 1687258584}
   - component: {fileID: 1687258582}
   - component: {fileID: 1687258586}
+  - component: {fileID: 1687258587}
   - component: {fileID: 1687258588}
   - component: {fileID: 1687258583}
-  - component: {fileID: 1687258587}
+  - component: {fileID: 1687258585}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1966,7 +1973,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   acceleration: 75
   accSprintMultiplier: 8
-  sensitivity: 3
+  sensitivity: 2
   damping: 5
   focusOnEnable: 1
   distance: 5
@@ -2020,6 +2027,18 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &1687258585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1687258581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fe03f0952e35df4ea56827cb2fa1532, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1687258586
 MonoBehaviour:
   m_ObjectHideFlags: 0

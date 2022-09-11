@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Sim.Maneuvers;
 using UnityEngine;
 using Sim.Math;
 using Sim.Objects;
@@ -145,8 +142,9 @@ namespace Sim.Visuals
                 return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad) + currentCelestial.transform.position;
             });
             lineButton.onLinePressed += (worldPos) => {
+                Debug.Log(currentCelestial.name);
                 var pressRelativePosition = worldPos - currentCelestial.transform.position;
-                ManeuverManager.Instance.CreateManeuver(this, inOrbitObject, pressRelativePosition);
+                ManeuverManager.Instance.CreateManeuver(this, orbit, pressRelativePosition);
             };
 
             // loop if no gravity change reported

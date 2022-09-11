@@ -11,13 +11,7 @@ namespace Sim.Math
         public Orbit orbit { get; set; }
         public OrbitType orbitType { get; set; } = OrbitType.NONE;
 
-        public KeplerianOrbit(Celestial centralBody)
-        {
-            // if (centralBody != null)
-            // {
-            //     this.orbit = new EllipticOrbit()
-            // }
-        }
+        public KeplerianOrbit(Celestial centralBody) {}
 
         public void CheckOrbitType(StateVectors stateVectors, Celestial centralBody)
         {
