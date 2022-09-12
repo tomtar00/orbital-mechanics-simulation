@@ -60,7 +60,7 @@ public class CameraController : MonoBehaviour
                 Fly();
         }
         
-        if (!Focused && Input.GetMouseButtonDown(0) && !GUIHoverListener.focusingOnGUI) { // TODO: and not pointing on line button
+        if (!Focused && Input.GetMouseButtonDown(0) && !GUIHoverListener.focusingOnGUI) {
             Focused = true;
         }
 

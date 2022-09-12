@@ -18,7 +18,7 @@ namespace Sim.Maneuvers {
             maneuvers = new List<Maneuver>();
         }
 
-        public Maneuver CreateManeuver(OrbitDrawer baseDrawer, Orbit currentOrbit, Vector3 relativePressPosition) {
+        public Maneuver CreateManeuver(OrbitDrawer baseDrawer, Orbit currentOrbit, InOrbitObject inOrbitObject, Vector3 relativePressPosition) {
 
             if (baseDrawer.hasManeuver) {
                 return null;
@@ -26,7 +26,7 @@ namespace Sim.Maneuvers {
             else baseDrawer.hasManeuver = true;
 
             Maneuver lastManeuver = maneuvers.Count > 0 ? maneuvers[maneuvers.Count - 1] : null;
-            Orbit orbit = currentOrbit;
+            Orbit orbit = lastManeuver == null ? inOrbitObject.Kepler.orbit : currentOrbit;
 
             // create prefab
             GameObject maneuverObj = Instantiate(maneuverPrefab, maneuverHolder);
@@ -40,13 +40,11 @@ namespace Sim.Maneuvers {
             StateVectors pressStateVectors = new StateVectors(relativePressPosition, relativePressVelocity);
 
             // create new maneuver
-            Debug.Log(orbit.centralBody.name);
             Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, node);
             maneuvers.Add(maneuver);
             node.maneuver = maneuver;
             if (lastManeuver != null) {
                 lastManeuver.NextManeuver = maneuver;
-                lastManeuver.TimeToNextManeuver = maneuver.timeToManeuver;
             }
             return maneuver;
         }
