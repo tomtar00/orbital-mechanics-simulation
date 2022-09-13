@@ -9,6 +9,7 @@ namespace Sim.Maneuvers {
     {
         [SerializeField] private GameObject maneuverPrefab;
         [SerializeField] private Transform maneuverHolder;
+        public Transform maneuverOrbitsHolder;
 
         public List<Maneuver> maneuvers { get; private set; }
 

@@ -45,6 +45,10 @@ namespace Sim.Visuals
             }
         }
 
+        public void ClearAllClickHandlers() {
+            onLinePressed = null;
+        }
+
         private void Update() {
             if (!enabled) return;
 

@@ -9,6 +9,7 @@ namespace Sim.Visuals
     {
         [SerializeField][Range(1, 200)] private int orbitResolution = 200;
         [SerializeField][Range(1, 5)] private int depth = 2;
+
         [SerializeField] private bool isManeuver;
         
         public LineRenderer[] lineRenderers { get; private set; }
@@ -33,7 +34,7 @@ namespace Sim.Visuals
             for (int i = 0; i < depth; i++) {
                 string lineName = isManeuver ? "Maneuver " + i : inOrbitObject.name + " - Orbit Renderer " + i;
                 GameObject rendererObject = new GameObject(lineName);
-                rendererObject.transform.SetParent(isManeuver ? gameObject.transform : inOrbitObject.CentralBody.transform);
+                rendererObject.transform.SetParent(isManeuver ? ManeuverManager.Instance.maneuverOrbitsHolder : inOrbitObject.CentralBody.transform);
                 rendererObject.transform.localPosition = Vector3.zero;
                 
                 LineButton lineButton = rendererObject.AddComponent<LineButton>();
@@ -141,6 +142,7 @@ namespace Sim.Visuals
                 float angleToPoint = Vector3.SignedAngle(orbit.elements.eccVec, pressLocalPosition, orbit.elements.angMomentum);
                 return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad) + currentCelestial.transform.position;
             });
+            lineButton.ClearAllClickHandlers();
             lineButton.onLinePressed += (worldPos) => {
                 var pressRelativePosition = worldPos - currentCelestial.transform.position;
                 ManeuverManager.Instance.CreateManeuver(this, orbit, inOrbitObject, pressRelativePosition);

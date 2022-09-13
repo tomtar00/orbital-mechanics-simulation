@@ -23,22 +23,19 @@ namespace Sim.Maneuvers
 
             // TODO: delete
             this.stateVectors.velocity += Random.insideUnitSphere;
+            // this.stateVectors.velocity += Vector3.one * .3f;
             
             UpdateOnDrag(this.stateVectors.position);
         }
 
         public void UpdateOnDrag(Vector3 newWorldPosition) {
+            if (NextManeuver != null) return;
+
             currentTrueAnomaly = GetTrueAnomaly(newWorldPosition);
             timeToManeuver = GetTimeToManeuver(currentTrueAnomaly);
-            Debug.Log(timeToManeuver);
+            
+            RotateNode(newWorldPosition);
             ChangePosition(newWorldPosition);
-            NextManeuver?.UpdateBasedOnPrevious();
-        }
-        public void UpdateBasedOnPrevious() { 
-            Vector3 newPosition = orbit.CalculateOrbitalPosition(currentTrueAnomaly);
-            currentTrueAnomaly = GetTrueAnomaly(newPosition);
-            ChangePosition(newPosition);
-            NextManeuver?.UpdateBasedOnPrevious();
         }
 
         public float GetTrueAnomaly(Vector3 relativePressPosition) {
@@ -47,8 +44,11 @@ namespace Sim.Maneuvers
         public float GetTimeToManeuver(float trueAnomaly) {
             float anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);
             float meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
-            // Debug.Log(orbit.elements.meanAnomaly);
             return (meanAnomaly - orbit.elements.meanAnomaly) / orbit.elements.meanMotion;
+        }
+        public void RotateNode(Vector3 orbitPosition) {
+            var velocityAtPosition = orbit.CalculateVelocity(orbitPosition, currentTrueAnomaly);
+            Node.gameObject.transform.rotation = Quaternion.LookRotation(velocityAtPosition);
         }
 
         public void ChangeVelocity(Vector3 dV) {
