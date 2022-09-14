@@ -543,7 +543,7 @@ MonoBehaviour:
   useCustomStartVelocity: 1
   startVelocity: {x: 0, y: 0, z: 7.7}
   startRelativePosition: {x: 30, y: 0, z: 0}
-  rotationSpeed: 50
+  rotationSpeed: 250
   thrust: 0.2
 --- !u!96 &493653090
 TrailRenderer:

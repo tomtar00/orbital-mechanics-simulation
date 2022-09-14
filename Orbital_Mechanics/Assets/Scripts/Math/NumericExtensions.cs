@@ -18,6 +18,12 @@ namespace Sim.Math
         {
             return (Denominator == 0) ? Vector3.zero : Numerator / Denominator;
         }
+
+        public static Vector3 ScaleWithDistance(Vector3 pos1, Vector3 pos2, float multiplier, float minScale, float maxScale) {
+            float distance = Vector3.Distance(pos1, pos2);
+            distance = Mathf.Clamp(distance, minScale, maxScale);
+            return Vector3.one * distance * multiplier;
+        }
     }
 
 }

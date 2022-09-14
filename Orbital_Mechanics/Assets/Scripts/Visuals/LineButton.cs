@@ -1,6 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Sim.Maneuvers;
+using Sim.Math;
 
 namespace Sim.Visuals
 {
@@ -16,12 +18,18 @@ namespace Sim.Visuals
         public bool showPointIndication;
         [DrawIf("showPointIndication", true, ComparisonType.Equals)] 
         public GameObject indicationPrefab;
+        
+        private float scaleMultiplier = .05f;
+        private float minScale = .1f;
+        private float maxScale = 6f;
 
-        private GameObject indicator;
+        public GameObject indicator { get; private set; }
+        public LineRenderer line { get; private set; }
+
         private PointerEventData pointerData;
-        private bool hovering = false;
-        public LineRenderer line {get; private set;}
         private MeshCollider _collider;
+
+        private bool hovering = false;
         private new bool enabled = true;
 
         private Func<Vector3, Vector3> converterFunction;
@@ -62,7 +70,19 @@ namespace Sim.Visuals
                 indicator.transform.position = convertedPos;
                 if (onLineHovering != null)
                     onLineHovering(this, convertedPos);
+
+                if (showPointIndication && indicator.activeSelf) {
+                    indicator.transform.localScale = NumericExtensions.ScaleWithDistance(
+                        indicator.transform.position, CameraController.Instance.cam.transform.position,
+                        scaleMultiplier, minScale, maxScale
+                    );
+                }
             }
+
+            line.startWidth = NumericExtensions.ScaleWithDistance(
+                line.gameObject.transform.position, CameraController.Instance.cam.transform.position,
+                scaleMultiplier, minScale, maxScale
+            ).x;
         }
 
         public void SetCustomIndicatorPositionConverter(Func<Vector3, Vector3> func) {
@@ -76,15 +96,23 @@ namespace Sim.Visuals
 
             var worldPos = pointerEventData.pointerCurrentRaycast.worldPosition;
             onLinePressed(converterFunction == null ? worldPos : converterFunction(worldPos));
+            if (showPointIndication) {
+                indicator.SetActive(false);
+            }
         }
         public void OnPointerEnter(PointerEventData pointerEventData)
         {
             if (!enabled) return;
             hovering = true;
             pointerData = pointerEventData;
-            if (showPointIndication) {
-                indicator.SetActive(true);
+
+            if (ManeuverNode.current == null) {
+                if (showPointIndication) indicator.SetActive(true);
             }
+            else if (!ManeuverNode.current.isDragging) {
+                if (showPointIndication) indicator.SetActive(true);
+            }
+            else indicator.SetActive(false);
         }
         public void OnPointerExit(PointerEventData pointerEventData)
         {

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 namespace Sim.Maneuvers
 {
@@ -30,6 +31,11 @@ namespace Sim.Maneuvers
                         ManeuverNode.current.OnStartDrag();
 
                         lastSelectTime = Time.unscaledTime;
+                    }
+
+                    if (ManeuverNode.directionsTags.Contains(hit.collider.gameObject.tag)) {
+                        var direction = ManeuverNode.current.directions[hit.collider.gameObject.tag];
+                        ManeuverNode.current.AddVelocity(direction, .1f);
                     }
                 }
                 else {

@@ -10,6 +10,7 @@ namespace Sim.Maneuvers
         public OrbitDrawer drawer { get; private set; }
         public float timeToManeuver { get; private set; }
         public StateVectors stateVectors { get; private set; }
+        public Vector3 addedVelocity { get; private set; }
         public float currentTrueAnomaly { get; private set; }
 
         public Maneuver NextManeuver { get; set; }
@@ -20,10 +21,7 @@ namespace Sim.Maneuvers
             this.drawer = drawer;
             this.stateVectors = startStateVectors;
             this.Node = node;
-
-            // TODO: delete
-            this.stateVectors.velocity += Random.insideUnitSphere;
-            // this.stateVectors.velocity += Vector3.one * .3f;
+            this.addedVelocity = Vector3.zero;
             
             UpdateOnDrag(this.stateVectors.position);
         }
@@ -33,6 +31,7 @@ namespace Sim.Maneuvers
 
             currentTrueAnomaly = GetTrueAnomaly(newWorldPosition);
             timeToManeuver = GetTimeToManeuver(currentTrueAnomaly);
+            this.stateVectors.velocity = orbit.CalculateVelocity(newWorldPosition, currentTrueAnomaly);
             
             RotateNode(newWorldPosition);
             ChangePosition(newWorldPosition);
@@ -47,17 +46,21 @@ namespace Sim.Maneuvers
             return (meanAnomaly - orbit.elements.meanAnomaly) / orbit.elements.meanMotion;
         }
         public void RotateNode(Vector3 orbitPosition) {
-            var velocityAtPosition = orbit.CalculateVelocity(orbitPosition, currentTrueAnomaly);
-            Node.gameObject.transform.rotation = Quaternion.LookRotation(velocityAtPosition);
+            Node.gameObject.transform.rotation = Quaternion.LookRotation(stateVectors.velocity);
         }
 
         public void ChangeVelocity(Vector3 dV) {
-            stateVectors.velocity += dV;
-            drawer.DrawOrbits(stateVectors, orbit.centralBody, timeToManeuver);
+            addedVelocity += dV;
+            StateVectors newVectors = new StateVectors(stateVectors.position, stateVectors.velocity + addedVelocity);
+
+            drawer.DrawOrbits(newVectors, orbit.centralBody, timeToManeuver);
         }
         public void ChangePosition(Vector3 newPosition) {
             Node.gameObject.transform.position = newPosition + orbit.centralBody.transform.position;
-            StateVectors newVectors = new StateVectors(newPosition, stateVectors.velocity);
+
+            stateVectors.position = newPosition;
+            StateVectors newVectors = new StateVectors(newPosition, stateVectors.velocity + addedVelocity);
+
             drawer.DrawOrbits(newVectors, orbit.centralBody, timeToManeuver);
         }
 
