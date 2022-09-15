@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Sim.Maneuvers;
@@ -10,6 +11,8 @@ namespace Sim.Visuals
     [RequireComponent(typeof(MeshCollider))]
     public class LineButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {
+        public static List<LineButton> allLineButtons = null;
+
         public delegate void OnClick(Vector3 worldPosition);
         public event OnClick onLinePressed;
         public delegate void OnHover(LineButton lineButton, Vector3 worldPosition);
@@ -44,6 +47,8 @@ namespace Sim.Visuals
         }
 
         private void Start() {
+            if (allLineButtons == null) allLineButtons = new List<LineButton>();
+            allLineButtons.Add(this);
             line = GetComponent<LineRenderer>();
             _collider = line.GetComponent<MeshCollider>();  
 
@@ -53,6 +58,13 @@ namespace Sim.Visuals
             }
         }
 
+        public static void EnableAllLineButtons(bool enabled, LineButton exception) {
+            foreach(var line in allLineButtons) {
+                if (line != exception) {
+                    line.Enabled = enabled;
+                }
+            }
+        }
         public void ClearAllClickHandlers() {
             onLinePressed = null;
         }

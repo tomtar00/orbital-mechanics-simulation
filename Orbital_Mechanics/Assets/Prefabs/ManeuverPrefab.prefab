@@ -113,7 +113,7 @@ MonoBehaviour:
   orbitWidthOnDrag: 5
   scaleMultiplier: 0.1
   minScale: 0.2
-  maxScale: 10
+  maxScale: 100
   vectorsHolder: {fileID: 1136877076179305813}
   prograde: {fileID: 0}
   retrograde: {fileID: 0}

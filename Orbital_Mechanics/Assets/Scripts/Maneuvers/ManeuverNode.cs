@@ -36,8 +36,11 @@ namespace Sim.Maneuvers {
         public bool isDragging { get; private set; } = false;
         public LineButton lineButton { get; private set; } = null;
         public bool selected { get; private set; } = false;
+        public Collider _collider { get; private set; }
 
         private void Start() {
+            _collider = GetComponent<Collider>();
+
             LineButton.onLineHovering += (line, worldPos) => {
                 if (lineButton == null) lineButton = line;
                 if (isDragging && lineButton == line) {
@@ -81,16 +84,19 @@ namespace Sim.Maneuvers {
         }
         public void OnStartDrag() {
             isDragging = true;
-            maneuver.drawer.EnableLineButtons(false);
+            LineButton.EnableAllLineButtons(false, lineButton);
             lineButton.line.startWidth *= orbitWidthOnDrag;
             lineButton.BakeMesh();
             lineButton.indicator.SetActive(false);
+            _collider.enabled = false;
         }
         public void OnEndDrag() {
             isDragging = false;
-            maneuver.drawer.EnableLineButtons(true);
+            LineButton.EnableAllLineButtons(true, lineButton);
             lineButton.line.startWidth /= orbitWidthOnDrag;
             lineButton.BakeMesh();
+            _collider.enabled = true;
         }
+        
     }
 }

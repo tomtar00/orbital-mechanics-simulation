@@ -45,9 +45,11 @@ namespace Sim.Maneuvers
             }
             else if (Input.GetMouseButtonUp(0))
             {
-                ManeuverNode.current?.OnEndDrag();
-                if (Time.unscaledTime - lastSelectTime <= maxClickDuration) {
-                    ManeuverNode.current?.OnSelect();
+                if (ManeuverNode.current != null) {
+                    ManeuverNode.current.OnEndDrag();
+                    if (Time.unscaledTime - lastSelectTime <= maxClickDuration) {
+                        ManeuverNode.current.OnSelect();
+                    }
                 }
             }
         }

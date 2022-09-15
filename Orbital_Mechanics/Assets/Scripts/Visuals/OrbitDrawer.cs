@@ -56,12 +56,6 @@ namespace Sim.Visuals
                 rendererObject.SetActive(false);
             }
         }
-        public void EnableLineButtons(bool enabled) {
-            foreach (var lineButton in lineButtons)
-            {
-                lineButton.Enabled = enabled;
-            }
-        }
         private Gradient CreateLineGradient(int lineIdx, bool celestial = false) {
             Gradient gradient = new Gradient();
             LineRenderer line = lineRenderers[lineIdx];
