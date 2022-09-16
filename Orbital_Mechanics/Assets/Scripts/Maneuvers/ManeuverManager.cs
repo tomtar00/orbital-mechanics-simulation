@@ -41,7 +41,7 @@ namespace Sim.Maneuvers {
             StateVectors pressStateVectors = new StateVectors(relativePressPosition, relativePressVelocity);
 
             // create new maneuver
-            Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, node);
+            Maneuver maneuver = new Maneuver(orbit, baseDrawer, drawer, pressStateVectors, node);
             maneuvers.Add(maneuver);
             node.maneuver = maneuver;
             if (lastManeuver != null) {

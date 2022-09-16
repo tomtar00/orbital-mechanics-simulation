@@ -8,6 +8,7 @@ namespace Sim.Maneuvers
     {
         public Orbit orbit { get; private set; }
         public OrbitDrawer drawer { get; private set; }
+        public OrbitDrawer previousDrawer { get; private set; }
         public float timeToManeuver { get; private set; }
         public StateVectors stateVectors { get; private set; }
         public Vector3 addedVelocity { get; private set; }
@@ -16,9 +17,10 @@ namespace Sim.Maneuvers
         public Maneuver NextManeuver { get; set; }
         public ManeuverNode Node { get; set; }
 
-        public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors, ManeuverNode node) {
+        public Maneuver(Orbit orbit, OrbitDrawer previousDrawer, OrbitDrawer drawer, StateVectors startStateVectors, ManeuverNode node) {
             this.orbit = orbit;
             this.drawer = drawer;
+            this.previousDrawer = previousDrawer;
             this.stateVectors = startStateVectors;
             this.Node = node;
             this.addedVelocity = Vector3.zero;
@@ -67,6 +69,7 @@ namespace Sim.Maneuvers
         public void Remove() {
             ManeuverManager.Instance.maneuvers.Remove(this);
             MonoBehaviour.Destroy(drawer.gameObject);
+            previousDrawer.hasManeuver = false;
         }
     }
 }

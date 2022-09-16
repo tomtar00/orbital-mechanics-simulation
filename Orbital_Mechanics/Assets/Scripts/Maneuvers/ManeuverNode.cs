@@ -76,11 +76,16 @@ namespace Sim.Maneuvers {
             vectorsHolder.SetActive(true);
             current = this;
             selected = true;
+
+            HUDController.Instance.RemoveManeuver.gameObject.SetActive(true);
         }
         public void OnDeselect() {
             if (!selected) return;
             vectorsHolder.SetActive(false);
             selected = false;
+            current = null;
+
+            HUDController.Instance.RemoveManeuver.gameObject.SetActive(false);
         }
         public void OnStartDrag() {
             isDragging = true;

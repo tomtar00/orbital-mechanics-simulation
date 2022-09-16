@@ -38,18 +38,20 @@ namespace Sim.Maneuvers
                         ManeuverNode.current.AddVelocity(direction, .1f);
                     }
                 }
-                else {
-                    ManeuverNode.current?.OnDeselect();
-                    ManeuverNode.current = null;
-                }
             }
             else if (Input.GetMouseButtonUp(0))
             {
                 if (ManeuverNode.current != null) {
+
                     ManeuverNode.current.OnEndDrag();
-                    if (Time.unscaledTime - lastSelectTime <= maxClickDuration) {
-                        ManeuverNode.current.OnSelect();
+
+                    if (ManeuverNode.current.selected) {
+                        ManeuverNode.current.OnDeselect();
                     }
+
+                    if (Time.unscaledTime - lastSelectTime <= maxClickDuration) {
+                        ManeuverNode.current?.OnSelect();
+                    }            
                 }
             }
         }

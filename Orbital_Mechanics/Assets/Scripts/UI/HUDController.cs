@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
+using Sim.Maneuvers;
 
 public class HUDController : MonoBehaviour
 {
@@ -9,6 +11,9 @@ public class HUDController : MonoBehaviour
     [SerializeField] private TMP_Text timeScaleText;
     [SerializeField] private float[] timeScales;
     [SerializeField] private int currentTimeScaleIdx = 1;
+    [Header("Maneuver")]
+    [SerializeField] private Button removeManeuver;
+    public Button RemoveManeuver { get => removeManeuver; }
 
     public static HUDController Instance;
     private void Awake() {
@@ -34,5 +39,9 @@ public class HUDController : MonoBehaviour
 
     public void ChangeFocus() {
         CameraController.Instance.FocusOnShip();
+    }
+
+    public void RemoveCurrentManeuver() {
+        ManeuverManager.Instance.RemoveManeuvers(ManeuverNode.current.maneuver);
     }
 }
