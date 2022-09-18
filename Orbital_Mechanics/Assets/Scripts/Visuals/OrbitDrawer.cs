@@ -7,6 +7,7 @@ namespace Sim.Visuals
 {
     public class OrbitDrawer : MonoBehaviour
     {
+        [SerializeField] private float lineWidth = 3f;
         [SerializeField][Range(1, 200)] private int orbitResolution = 200;
         [SerializeField][Range(1, 5)] private int depth = 2;
 
@@ -38,17 +39,17 @@ namespace Sim.Visuals
                 rendererObject.transform.localPosition = Vector3.zero;
                 
                 LineButton lineButton = rendererObject.AddComponent<LineButton>();
-                lineButton.showPointIndication = true;
+                lineButton.showPointIndication = isManeuver || inOrbitObject is Spacecraft;
                 lineButton.indicationPrefab = SimulationSettings.Instance.indicationPrefab;
                 lineButton.Enabled = isManeuver || inOrbitObject is Spacecraft;
                 lineButtons[i] = lineButton;
 
                 LineRenderer lineRenderer = rendererObject.GetComponent<LineRenderer>();
                 lineRenderer.useWorldSpace = false;
-                lineRenderer.startWidth = .1f;
                 lineRenderer.loop = true;
-                lineRenderer.material = SimulationSettings.Instance.trajectoryMat;
-                lineRenderer.startWidth = 1;
+                lineRenderer.material = isManeuver ? SimulationSettings.Instance.dashedTrajectoryMat : SimulationSettings.Instance.trajectoryMat;
+                lineRenderer.textureMode = isManeuver ? LineTextureMode.Tile : LineTextureMode.Stretch;
+                lineRenderer.startWidth = lineWidth;
 
                 lineRenderers[i] = lineRenderer;
                 lineRenderer.colorGradient = CreateLineGradient(i);
@@ -85,6 +86,11 @@ namespace Sim.Visuals
         {
             for (int i = idx; i < depth; i++) {
                 lineRenderers[i].gameObject.SetActive(false);
+            }
+        }
+        public void DestroyRenderers() {
+            foreach(var line in lineRenderers) {
+                Destroy(line.gameObject);
             }
         }
 
@@ -138,8 +144,11 @@ namespace Sim.Visuals
             });
             lineButton.ClearAllClickHandlers();
             lineButton.onLinePressed += (worldPos) => {
-                var pressRelativePosition = worldPos - currentCelestial.transform.position;
-                ManeuverManager.Instance.CreateManeuver(this, orbit, inOrbitObject, pressRelativePosition);
+                if (!hasManeuver) {
+                    var pressRelativePosition = worldPos - currentCelestial.transform.position;
+                    ManeuverManager.Instance.CreateManeuver(orbit, inOrbitObject, pressRelativePosition, timePassed);
+                    hasManeuver = true;
+                }
             };
 
             // loop if no gravity change reported

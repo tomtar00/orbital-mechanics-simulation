@@ -26,6 +26,10 @@ namespace Sim.Visuals
         private float minScale = .1f;
         private float maxScale = 6f;
 
+        private float lineScaleMultiplier = .2f;
+        private float lineMinScale = .1f;
+        private float lineMaxScale = 3f;
+
         public GameObject indicator { get; private set; }
         public LineRenderer line { get; private set; }
 
@@ -93,7 +97,7 @@ namespace Sim.Visuals
 
             line.startWidth = NumericExtensions.ScaleWithDistance(
                 line.gameObject.transform.position, CameraController.Instance.cam.transform.position,
-                scaleMultiplier, minScale, maxScale
+                lineScaleMultiplier, lineMinScale, lineMaxScale
             ).x;
         }
 

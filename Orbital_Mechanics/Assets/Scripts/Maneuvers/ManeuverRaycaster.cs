@@ -10,6 +10,8 @@ namespace Sim.Maneuvers
         [SerializeField] private float maxClickDuration;
 
         private float lastSelectTime;
+        private bool addingVelocity = false;
+        private bool hitNode = false;
 
         private void Update() 
         {
@@ -24,19 +26,28 @@ namespace Sim.Maneuvers
                 RaycastHit hit;
                 if (Physics.Raycast(ray, out hit, Mathf.Infinity))
                 {
+                    // check node hit
                     if (hit.collider.gameObject.CompareTag("ManeuverNode")) 
                     {
                         var node = hit.collider.gameObject.GetComponent<ManeuverNode>();
                         ManeuverNode.current = node;
-                        ManeuverNode.current.OnStartDrag();
-
+                        hitNode = true;
                         lastSelectTime = Time.unscaledTime;
-                    }
-
-                    if (ManeuverNode.directionsTags.Contains(hit.collider.gameObject.tag)) {
+                    }   // check direction vector hit
+                    else if (ManeuverNode.directionsTags.Contains(hit.collider.gameObject.tag)) 
+                    {
                         var direction = ManeuverNode.current.directions[hit.collider.gameObject.tag];
                         ManeuverNode.current.AddVelocity(direction, .1f);
+                        addingVelocity = true;
                     }
+                    else {
+                        addingVelocity = false;
+                        hitNode = false;
+                    }
+                }
+                else {
+                    addingVelocity = false;
+                    hitNode = false;
                 }
             }
             else if (Input.GetMouseButtonUp(0))
@@ -45,14 +56,18 @@ namespace Sim.Maneuvers
 
                     ManeuverNode.current.OnEndDrag();
 
-                    if (ManeuverNode.current.selected) {
+                    if (ManeuverNode.current.selected && !addingVelocity) {
                         ManeuverNode.current.OnDeselect();
                     }
-
-                    if (Time.unscaledTime - lastSelectTime <= maxClickDuration) {
-                        ManeuverNode.current?.OnSelect();
+                    else if (Time.unscaledTime - lastSelectTime <= maxClickDuration) {
+                        ManeuverNode.current.OnSelect();
                     }            
                 }
+                hitNode = false;
+            }
+
+            if (hitNode && ManeuverNode.current != null && Time.unscaledTime - lastSelectTime > maxClickDuration) {
+                ManeuverNode.current.OnStartDrag();
             }
         }
     }

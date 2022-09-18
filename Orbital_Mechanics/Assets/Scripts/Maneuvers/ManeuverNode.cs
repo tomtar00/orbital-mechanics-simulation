@@ -72,12 +72,14 @@ namespace Sim.Maneuvers {
 
         public void OnSelect() {
             if (selected) return;
-            if (maneuver.NextManeuver != null) return;
-            vectorsHolder.SetActive(true);
+
+            HUDController.Instance.RemoveManeuver.gameObject.SetActive(true);
             current = this;
             selected = true;
 
-            HUDController.Instance.RemoveManeuver.gameObject.SetActive(true);
+            if (maneuver.NextManeuver != null) return;
+
+            vectorsHolder.SetActive(true);
         }
         public void OnDeselect() {
             if (!selected) return;
@@ -88,19 +90,23 @@ namespace Sim.Maneuvers {
             HUDController.Instance.RemoveManeuver.gameObject.SetActive(false);
         }
         public void OnStartDrag() {
+            if(isDragging) return;
             isDragging = true;
             LineButton.EnableAllLineButtons(false, lineButton);
             lineButton.line.startWidth *= orbitWidthOnDrag;
             lineButton.BakeMesh();
             lineButton.indicator.SetActive(false);
             _collider.enabled = false;
+            vectorsHolder.SetActive(false);
         }
         public void OnEndDrag() {
+            if (!isDragging) return;
             isDragging = false;
             LineButton.EnableAllLineButtons(true, lineButton);
             lineButton.line.startWidth /= orbitWidthOnDrag;
             lineButton.BakeMesh();
             _collider.enabled = true;
+            if (selected) vectorsHolder.SetActive(true);
         }
         
     }

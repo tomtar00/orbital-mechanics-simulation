@@ -1,11 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Sim {
     public class SimulationSettings : MonoBehaviour
     {
         public Material trajectoryMat;
+        public Material dashedTrajectoryMat;
+
         public Color[] futureOrbitColors;
         public Color celestialOrbitColor;
         public GameObject indicationPrefab;

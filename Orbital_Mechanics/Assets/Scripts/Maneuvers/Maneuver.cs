@@ -14,16 +14,19 @@ namespace Sim.Maneuvers
         public Vector3 addedVelocity { get; private set; }
         public float currentTrueAnomaly { get; private set; }
 
+        public Maneuver PreviousManeuver { get; set; }
         public Maneuver NextManeuver { get; set; }
         public ManeuverNode Node { get; set; }
 
-        public Maneuver(Orbit orbit, OrbitDrawer previousDrawer, OrbitDrawer drawer, StateVectors startStateVectors, ManeuverNode node) {
+        private float timeToOrbit;
+
+        public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors, ManeuverNode node, float timeToOrbit) {
             this.orbit = orbit;
             this.drawer = drawer;
-            this.previousDrawer = previousDrawer;
             this.stateVectors = startStateVectors;
             this.Node = node;
             this.addedVelocity = Vector3.zero;
+            this.timeToOrbit = timeToOrbit;
             
             UpdateOnDrag(this.stateVectors.position);
         }
@@ -33,6 +36,7 @@ namespace Sim.Maneuvers
 
             currentTrueAnomaly = GetTrueAnomaly(newWorldPosition);
             timeToManeuver = GetTimeToManeuver(currentTrueAnomaly);
+            Debug.Log(timeToManeuver);
             this.stateVectors.velocity = orbit.CalculateVelocity(newWorldPosition, currentTrueAnomaly);
             
             RotateNode(newWorldPosition);
@@ -45,7 +49,7 @@ namespace Sim.Maneuvers
         public float GetTimeToManeuver(float trueAnomaly) {
             float anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);
             float meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
-            return (meanAnomaly - orbit.elements.meanAnomaly) / orbit.elements.meanMotion;
+            return (meanAnomaly - orbit.elements.meanAnomaly) / orbit.elements.meanMotion + timeToOrbit;
         }
         public void RotateNode(Vector3 orbitPosition) {
             Node.gameObject.transform.rotation = Quaternion.LookRotation(stateVectors.velocity);
@@ -68,8 +72,12 @@ namespace Sim.Maneuvers
 
         public void Remove() {
             ManeuverManager.Instance.maneuvers.Remove(this);
+            drawer.DestroyRenderers();
             MonoBehaviour.Destroy(drawer.gameObject);
-            previousDrawer.hasManeuver = false;
+            if (PreviousManeuver != null) {
+                PreviousManeuver.drawer.hasManeuver = false;
+                PreviousManeuver.NextManeuver = null;
+            }
         }
     }
 }

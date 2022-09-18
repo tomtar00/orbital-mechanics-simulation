@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 2138677392}
-  m_IndirectSpecularColor: {r: 0.001505592, g: 0.0013019211, b: 0.0016038049, a: 1}
+  m_IndirectSpecularColor: {r: 0.0014822877, g: 0.0013037389, b: 0.0015789905, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -305,6 +305,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   trajectoryMat: {fileID: 2100000, guid: 1561e8f09b26a904abb3753c981b089a, type: 2}
+  dashedTrajectoryMat: {fileID: 2100000, guid: 4ef032a27bc7de34a8a26fc3bf950d41, type: 2}
   futureOrbitColors:
   - {r: 0.19339621, g: 0.8515453, b: 1, a: 0.5019608}
   - {r: 1, g: 0.80092657, b: 0, a: 0.5019608}
@@ -843,6 +844,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93168a3fca1644e4290aff80cd9855a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lineWidth: 3
   orbitResolution: 200
   depth: 5
   isManeuver: 0
@@ -2238,8 +2240,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70e1776bb11c8fc44b2634e39d57bf7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  acceleration: 75
-  accSprintMultiplier: 8
+  acceleration: 15
+  accSprintMultiplier: 10
   sensitivity: 2
   damping: 5
   focusOnEnable: 1
@@ -2306,7 +2308,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3fe03f0952e35df4ea56827cb2fa1532, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxClickDuration: 0.3
+  maxClickDuration: 0.15
 --- !u!114 &1687258586
 MonoBehaviour:
   m_ObjectHideFlags: 0
