@@ -16,7 +16,7 @@ namespace Sim.Visuals
         public LineRenderer[] lineRenderers { get; private set; }
         public bool hasManeuver { get; set; }
 
-        private LineButton[] lineButtons;
+        public LineButton[] lineButtons { get; private set; }
         private Color[] futureColors;
         private InOrbitObject inOrbitObject;
         private Celestial centralBody;
@@ -39,9 +39,10 @@ namespace Sim.Visuals
                 rendererObject.transform.localPosition = Vector3.zero;
                 
                 LineButton lineButton = rendererObject.AddComponent<LineButton>();
-                lineButton.showPointIndication = isManeuver || inOrbitObject is Spacecraft;
+                lineButton.showPointIndication = isManeuver || (inOrbitObject is Spacecraft);
                 lineButton.indicationPrefab = SimulationSettings.Instance.indicationPrefab;
-                lineButton.Enabled = isManeuver || inOrbitObject is Spacecraft;
+                
+                lineButton.Enabled = isManeuver || (inOrbitObject is Spacecraft);
                 lineButtons[i] = lineButton;
 
                 LineRenderer lineRenderer = rendererObject.GetComponent<LineRenderer>();
@@ -91,6 +92,9 @@ namespace Sim.Visuals
         public void DestroyRenderers() {
             foreach(var line in lineRenderers) {
                 Destroy(line.gameObject);
+            }
+            foreach(var line in lineButtons) {
+                LineButton.allLineButtons.Remove(line);
             }
         }
 
@@ -146,7 +150,7 @@ namespace Sim.Visuals
             lineButton.onLinePressed += (worldPos) => {
                 if (!hasManeuver) {
                     var pressRelativePosition = worldPos - currentCelestial.transform.position;
-                    ManeuverManager.Instance.CreateManeuver(orbit, inOrbitObject, pressRelativePosition, timePassed);
+                    ManeuverManager.Instance.CreateManeuver(orbit, inOrbitObject, pressRelativePosition);
                     hasManeuver = true;
                 }
             };

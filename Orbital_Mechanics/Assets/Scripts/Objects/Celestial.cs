@@ -7,7 +7,7 @@ namespace Sim.Objects
 {
     public class Celestial : InOrbitObject
     {
-        public const float GRAVITY_FALLOFF = 0.05f;
+        public const float GRAVITY_FALLOFF = 0.005f * KeplerianOrbit.G;
 
         [Header("Celestial")]
         [SerializeField] protected CelestialSO data;

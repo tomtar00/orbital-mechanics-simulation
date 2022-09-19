@@ -45,8 +45,10 @@ namespace Sim.Visuals
             get => enabled;
             set {
                 enabled = value;
-                if (_collider != null)
-                    _collider.enabled = value;
+                if (_collider == null)
+                    _collider = gameObject.GetComponent<MeshCollider>();
+                
+                _collider.enabled = value;
             }
         }
 
@@ -54,7 +56,7 @@ namespace Sim.Visuals
             if (allLineButtons == null) allLineButtons = new List<LineButton>();
             allLineButtons.Add(this);
             line = GetComponent<LineRenderer>();
-            _collider = line.GetComponent<MeshCollider>();  
+            if (_collider == null) _collider = line.GetComponent<MeshCollider>();  
 
             if (showPointIndication) {
                 indicator = Instantiate(indicationPrefab, transform);

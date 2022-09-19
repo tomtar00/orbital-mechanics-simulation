@@ -2,10 +2,6 @@
 using Sim.Visuals;
 using Sim.Math;
 
-// failing at
-// v = 0, 0, 8
-// r = 45, 0, -15
-
 // encounter at
 // v = 0, 0, 7.7
 // r = 30, 0, 0
@@ -16,22 +12,24 @@ namespace Sim.Objects
     public class Spacecraft : InOrbitObject
     {
         [Header("Spacecraft")]
-
         [SerializeField] protected bool useCustomStartVelocity;
-
         [SerializeField]
         [DrawIf("useCustomStartVelocity", true, ComparisonType.Equals)] 
         protected Vector3 startVelocity;
-
         [SerializeField] protected Vector3 startRelativePosition;
+
         [Header("Controls")]
         [SerializeField] protected float rotationSpeed = 50;
         [SerializeField] protected float thrust;
+
+        public static Spacecraft current { get; private set;}
+        public float Thrust { get => thrust; }
 
         private bool canUpdateOrbit = true;
 
         private void Start()
         {
+            current = this;
             if (isStationary)
             {
                 relativePosition = startRelativePosition;

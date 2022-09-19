@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 2138677392}
-  m_IndirectSpecularColor: {r: 0.0014822877, g: 0.0013037389, b: 0.0015789905, a: 1}
+  m_IndirectSpecularColor: {r: 0.001505592, g: 0.0013019211, b: 0.0016038049, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -674,7 +674,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isStationary: 0
   centralBody: {fileID: 1395013022}
-  useCustomStartVelocity: 1
+  useCustomStartVelocity: 0
   startVelocity: {x: 0, y: 0, z: 7.7}
   startRelativePosition: {x: 30, y: 0, z: 0}
   rotationSpeed: 250
@@ -1707,7 +1707,7 @@ PrefabInstance:
     - target: {fileID: 8389042665677919027, guid: df89030a194ccd5488e4434af43430bb,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 8389042663809134706, guid: df89030a194ccd5488e4434af43430bb, type: 3}

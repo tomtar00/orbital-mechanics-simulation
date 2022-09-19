@@ -6,7 +6,7 @@ namespace Sim.Math
 {
     public class KeplerianOrbit
     {
-        public const float G = 6.67f;
+        public const float G = 6.67f / 100f;
 
         public Orbit orbit { get; set; }
         public OrbitType orbitType { get; set; } = OrbitType.NONE;

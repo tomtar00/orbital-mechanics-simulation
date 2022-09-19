@@ -3,6 +3,7 @@ using UnityEngine;
 using Sim.Visuals;
 using Sim.Math;
 using Sim.Objects;
+using System.Linq;
 
 namespace Sim.Maneuvers {
     public class ManeuverManager : MonoBehaviour
@@ -12,6 +13,14 @@ namespace Sim.Maneuvers {
         public Transform maneuverOrbitsHolder;
 
         public List<Maneuver> maneuvers { get; private set; }
+        public Maneuver NextManeuver {
+            get {
+                if (maneuvers.Count > 0 && maneuvers.Where(m => m.timeToManeuver > 0).Count() > 0)
+                    return maneuvers.Where(m => m.timeToManeuver > 0).OrderBy(m => m.timeToManeuver).First();
+                else 
+                    return null;
+            }
+        }
 
         public static ManeuverManager Instance;
         private void Awake() {
@@ -19,12 +28,19 @@ namespace Sim.Maneuvers {
             maneuvers = new List<Maneuver>();
         }
 
-        public Maneuver CreateManeuver(Orbit currentOrbit, InOrbitObject inOrbitObject, Vector3 relativePressPosition, float timePassed) {
+        private void Update() {
+            foreach (var maneuver in maneuvers)
+            {
+                maneuver.Update();
+            }
+        }
+
+        public Maneuver CreateManeuver(Orbit currentOrbit, InOrbitObject inOrbitObject, Vector3 relativePressPosition) {
 
             Maneuver lastManeuver = maneuvers.Count > 0 ? maneuvers[maneuvers.Count - 1] : null;
             Orbit orbit = /* lastManeuver == null ? inOrbitObject.Kepler.orbit : */ currentOrbit;
             if (inOrbitObject != null) {
-                currentOrbit.elements.meanAnomaly = inOrbitObject.Kepler.orbit.elements.meanAnomaly;
+                orbit.elements.meanAnomaly = inOrbitObject.Kepler.orbit.elements.meanAnomaly;
             }
 
             // create prefab
@@ -39,13 +55,13 @@ namespace Sim.Maneuvers {
             StateVectors pressStateVectors = new StateVectors(relativePressPosition, relativePressVelocity);
 
             // create new maneuver
-            Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, node, timePassed);
+            Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, node, lastManeuver);
             maneuvers.Add(maneuver);
             node.maneuver = maneuver;
             if (lastManeuver != null) {
-                maneuver.PreviousManeuver = lastManeuver;
                 lastManeuver.NextManeuver = maneuver;
             }
+            else maneuver.PreviousDrawer = inOrbitObject.GetComponent<OrbitDrawer>();
             return maneuver;
         }
 
@@ -56,9 +72,25 @@ namespace Sim.Maneuvers {
                 return;
             }
             
-            for (int i = index; i < maneuvers.Count; i++) {
+            for (int i = maneuvers.Count - 1; i >= index; i--) {
                 maneuvers[i].Remove();
             }
+        }
+
+        private void OnGUI() 
+        {
+            float startHeight = 300;
+            float space = 20;
+            int i = 0;
+
+            foreach (var maneuver in maneuvers)
+            {
+                GUI.Label(new Rect(10, startHeight + space * i, 300, 20), $"Maneuver {i++}: {maneuver.timeToManeuver} Burn: {maneuver.GetBurnTime()}");
+            }
+            i++;
+            Maneuver next = NextManeuver;
+            if (NextManeuver != null)
+                GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Next maneuver: Maneuver {maneuvers.IndexOf(next)}");
         }
     }
 }
