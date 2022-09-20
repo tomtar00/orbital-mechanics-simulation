@@ -37,7 +37,7 @@ namespace Sim.Maneuvers
                     else if (ManeuverNode.directionsTags.Contains(hit.collider.gameObject.tag)) 
                     {
                         var direction = ManeuverNode.current.directions[hit.collider.gameObject.tag];
-                        ManeuverNode.current.AddVelocity(direction, .1f);
+                        ManeuverNode.current.AddVelocity(direction, .03f);
                         addingVelocity = true;
                     }
                     else {

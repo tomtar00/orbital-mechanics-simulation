@@ -6,6 +6,7 @@ using Sim.Math;
 namespace Sim.Maneuvers {
     public class ManeuverNode : MonoBehaviour
     {
+        public static bool isDraggingAny { get; private set; }
         public static ManeuverNode current { get; set; }
         public static List<string> directionsTags = new List<string> {
             "Prograde",  
@@ -92,6 +93,7 @@ namespace Sim.Maneuvers {
         public void OnStartDrag() {
             if(isDragging) return;
             isDragging = true;
+            isDraggingAny = true;
             LineButton.EnableAllLineButtons(false, lineButton);
             lineButton.line.startWidth *= orbitWidthOnDrag;
             lineButton.BakeMesh();
@@ -102,6 +104,7 @@ namespace Sim.Maneuvers {
         public void OnEndDrag() {
             if (!isDragging) return;
             isDragging = false;
+            isDraggingAny = false;
             LineButton.EnableAllLineButtons(true, lineButton);
             lineButton.line.startWidth /= orbitWidthOnDrag;
             lineButton.BakeMesh();

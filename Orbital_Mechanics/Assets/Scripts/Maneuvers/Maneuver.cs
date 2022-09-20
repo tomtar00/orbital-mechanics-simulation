@@ -22,8 +22,9 @@ namespace Sim.Maneuvers
         public Spacecraft spacecraft { get; set; }
 
         private Vector3 lastVelocity;
+        private float timeToOrbit;
 
-        public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors, ManeuverNode node, Maneuver lastManeuver) {
+        public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors, ManeuverNode node, Maneuver lastManeuver, float timeToOrbit) {
             this.orbit = orbit;
             this.drawer = drawer;
             this.stateVectors = startStateVectors;
@@ -31,6 +32,7 @@ namespace Sim.Maneuvers
             this.addedVelocity = Vector3.zero;
             this.spacecraft = Spacecraft.current;
             this.PreviousManeuver = lastManeuver;
+            this.timeToOrbit = timeToOrbit;
             
             UpdateOnDrag(this.stateVectors.position);
         }
@@ -61,14 +63,8 @@ namespace Sim.Maneuvers
             float meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
             currentMeanAnomaly = meanAnomaly;
 
-            float timeToOrbit = 0;
-            var maneuver = PreviousManeuver;
-            while(maneuver != null) {
-                timeToOrbit += maneuver.timeToManeuver;
-                maneuver = maneuver.PreviousManeuver;
-            }
-
-            return (meanAnomaly - orbit.elements.meanAnomaly) / orbit.elements.meanMotion + timeToOrbit;
+            float ma = PreviousManeuver == null ? Spacecraft.current.Kepler.orbit.elements.meanAnomaly : orbit.elements.meanAnomaly;
+            return (meanAnomaly - ma) / orbit.elements.meanMotion + timeToOrbit;
         }
         public float GetBurnTime() {
             return addedVelocity.magnitude / spacecraft.Thrust;

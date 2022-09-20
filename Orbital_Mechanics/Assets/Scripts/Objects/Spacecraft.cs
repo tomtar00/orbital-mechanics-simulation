@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Sim.Visuals;
 using Sim.Math;
+using Sim.Maneuvers;
 
 // encounter at
 // v = 0, 0, 7.7
@@ -12,6 +13,9 @@ namespace Sim.Objects
     public class Spacecraft : InOrbitObject
     {
         [Header("Spacecraft")]
+        [SerializeField] protected Transform model;
+        [SerializeField] protected Transform maneuverDirection;
+        [Space]
         [SerializeField] protected bool useCustomStartVelocity;
         [SerializeField]
         [DrawIf("useCustomStartVelocity", true, ComparisonType.Equals)] 
@@ -21,6 +25,8 @@ namespace Sim.Objects
         [Header("Controls")]
         [SerializeField] protected float rotationSpeed = 50;
         [SerializeField] protected float thrust;
+        [Space]
+        [SerializeField] bool autoManeuvers;
 
         public static Spacecraft current { get; private set;}
         public float Thrust { get => thrust; }
@@ -50,11 +56,9 @@ namespace Sim.Objects
             
             HandleControls();
             CheckCelestialInfluence();
-        }
 
-        private void OnValidate()
-        {
-            transform.position = centralBody.transform.position + startRelativePosition;
+            HandleManeuverDirection();
+            AutomateManeuvers();
         }
 
         private void InitializeShip()
@@ -91,17 +95,47 @@ namespace Sim.Objects
         {
             if (CameraController.Instance.focusingOnObject) {
                 if (Input.GetKey(KeyCode.A)){
-                    transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
+                    model.transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
                 } else if (Input.GetKey(KeyCode.D)) {
-                    transform.Rotate(-Vector3.up, rotationSpeed * Time.deltaTime);
+                    model.transform.Rotate(-Vector3.up, rotationSpeed * Time.deltaTime);
                 }
                 if (Input.GetKey(KeyCode.W)){
-                    transform.Rotate(Vector3.right, rotationSpeed * Time.deltaTime);
+                    model.transform.Rotate(Vector3.right, rotationSpeed * Time.deltaTime);
                 } else if (Input.GetKey(KeyCode.S)) {
-                    transform.Rotate(-Vector3.right, rotationSpeed * Time.deltaTime);
+                    model.transform.Rotate(-Vector3.right, rotationSpeed * Time.deltaTime);
                 }
                 if (Input.GetKey(KeyCode.Space)) {
-                    AddVelocity(transform.forward * thrust * Time.deltaTime);
+                    AddVelocity(model.transform.forward * thrust * Time.deltaTime);
+                }
+            }
+        }
+        private void HandleManeuverDirection() {
+            if (ManeuverManager.Instance.maneuvers.Count > 0) {
+                Maneuver next = ManeuverManager.Instance.NextManeuver;
+                if (next != null) {
+                    if (next.addedVelocity == Vector3.zero) return;
+                    if (!maneuverDirection.gameObject.activeSelf) {
+                        maneuverDirection.gameObject.SetActive(true);
+                    }
+                    maneuverDirection.rotation = Quaternion.LookRotation(next.addedVelocity);
+                }
+            }
+            else if (maneuverDirection.gameObject.activeSelf) {
+                maneuverDirection.gameObject.SetActive(false);
+            }
+        }
+        private void AutomateManeuvers() {
+            if (!autoManeuvers) return;
+
+            if (ManeuverManager.Instance.maneuvers.Count > 0) {
+                Maneuver next = ManeuverManager.Instance.NextManeuver;
+                Maneuver current = ManeuverManager.Instance.CurrentManeuver;
+                
+                if (current != null) {
+                    AddVelocity(model.transform.forward * thrust * Time.deltaTime);
+                }
+                else if (next != null) {
+                    model.rotation = Quaternion.RotateTowards(model.rotation, Quaternion.LookRotation(next.addedVelocity), rotationSpeed * Time.deltaTime);
                 }
             }
         }

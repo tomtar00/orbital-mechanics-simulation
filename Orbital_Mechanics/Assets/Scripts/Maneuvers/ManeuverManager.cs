@@ -21,6 +21,28 @@ namespace Sim.Maneuvers {
                     return null;
             }
         }
+        public Maneuver CurrentManeuver {
+            get {
+                if (maneuvers.Count > 0)
+                {
+                    var maneuver = maneuvers.OrderBy(m => m.timeToManeuver).First();
+                    float time = maneuver.timeToManeuver;
+                    float burn = maneuver.GetBurnTime();
+                    if (time < (burn / 2f)) {
+                        if (time > -(burn / 2f))
+                            return maneuver;
+                        else {
+                            if (!ManeuverNode.isDraggingAny)
+                                RemoveFirst();
+                            return null;
+                        }
+                    }
+                    else return null;
+                }
+                else 
+                    return null;
+            }
+        }
 
         public static ManeuverManager Instance;
         private void Awake() {
@@ -35,7 +57,7 @@ namespace Sim.Maneuvers {
             }
         }
 
-        public Maneuver CreateManeuver(Orbit currentOrbit, InOrbitObject inOrbitObject, Vector3 relativePressPosition) {
+        public Maneuver CreateManeuver(Orbit currentOrbit, InOrbitObject inOrbitObject, Vector3 relativePressPosition, float timeToOrbit) {
 
             Maneuver lastManeuver = maneuvers.Count > 0 ? maneuvers[maneuvers.Count - 1] : null;
             Orbit orbit = /* lastManeuver == null ? inOrbitObject.Kepler.orbit : */ currentOrbit;
@@ -55,7 +77,7 @@ namespace Sim.Maneuvers {
             StateVectors pressStateVectors = new StateVectors(relativePressPosition, relativePressVelocity);
 
             // create new maneuver
-            Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, node, lastManeuver);
+            Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, node, lastManeuver, timeToOrbit);
             maneuvers.Add(maneuver);
             node.maneuver = maneuver;
             if (lastManeuver != null) {
@@ -75,6 +97,12 @@ namespace Sim.Maneuvers {
             for (int i = maneuvers.Count - 1; i >= index; i--) {
                 maneuvers[i].Remove();
             }
+        }
+        public void RemoveFirst() {
+            if (maneuvers.Count > 0)
+                maneuvers[0].Remove();
+            else
+                Debug.LogWarning("Tried to remove maneuver from empty list");
         }
 
         private void OnGUI() 
