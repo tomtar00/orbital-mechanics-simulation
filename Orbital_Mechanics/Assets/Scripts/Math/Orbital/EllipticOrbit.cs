@@ -21,6 +21,7 @@ namespace Sim.Math
 
             elements.trueAnomalyConstant = MathLib.Sqrt((1 + elements.eccentricity).SafeDivision(1 - elements.eccentricity));
             elements.periodConstant = MathLib.Sqrt((MathLib.Pow(elements.semimajorAxis, 3) / GM));
+            elements.period = 2 * Mathf.PI * elements.periodConstant;
 
             return elements;
         }

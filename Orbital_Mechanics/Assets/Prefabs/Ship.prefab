@@ -292,6 +292,13 @@ MonoBehaviour:
   startRelativePosition: {x: 30, y: 0, z: 0}
   rotationSpeed: 250
   thrust: 0.1
+  autoManeuvers: 0
+  maneuverSuccessMat: {fileID: 2100000, guid: dde2043135954444ca887e2d4d5d0143, type: 2}
+  maneuverFailMat: {fileID: 2100000, guid: aba251bab80144840928aef4889284f4, type: 2}
+  maneuverSuccessAngle: 5
+  arrowMeshRenderers:
+  - {fileID: 4749168941381657771}
+  - {fileID: 4194339930323367775}
 --- !u!1 &7396680545637218813
 GameObject:
   m_ObjectHideFlags: 0

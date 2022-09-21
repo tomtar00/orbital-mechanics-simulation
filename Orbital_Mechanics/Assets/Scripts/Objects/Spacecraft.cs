@@ -27,6 +27,10 @@ namespace Sim.Objects
         [SerializeField] protected float thrust;
         [Space]
         [SerializeField] bool autoManeuvers;
+        [SerializeField] Material maneuverSuccessMat;
+        [SerializeField] Material maneuverFailMat;
+        [SerializeField] float maneuverSuccessAngle = 5f;
+        [SerializeField] private MeshRenderer[] arrowMeshRenderers;
 
         public static Spacecraft current { get; private set;}
         public float Thrust { get => thrust; }
@@ -118,6 +122,14 @@ namespace Sim.Objects
                         maneuverDirection.gameObject.SetActive(true);
                     }
                     maneuverDirection.rotation = Quaternion.LookRotation(next.addedVelocity);
+                    if (Vector3.Angle(model.transform.forward, next.addedVelocity) < maneuverSuccessAngle) {
+                        foreach(var mesh in arrowMeshRenderers)
+                            mesh.material = maneuverSuccessMat;
+                    }
+                    else {
+                        foreach(var mesh in arrowMeshRenderers)
+                            mesh.material = maneuverFailMat;
+                    }
                 }
             }
             else if (maneuverDirection.gameObject.activeSelf) {

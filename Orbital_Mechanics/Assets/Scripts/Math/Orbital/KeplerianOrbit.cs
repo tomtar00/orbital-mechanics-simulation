@@ -152,6 +152,7 @@ namespace Sim.Math
         public float meanMotion;
         public float semiLatusRectum;
         public float timeToPeriapsis;
+        public float period;
 
         public float trueAnomalyConstant;
         public float periodConstant;

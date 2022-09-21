@@ -153,6 +153,9 @@ namespace Sim.Visuals
                     ManeuverManager.Instance.CreateManeuver(orbit, inOrbitObject, pressRelativePosition, timePassed);
                     hasManeuver = true;
                 }
+                else {
+                    Debug.LogWarning("This orbit drawer already has a maneuver");
+                }
             };
 
             // loop if no gravity change reported

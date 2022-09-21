@@ -64,7 +64,11 @@ namespace Sim.Maneuvers
             currentMeanAnomaly = meanAnomaly;
 
             float ma = PreviousManeuver == null ? Spacecraft.current.Kepler.orbit.elements.meanAnomaly : orbit.elements.meanAnomaly;
-            return (meanAnomaly - ma) / orbit.elements.meanMotion + timeToOrbit;
+            float time = (meanAnomaly - ma) / orbit.elements.meanMotion + timeToOrbit;
+            Debug.Log("to orbit: " + timeToOrbit + " on orbit: " + (time - timeToOrbit));
+            Debug.Log("curr: " + currentMeanAnomaly + " ma: " + ma + " tr: " + trueAnomaly);
+            if (time < 0) time += orbit.elements.period;
+            return time;
         }
         public float GetBurnTime() {
             return addedVelocity.magnitude / spacecraft.Thrust;
