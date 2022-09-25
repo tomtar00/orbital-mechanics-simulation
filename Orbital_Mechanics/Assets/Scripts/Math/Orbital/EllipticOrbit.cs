@@ -14,7 +14,7 @@ namespace Sim.Math
             float sqrt = MathLib.Sqrt((1 - elements.eccentricity).SafeDivision(1 + elements.eccentricity));
             elements.anomaly = 2 * MathLib.Atan(sqrt * MathLib.Tan(elements.trueAnomaly / 2));
             elements.meanAnomaly = elements.anomaly - elements.eccentricity * MathLib.Sin(elements.anomaly);
-
+            
             elements.semiminorAxis = elements.semimajorAxis * MathLib.Sqrt(1 - elements.eccentricity * elements.eccentricity);
             elements.meanMotion = MathLib.Sqrt((GM).SafeDivision(MathLib.Pow(elements.semimajorAxis, 3)));
             elements.semiLatusRectum = elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity);
@@ -22,6 +22,9 @@ namespace Sim.Math
             elements.trueAnomalyConstant = MathLib.Sqrt((1 + elements.eccentricity).SafeDivision(1 - elements.eccentricity));
             elements.periodConstant = MathLib.Sqrt((MathLib.Pow(elements.semimajorAxis, 3) / GM));
             elements.period = 2 * Mathf.PI * elements.periodConstant;
+
+            // elements.anomaly = CalculateAnomalyFromTrueAnomaly(elements.trueAnomaly);
+            // elements.meanAnomaly = CalculateMeanAnomalyFromAnomaly(elements.anomaly);
 
             return elements;
         }
@@ -67,21 +70,23 @@ namespace Sim.Math
         {
             float meanAnomaly = elements.meanAnomaly;
             meanAnomaly += elements.meanMotion * time;
-            if (meanAnomaly > PI2) meanAnomaly -= PI2;
+            meanAnomaly = NumericExtensions.FitBetween0And2PI(meanAnomaly);
             return meanAnomaly;
         }
         public override float CalculateMeanAnomalyFromAnomaly(float anomaly) {
-            return anomaly - elements.eccentricity * MathLib.Sin(anomaly);
+            float meanAnomaly = anomaly - elements.eccentricity * MathLib.Sin(anomaly);
+            meanAnomaly = NumericExtensions.FitBetween0And2PI(meanAnomaly);
+            return meanAnomaly;
         }
         public override float CalculateTrueAnomaly(float eccentricAnomaly)
         {
             float trueAnomaly = 2f * MathLib.Atan(elements.trueAnomalyConstant * MathLib.Tan(eccentricAnomaly / 2f));
-            if (trueAnomaly < 0) trueAnomaly += 2f * MathLib.PI;
+            trueAnomaly = NumericExtensions.FitBetween0And2PI(trueAnomaly);
             return trueAnomaly;
         }
         public override float CalculateAnomalyFromTrueAnomaly(float trueAnomaly) {
             float anomaly = 2f * MathLib.Atan(MathLib.Tan(trueAnomaly / 2f) / elements.trueAnomalyConstant);
-            if (anomaly < 0) anomaly += 2f * MathLib.PI;
+            anomaly = NumericExtensions.FitBetween0And2PI(anomaly);
             return anomaly;
         }
 

@@ -27,7 +27,7 @@ namespace Sim.Maneuvers {
                 {
                     var maneuver = maneuvers.OrderBy(m => m.timeToManeuver).First();
                     float time = maneuver.timeToManeuver;
-                    float burn = maneuver.GetBurnTime();
+                    float burn = maneuver.burnTime;
                     if (time < (burn / 2f)) {
                         if (time > -(burn / 2f))
                             return maneuver;
@@ -57,13 +57,13 @@ namespace Sim.Maneuvers {
             }
         }
 
-        public Maneuver CreateManeuver(Orbit currentOrbit, InOrbitObject inOrbitObject, Vector3 relativePressPosition, float timeToOrbit) {
+        public Maneuver CreateManeuver(Orbit currentOrbit, InOrbitObject inOrbitObject, Vector3 relativePressPosition, float timeToOrbit, int futureOrbitIdx) {
 
             Maneuver lastManeuver = maneuvers.Count > 0 ? maneuvers[maneuvers.Count - 1] : null;
-            Orbit orbit = /* lastManeuver == null ? inOrbitObject.Kepler.orbit : */ currentOrbit;
-            if (inOrbitObject != null) {
-                orbit.elements.meanAnomaly = inOrbitObject.Kepler.orbit.elements.meanAnomaly;
-            }
+            Orbit orbit = inOrbitObject != null && futureOrbitIdx == 0 ? inOrbitObject.Kepler.orbit : currentOrbit;
+            // if (inOrbitObject != null) {
+            //     orbit.elements.meanAnomaly = inOrbitObject.Kepler.orbit.elements.meanAnomaly;
+            // }
 
             // create prefab
             GameObject maneuverObj = Instantiate(maneuverPrefab, maneuverHolder);
@@ -113,7 +113,7 @@ namespace Sim.Maneuvers {
 
             foreach (var maneuver in maneuvers)
             {
-                GUI.Label(new Rect(10, startHeight + space * i, 300, 20), $"Maneuver {i++}: {maneuver.timeToManeuver} Burn: {maneuver.GetBurnTime()}");
+                GUI.Label(new Rect(10, startHeight + space * i, 300, 20), $"Maneuver {i++}: {maneuver.timeToManeuver} Burn: {maneuver.burnTime}");
             }
             i++;
             Maneuver next = NextManeuver;

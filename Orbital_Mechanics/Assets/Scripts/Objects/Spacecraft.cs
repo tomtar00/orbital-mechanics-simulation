@@ -146,7 +146,7 @@ namespace Sim.Objects
                 if (current != null) {
                     AddVelocity(model.transform.forward * thrust * Time.deltaTime);
                 }
-                else if (next != null) {
+                else if (next != null && next.addedVelocity != Vector3.zero) {
                     model.rotation = Quaternion.RotateTowards(model.rotation, Quaternion.LookRotation(next.addedVelocity), rotationSpeed * Time.deltaTime);
                 }
             }

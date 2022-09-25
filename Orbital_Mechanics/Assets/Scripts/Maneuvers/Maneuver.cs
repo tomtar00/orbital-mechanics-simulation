@@ -13,7 +13,7 @@ namespace Sim.Maneuvers
         public Vector3 addedVelocity { get; private set; }
         public float currentTrueAnomaly { get; private set; }
         public float timeToManeuver { get; private set; }
-        public float currentMeanAnomaly { get; private set; }
+        public float burnTime { get; private set; }
 
         public Maneuver PreviousManeuver { get; set; }
         public OrbitDrawer PreviousDrawer { get; set; }
@@ -53,6 +53,10 @@ namespace Sim.Maneuvers
             timeToManeuver -= Time.deltaTime;
             if (!Node.isDragging)
                 Node.gameObject.transform.position = stateVectors.position + orbit.centralBody.transform.position;
+
+            if (timeToManeuver < burnTime * 3 && Time.timeScale != 1) {
+                HUDController.Instance.SetTimeScaleToOne();
+            }
         }
 
         public float GetTrueAnomaly(Vector3 relativePressPosition) {
@@ -61,16 +65,17 @@ namespace Sim.Maneuvers
         public float GetTimeToManeuver(float trueAnomaly) {
             float anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);
             float meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
-            currentMeanAnomaly = meanAnomaly;
 
-            float ma = PreviousManeuver == null ? Spacecraft.current.Kepler.orbit.elements.meanAnomaly : orbit.elements.meanAnomaly;
-            float time = (meanAnomaly - ma) / orbit.elements.meanMotion + timeToOrbit;
-            Debug.Log("to orbit: " + timeToOrbit + " on orbit: " + (time - timeToOrbit));
-            Debug.Log("curr: " + currentMeanAnomaly + " ma: " + ma + " tr: " + trueAnomaly);
+            float enterMeanAnomaly = orbit.elements.meanAnomaly;
+            // if (enterMeanAnomaly > meanAnomaly) enterMeanAnomaly -= 2f * Mathf.PI;
+            float time = Mathf.Abs(meanAnomaly - enterMeanAnomaly) / orbit.elements.meanMotion + timeToOrbit;
+
+            Debug.Log("mean: " + meanAnomaly + " enter: " + enterMeanAnomaly);
+
             if (time < 0) time += orbit.elements.period;
             return time;
         }
-        public float GetBurnTime() {
+        private float GetBurnTime() {
             return addedVelocity.magnitude / spacecraft.Thrust;
         }
         public void RotateNode(Vector3 orbitPosition) {
@@ -82,6 +87,8 @@ namespace Sim.Maneuvers
             StateVectors newVectors = new StateVectors(stateVectors.position, stateVectors.velocity + addedVelocity);
 
             drawer.DrawOrbits(newVectors, orbit.centralBody, timeToManeuver);
+
+            burnTime = GetBurnTime();
         }
         public void ChangePosition(Vector3 newPosition) {
             Node.gameObject.transform.position = newPosition + orbit.centralBody.transform.position;

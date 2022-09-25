@@ -150,7 +150,7 @@ namespace Sim.Visuals
             lineButton.onLinePressed += (worldPos) => {
                 if (!hasManeuver) {
                     var pressRelativePosition = worldPos - currentCelestial.transform.position;
-                    ManeuverManager.Instance.CreateManeuver(orbit, inOrbitObject, pressRelativePosition, timePassed);
+                    ManeuverManager.Instance.CreateManeuver(orbit, inOrbitObject, pressRelativePosition, timePassed, lineIdx);
                     hasManeuver = true;
                 }
                 else {
