@@ -6,12 +6,16 @@ namespace Sim.Math
 {
     public class KeplerianOrbit
     {
-        public const float G = 6.67f / 100f;
+        public static float G { get; private set; }
 
         public Orbit orbit { get; set; }
         public OrbitType orbitType { get; set; } = OrbitType.NONE;
 
-        public KeplerianOrbit(Celestial centralBody) {}
+        public KeplerianOrbit() {
+            G = SimulationSettings.Instance.G;
+        }
+
+        private (float, float, float) mat;
 
         public void CheckOrbitType(StateVectors stateVectors, Celestial centralBody)
         {
@@ -75,16 +79,12 @@ namespace Sim.Math
 
         public (float, float, float) UpdateAnomalies(float time)
         {
-            (float, float, float) mat = orbit.GetFutureAnomalies(time);
+            mat = orbit.GetFutureAnomalies(time);
             orbit.elements.meanAnomaly = mat.Item1;
             orbit.elements.anomaly = mat.Item2;
             orbit.elements.trueAnomaly = mat.Item3;
 
-            return (
-                orbit.elements.meanAnomaly,
-                orbit.elements.anomaly,
-                orbit.elements.trueAnomaly
-            );
+            return mat;
         }
         public StateVectors UpdateStateVectors(float trueAnomaly)
         {
@@ -144,6 +144,8 @@ namespace Sim.Math
         public float lonAscNode;
         public float argPeriapsis;
         public float trueAnomaly;
+
+        [Space]
 
         public float meanAnomaly;
         public float anomaly;

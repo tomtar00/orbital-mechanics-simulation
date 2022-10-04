@@ -32,8 +32,10 @@ namespace Sim.Maneuvers {
                         if (time > -(burn / 2f))
                             return maneuver;
                         else {
-                            if (!ManeuverNode.isDraggingAny)
+                            if (!ManeuverNode.isDraggingAny) {
                                 RemoveFirst();
+                                HUDController.Instance.SetTimeScaleToPrevious();
+                            }
                             return null;
                         }
                     }
@@ -77,7 +79,7 @@ namespace Sim.Maneuvers {
             StateVectors pressStateVectors = new StateVectors(relativePressPosition, relativePressVelocity);
 
             // create new maneuver
-            Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, node, lastManeuver, timeToOrbit);
+            Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, node, lastManeuver, timeToOrbit, futureOrbitIdx);
             maneuvers.Add(maneuver);
             node.maneuver = maneuver;
             if (lastManeuver != null) {
@@ -107,7 +109,7 @@ namespace Sim.Maneuvers {
 
         private void OnGUI() 
         {
-            float startHeight = 300;
+            float startHeight = Screen.height - 300;
             float space = 20;
             int i = 0;
 

@@ -114,10 +114,15 @@ namespace Sim.Visuals
                 Celestial nextCelestial;
                 StateVectors gravityChangePoint = DrawOrbit(stateVectors, i, currentCelestial, timePassed, out nextCelestial, out timeToGravityChange);
                 line.colorGradient = CreateLineGradient(i);
+
+                if (!isManeuver && i == 0) {
+                    Spacecraft.current.timeToNextGravityChange = timeToGravityChange;
+                }
+
                 if (gravityChangePoint == null || nextCelestial == null) {
                     TurnOffRenderersFrom(i + 1);
                     return;
-                }
+                }     
                 
                 stateVectors = gravityChangePoint;
                 currentCelestial = nextCelestial;

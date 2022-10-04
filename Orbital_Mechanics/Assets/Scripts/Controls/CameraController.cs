@@ -49,6 +49,7 @@ public class CameraController : MonoBehaviour
     private void Start() {
         targetDistance = distance;
         cam = GetComponent<Camera>();
+        FocusOnShip();
     }
     private void Update()
     {

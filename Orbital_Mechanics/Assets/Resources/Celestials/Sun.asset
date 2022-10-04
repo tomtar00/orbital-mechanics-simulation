@@ -13,11 +13,22 @@ MonoBehaviour:
   m_Name: Sun
   m_EditorClassIdentifier: 
   mass: 200
-  radius: 2
+  radius: 8
   orbit:
     semimajorAxis: 0
     eccentricity: 0
     inclination: 0
     lonAscNode: 0
     argPeriapsis: 0
+    trueAnomaly: 0
     meanAnomaly: 0
+    anomaly: 0
+    semiminorAxis: 0
+    meanMotion: 0
+    semiLatusRectum: 0
+    timeToPeriapsis: 0
+    period: 0
+    trueAnomalyConstant: 0
+    periodConstant: 0
+    angMomentum: {x: 0, y: 0, z: 0}
+    eccVec: {x: 0, y: 0, z: 0}

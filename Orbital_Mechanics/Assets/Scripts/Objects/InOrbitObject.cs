@@ -27,12 +27,15 @@ namespace Sim.Objects
         protected Vector3 relativePosition;
         public Vector3 RelativePosition { get => relativePosition; }
 
+        (float, float, float) mat;
+        StateVectors stateVectors;
+
         protected void Awake()
         {
             orbitDrawer = GetComponent<OrbitDrawer>();
             if (!isStationary)
             {
-                kepler = new KeplerianOrbit(centralBody);
+                kepler = new KeplerianOrbit();
             }
         }
 
@@ -52,8 +55,8 @@ namespace Sim.Objects
 
         protected void MoveAlongOrbit()
         {
-            (float, float, float) mat = kepler.UpdateAnomalies(Time.deltaTime);
-            StateVectors stateVectors = kepler.UpdateStateVectors(mat.Item3);
+            mat = kepler.UpdateAnomalies(Time.deltaTime);
+            stateVectors = kepler.UpdateStateVectors(mat.Item3);
             kepler.UpdateTimeToPeriapsis();
 
             relativePosition = stateVectors.position;

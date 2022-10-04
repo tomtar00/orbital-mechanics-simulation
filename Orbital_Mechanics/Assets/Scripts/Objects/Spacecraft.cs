@@ -1,11 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Threading;
+using UnityEngine;
 using Sim.Visuals;
 using Sim.Math;
 using Sim.Maneuvers;
-
-// encounter at
-// v = 0, 0, 7.7
-// r = 30, 0, 0
 
 namespace Sim.Objects
 {
@@ -26,14 +23,23 @@ namespace Sim.Objects
         [SerializeField] protected float rotationSpeed = 50;
         [SerializeField] protected float thrust;
         [Space]
-        [SerializeField] bool autoManeuvers;
-        [SerializeField] Material maneuverSuccessMat;
-        [SerializeField] Material maneuverFailMat;
-        [SerializeField] float maneuverSuccessAngle = 5f;
+        [SerializeField] private bool autoManeuvers;
+        [SerializeField] private Material maneuverSuccessMat;
+        [SerializeField] private Material maneuverFailMat;
+        [SerializeField] private float maneuverSuccessAngle = 5f;
         [SerializeField] private MeshRenderer[] arrowMeshRenderers;
 
-        public static Spacecraft current { get; private set;}
+        [Header("Scale")]
+        [SerializeField] private float scaleMultiplier = .1f;
+        [SerializeField] private float minScale = .2f;
+        [SerializeField] private float maxScale = 10f;
+
+        public static Spacecraft current { get; private set; }
+        public float timeSinceVelocityChanged { get; private set; }
+        public float timeToNextGravityChange { get; set; }
+        public float timeSinceGravityChange { get; set; }
         public float Thrust { get => thrust; }
+        public bool AutoManeuvers { set => autoManeuvers = value; }
 
         private bool canUpdateOrbit = true;
 
@@ -54,15 +60,25 @@ namespace Sim.Objects
 
         private new void Update()
         {
+            timeSinceVelocityChanged += Time.deltaTime;
+            timeToNextGravityChange -= Time.deltaTime;
+            timeSinceGravityChange += Time.deltaTime;
+            
             base.Update();
 
             UpdateOrbitRenderer();
             
             HandleControls();
+            CheckWillSoonEnterExitInfluence();
             CheckCelestialInfluence();
 
             HandleManeuverDirection();
             AutomateManeuvers();
+
+            gameObject.transform.localScale = NumericExtensions.ScaleWithDistance(
+                gameObject.transform.position, CameraController.Instance.cam.transform.position,
+                scaleMultiplier, minScale, maxScale
+            );
         }
 
         private void InitializeShip()
@@ -77,7 +93,6 @@ namespace Sim.Objects
                 AddVelocity(velDirection * CircularOrbitSpeed());
             }
         }
-
         private float CircularOrbitSpeed()
         {
             return MathLib.Sqrt(KeplerianOrbit.G * centralBody.Data.Mass / relativePosition.magnitude);
@@ -85,6 +100,7 @@ namespace Sim.Objects
 
         private void AddVelocity(Vector3 d_vel)
         {
+            timeSinceVelocityChanged = 0;
             Vector3 newVelocity = this.velocity + d_vel;
 
             StateVectors stateVectors = new StateVectors(relativePosition, newVelocity);
@@ -155,7 +171,7 @@ namespace Sim.Objects
         {
             if (centralBody == null) return;
 
-            if (relativePosition.sqrMagnitude - centralBody.InfluenceRadius * centralBody.InfluenceRadius > 0) // FIXME: change 0 to something else
+            if (relativePosition.sqrMagnitude - centralBody.InfluenceRadius * centralBody.InfluenceRadius > 0) // .5f
             {
                 ExitCelestialInfluence();
             }
@@ -163,7 +179,7 @@ namespace Sim.Objects
             {
                 foreach (var orbitingCelestial in centralBody.celestialsOnOrbit)
                 {
-                    if ((transform.position - orbitingCelestial.transform.position).sqrMagnitude - orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius < -0.5f)
+                    if ((transform.position - orbitingCelestial.transform.position).sqrMagnitude - orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius < 0) // -.5f
                     {
                         EnterCelestialInfluence(orbitingCelestial);
                         break;
@@ -185,6 +201,8 @@ namespace Sim.Objects
                 UpdateRelativePosition();
                 AddVelocity(previousCentralBodyVelocity);
             }
+
+            timeSinceGravityChange = 0;
         }
         private void EnterCelestialInfluence(Celestial celestial)
         {
@@ -193,6 +211,8 @@ namespace Sim.Objects
 
             UpdateRelativePosition();
             AddVelocity(-centralBody.Velocity);
+
+            timeSinceGravityChange = 0;
 
             //Debug.Log($"Entering {celestial.name} with vectors: R = {relativePosition}, V = {velocity - centralBody.Velocity}");
         }
@@ -208,6 +228,14 @@ namespace Sim.Objects
             }
             else canUpdateOrbit = true;
         }
+        private void CheckWillSoonEnterExitInfluence() {
+            if (timeToNextGravityChange < SimulationSettings.Instance.influenceChangeTimeSlowdownOffset && timeToNextGravityChange > 0) {
+                HUDController.Instance.SetTimeScaleToDefault();
+            }
+            else if (timeSinceGravityChange > SimulationSettings.Instance.influenceChangeTimeSlowdownOffset) {
+                HUDController.Instance.SetTimeScaleToPrevious();
+            }
+        }
 
         private void OnGUI()
         {
@@ -216,6 +244,7 @@ namespace Sim.Objects
             int i = 0;
 
             OrbitElements elements = this.kepler.orbit.elements;
+            string timeToGravityChange = (timeToNextGravityChange > 0) ? timeToNextGravityChange+"" : "Inf";
 
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Semimajor Axis: {elements.semimajorAxis}");
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Eccentricity: {elements.eccentricity}");
@@ -229,6 +258,9 @@ namespace Sim.Objects
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Anomaly:        {elements.anomaly}");
             i++;
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time to periapsis: {elements.timeToPeriapsis}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time since velocity changed: {timeSinceVelocityChanged}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time to next gravity change: {timeToGravityChange}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time since gravity changed: {timeSinceGravityChange}");
         }
 
     }

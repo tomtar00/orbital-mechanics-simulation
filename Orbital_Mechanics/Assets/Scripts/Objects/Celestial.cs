@@ -7,7 +7,7 @@ namespace Sim.Objects
 {
     public class Celestial : InOrbitObject
     {
-        public const float GRAVITY_FALLOFF = 0.005f * KeplerianOrbit.G;
+        public const float GRAVITY_FALLOFF_MULTIPLIER = 0.005f;
 
         [Header("Celestial")]
         [SerializeField] protected CelestialSO data;
@@ -24,6 +24,8 @@ namespace Sim.Objects
 
         private new void Awake()
         {
+            float GRAVITY_FALLOFF = GRAVITY_FALLOFF_MULTIPLIER * SimulationSettings.Instance.G;
+
             base.Awake();
 
             if (infiniteInfluence) influenceRadius = float.MaxValue;

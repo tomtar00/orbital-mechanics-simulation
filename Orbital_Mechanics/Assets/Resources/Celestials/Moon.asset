@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
   m_Name: Moon
   m_EditorClassIdentifier: 
-  mass: 0.05
-  radius: 0.5
+  mass: 0.01
+  radius: 0.2
   orbit:
-    semimajorAxis: 7
-    eccentricity: 0
-    inclination: 1.5707964
+    semimajorAxis: 9
+    eccentricity: 0.0549
+    inclination: 1.57
     lonAscNode: 0
     argPeriapsis: 0
     trueAnomaly: 1.57
@@ -27,6 +27,7 @@ MonoBehaviour:
     meanMotion: 0
     semiLatusRectum: 0
     timeToPeriapsis: 0
+    period: 0
     trueAnomalyConstant: 0
     periodConstant: 0
     angMomentum: {x: 0, y: 0, z: 0}

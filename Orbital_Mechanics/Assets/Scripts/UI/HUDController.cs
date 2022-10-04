@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using TMPro;
 using Sim.Maneuvers;
+using Sim.Objects;
 
 public class HUDController : MonoBehaviour
 {
@@ -11,7 +12,9 @@ public class HUDController : MonoBehaviour
     [SerializeField] private int currentTimeScaleIdx = 2;
     [Header("Maneuver")]
     [SerializeField] private Button removeManeuver;
-    public Button RemoveManeuver { get => removeManeuver; }
+
+    public Button RemoveManeuverBtn { get => removeManeuver; }
+    public bool blockTimeChange { get; private set; } = false;
 
     private int previousTimeScaleIdx = 1;
 
@@ -23,31 +26,34 @@ public class HUDController : MonoBehaviour
     }
 
     private void UpdateTimeScaleText() {
+        Time.timeScale = timeScales[currentTimeScaleIdx];
         timeScaleText.text = "x" + Time.timeScale;
     }
 
     public void IncreaseTimeScale() {
+        if (blockTimeChange) return;
         previousTimeScaleIdx = currentTimeScaleIdx;
         if (++currentTimeScaleIdx >= timeScales.Length) currentTimeScaleIdx = timeScales.Length - 1;
-        Time.timeScale = timeScales[currentTimeScaleIdx];
         UpdateTimeScaleText();
     }
     public void DecreaseTimeScale() {
+        if (blockTimeChange) return;
         previousTimeScaleIdx = currentTimeScaleIdx;
         if (--currentTimeScaleIdx < 0) currentTimeScaleIdx = 0;
-        Time.timeScale = timeScales[currentTimeScaleIdx];
         UpdateTimeScaleText();
     }
 
-    public void SetTimeScaleToOne() {
+    public void SetTimeScaleToDefault() {
+        if (blockTimeChange) return;
         currentTimeScaleIdx = 2;
-        Time.timeScale = timeScales[currentTimeScaleIdx];
         UpdateTimeScaleText();
+        blockTimeChange = true;
     }
     public void SetTimeScaleToPrevious() {
+        if (!blockTimeChange) return;
         currentTimeScaleIdx = previousTimeScaleIdx;
-        Time.timeScale = timeScales[currentTimeScaleIdx];
         UpdateTimeScaleText();
+        blockTimeChange = false;
     }
 
     public void ChangeFocus() {
@@ -56,5 +62,9 @@ public class HUDController : MonoBehaviour
 
     public void RemoveCurrentManeuver() {
         ManeuverManager.Instance.RemoveManeuvers(ManeuverNode.current.maneuver);
+    }
+
+    public void HandleAutoManeuversValueChange(bool isOn) {
+        Spacecraft.current.AutoManeuvers = isOn;
     }
 }

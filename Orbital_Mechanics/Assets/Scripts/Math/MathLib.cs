@@ -87,15 +87,15 @@ namespace Sim.Math
 
         public static float Sin(float x)
         {
-            return EnsureFunctionConditions(Mathf.Sin, x);
+            return EnsureFunctionConditions((a) => Mathf.Sin(a), x);
         }
         public static float Cos(float x)
         {
-            return EnsureFunctionConditions(Mathf.Cos, x);
+            return EnsureFunctionConditions((a) => Mathf.Cos(a), x);
         }
         public static float Tan(float x)
         {
-            return EnsureFunctionConditions(Mathf.Tan, x);
+            return EnsureFunctionConditions((a) => Mathf.Tan(a), x);
         }
         public static double Sinh(float x)
         {
@@ -112,42 +112,40 @@ namespace Sim.Math
 
         public static float Asin(float x)
         {
-            return EnsureFunctionConditions(Mathf.Asin, x, true, -1f, 1f);
+            return EnsureFunctionConditions((a) => Mathf.Asin(a), x, true, -1f, 1f);
         }
         public static float Acos(float x)
         {
-            return EnsureFunctionConditions(Mathf.Acos, x, true, -1f, 1f);
+            return EnsureFunctionConditions((a) => Mathf.Acos(a), x, true, -1f, 1f);
         }
         public static float Atan(float x)
         {
-            return EnsureFunctionConditions(Mathf.Atan, x);
+            return EnsureFunctionConditions((a) => Mathf.Atan(a), x);
         }
         public static float Atan2(float y, float x)
         {
-            return EnsureFunctionConditions2(Mathf.Atan2, y, x);
+            return EnsureFunctionConditions2((a, b) => Mathf.Atan2(a, b), y, x);
         }
         public static float Atanh(float x)
         {
-            Func<float, float> Atanh = (float a) => (Mathf.Log(1 + a) - Mathf.Log(1 - a)) / 2;
-            return EnsureFunctionConditions(Atanh, x, true, -.99f, .99f);
+            return EnsureFunctionConditions((a) => (Mathf.Log(1 + a) - Mathf.Log(1 - a)) / 2, x, true, -.99f, .99f);
         }
         public static float Asinh(float x)
         {
-            Func<float, float> Asinh = (float a) => Mathf.Log(a + Mathf.Sqrt(a * a + 1));
-            return EnsureFunctionConditions(Asinh, x, true);
+            return EnsureFunctionConditions((a) => Mathf.Log(a + Mathf.Sqrt(a * a + 1)), x, true);
         }
 
         public static float Sqrt(float x)
         {
-            return EnsureFunctionConditions(Mathf.Sqrt, x, true, 0);
+            return EnsureFunctionConditions((a) => Mathf.Sqrt(a), x, true, 0);
         }
         public static float Pow(float x, float y)
         {
-            return EnsureFunctionConditions2(Mathf.Pow, x, y);
+            return EnsureFunctionConditions2((a, b) => Mathf.Pow(a, b), x, y);
         }
         public static float Abs(float x)
         {
-            return EnsureFunctionConditions(Mathf.Abs, x);
+            return EnsureFunctionConditions((a) => Mathf.Abs(a), x);
         }
 
     }

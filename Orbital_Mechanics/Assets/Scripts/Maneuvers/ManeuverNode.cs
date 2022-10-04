@@ -74,7 +74,7 @@ namespace Sim.Maneuvers {
         public void OnSelect() {
             if (selected) return;
 
-            HUDController.Instance.RemoveManeuver.gameObject.SetActive(true);
+            HUDController.Instance.RemoveManeuverBtn.gameObject.SetActive(true);
             current = this;
             selected = true;
 
@@ -88,7 +88,7 @@ namespace Sim.Maneuvers {
             selected = false;
             current = null;
 
-            HUDController.Instance.RemoveManeuver.gameObject.SetActive(false);
+            HUDController.Instance.RemoveManeuverBtn.gameObject.SetActive(false);
         }
         public void OnStartDrag() {
             if(isDragging) return;

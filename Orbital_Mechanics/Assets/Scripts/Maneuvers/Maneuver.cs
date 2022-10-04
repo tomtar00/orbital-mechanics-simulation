@@ -24,7 +24,7 @@ namespace Sim.Maneuvers
         private Vector3 lastVelocity;
         private float timeToOrbit;
 
-        public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors, ManeuverNode node, Maneuver lastManeuver, float timeToOrbit) {
+        public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors, ManeuverNode node, Maneuver lastManeuver, float timeToOrbit, int orbitIdx) {
             this.orbit = orbit;
             this.drawer = drawer;
             this.stateVectors = startStateVectors;
@@ -33,6 +33,8 @@ namespace Sim.Maneuvers
             this.spacecraft = Spacecraft.current;
             this.PreviousManeuver = lastManeuver;
             this.timeToOrbit = timeToOrbit;
+
+            this.PreviousManeuver?.drawer.TurnOffRenderersFrom(orbitIdx + 1);
             
             UpdateOnDrag(this.stateVectors.position);
         }
@@ -51,11 +53,12 @@ namespace Sim.Maneuvers
 
         public void Update() {
             timeToManeuver -= Time.deltaTime;
-            if (!Node.isDragging)
+            if (!Node.isDragging) {
                 Node.gameObject.transform.position = stateVectors.position + orbit.centralBody.transform.position;
 
-            if (timeToManeuver < burnTime * 3 && Time.timeScale != 1) {
-                HUDController.Instance.SetTimeScaleToOne();
+                if (timeToManeuver < SimulationSettings.Instance.maneuverTimeSlowdownOffset && Time.timeScale != 1) {
+                    HUDController.Instance.SetTimeScaleToDefault();
+                }
             }
         }
 
@@ -66,13 +69,16 @@ namespace Sim.Maneuvers
             float anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);
             float meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
 
-            float enterMeanAnomaly = orbit.elements.meanAnomaly;
-            // if (enterMeanAnomaly > meanAnomaly) enterMeanAnomaly -= 2f * Mathf.PI;
-            float time = Mathf.Abs(meanAnomaly - enterMeanAnomaly) / orbit.elements.meanMotion + timeToOrbit;
+            float enterMeanAnomaly = NumericExtensions.FitBetween0And2PI(orbit.elements.meanAnomaly);
+            float timeOnCurrentOrbit = PreviousManeuver == null ? Spacecraft.current.timeSinceVelocityChanged : 0f;
+            float currentTimeToOrbit = Mathf.Max(timeToOrbit - timeOnCurrentOrbit, 0f); 
+            
+            if (enterMeanAnomaly > meanAnomaly) enterMeanAnomaly -= Mathf.PI * 2f;
+            float time = ((meanAnomaly - enterMeanAnomaly) / orbit.elements.meanMotion) + currentTimeToOrbit;
 
-            Debug.Log("mean: " + meanAnomaly + " enter: " + enterMeanAnomaly);
-
-            if (time < 0) time += orbit.elements.period;
+            if (time < 0) {
+                time += orbit.elements.period;
+            }
             return time;
         }
         private float GetBurnTime() {

@@ -95,8 +95,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93168a3fca1644e4290aff80cd9855a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  orbitResolution: 200
-  depth: 2
+  lineWidth: 3
+  orbitResolution: 150
+  depth: 5
   isManeuver: 1
 --- !u!114 &2049871487047241561
 MonoBehaviour:
