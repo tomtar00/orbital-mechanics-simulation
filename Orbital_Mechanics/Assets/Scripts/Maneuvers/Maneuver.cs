@@ -13,6 +13,7 @@ namespace Sim.Maneuvers
         public Vector3 addedVelocity { get; private set; }
         public float currentTrueAnomaly { get; private set; }
         public float timeToManeuver { get; private set; }
+        public float fixedTimeToManeuver { get; private set; } = -1f;
         public float burnTime { get; private set; }
 
         public Maneuver PreviousManeuver { get; set; }
@@ -23,6 +24,7 @@ namespace Sim.Maneuvers
 
         private Vector3 lastVelocity;
         private float timeToOrbit;
+        private int orbitIdx;
 
         public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors, ManeuverNode node, Maneuver lastManeuver, float timeToOrbit, int orbitIdx) {
             this.orbit = orbit;
@@ -33,6 +35,7 @@ namespace Sim.Maneuvers
             this.spacecraft = Spacecraft.current;
             this.PreviousManeuver = lastManeuver;
             this.timeToOrbit = timeToOrbit;
+            this.orbitIdx = orbitIdx;
 
             this.PreviousManeuver?.drawer.TurnOffRenderersFrom(orbitIdx + 1);
             
@@ -44,6 +47,12 @@ namespace Sim.Maneuvers
 
             currentTrueAnomaly = GetTrueAnomaly(newWorldPosition);
             timeToManeuver = GetTimeToManeuver(currentTrueAnomaly);
+            
+            // if (timeToManeuver > fixedTimeToManeuver) {
+            //     fixedTimeToManeuver = timeToManeuver;
+            // }
+            fixedTimeToManeuver = timeToManeuver;
+
             lastVelocity = this.stateVectors.velocity;
             this.stateVectors.velocity = orbit.CalculateVelocity(newWorldPosition, currentTrueAnomaly);
             
@@ -56,7 +65,7 @@ namespace Sim.Maneuvers
             if (!Node.isDragging) {
                 Node.gameObject.transform.position = stateVectors.position + orbit.centralBody.transform.position;
 
-                if (timeToManeuver < SimulationSettings.Instance.maneuverTimeSlowdownOffset && Time.timeScale != 1) {
+                if (timeToManeuver < burnTime / 2 + SimulationSettings.Instance.maneuverTimeSlowdownOffset) {
                     HUDController.Instance.SetTimeScaleToDefault();
                 }
             }
@@ -75,6 +84,8 @@ namespace Sim.Maneuvers
             
             if (enterMeanAnomaly > meanAnomaly) enterMeanAnomaly -= Mathf.PI * 2f;
             float time = ((meanAnomaly - enterMeanAnomaly) / orbit.elements.meanMotion) + currentTimeToOrbit;
+
+            // Debug.Log("mean: " + meanAnomaly + " enter: " + enterMeanAnomaly + " on orbit time: " + (time - currentTimeToOrbit) + " to orbit time: " + currentTimeToOrbit);
 
             if (time < 0) {
                 time += orbit.elements.period;
@@ -116,8 +127,11 @@ namespace Sim.Maneuvers
             if (PreviousManeuver != null) {
                 PreviousManeuver.drawer.hasManeuver = false;
                 PreviousManeuver.NextManeuver = null;
+                PreviousManeuver.drawer.TurnOnRenderersFrom(orbitIdx + 1);
             }
-            else PreviousDrawer.hasManeuver = false;
+            else if (PreviousDrawer != null) {
+                PreviousDrawer.hasManeuver = false;
+            }
         }
     }
 }

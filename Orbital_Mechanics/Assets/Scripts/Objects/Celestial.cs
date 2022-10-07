@@ -13,7 +13,7 @@ namespace Sim.Objects
         [SerializeField] protected CelestialSO data;
         public CelestialSO Data { get => data; }
 
-        public List<Celestial> celestialsOnOrbit {get; private set;} = new List<Celestial>();
+        public List<Celestial> celestialsOnOrbit { get; private set; } = new List<Celestial>();
 
         [SerializeField] private bool infiniteInfluence;
         private float influenceRadius;
@@ -21,6 +21,9 @@ namespace Sim.Objects
 
         [SerializeField] private Transform model;
         [SerializeField] private Transform influenceSphere;
+
+        private float currentCamDistance;
+        private bool camInsideInfluence = false;
 
         private new void Awake()
         {
@@ -31,7 +34,7 @@ namespace Sim.Objects
             if (infiniteInfluence) influenceRadius = float.MaxValue;
             else influenceRadius = Mathf.Sqrt((KeplerianOrbit.G * data.Mass) / GRAVITY_FALLOFF);
 
-            centralBody?.celestialsOnOrbit.Add(this); 
+            centralBody?.celestialsOnOrbit.Add(this);
 
             influenceSphere.localScale = Vector3.one * influenceRadius * 2f / 10f;
             model.transform.localScale = Vector3.one * data.Radius;
@@ -40,18 +43,45 @@ namespace Sim.Objects
             {
                 kepler.ApplyElementsFromStruct(data.Orbit, centralBody);
                 transform.position = centralBody.transform.position + kepler.orbit.CalculateOrbitalPosition(data.Orbit.trueAnomaly);
-        
+
                 UpdateRelativePosition();
             }
         }
 
-        private void Start() {
-            if (!isStationary) {
+        private void Start()
+        {
+            if (!isStationary)
+            {
                 orbitDrawer.DrawOrbit(kepler.orbit.elements);
             }
         }
 
-        private new void OnDrawGizmos() {
+        private new void Update()
+        {
+            base.Update();
+
+            if (!isStationary)
+            {
+                // disable and enable orbit line renderers when close to body
+                currentCamDistance = (CameraController.Instance.cam.transform.position - transform.position).sqrMagnitude;
+                if (currentCamDistance < influenceRadius * influenceRadius)
+                {
+                    if (!camInsideInfluence)
+                    {
+                        orbitDrawer.TurnOffRenderersFrom(0);
+                        camInsideInfluence = true;
+                    }
+                }
+                else if (camInsideInfluence)
+                {
+                    orbitDrawer.TurnOnRenderersFrom(0);
+                    camInsideInfluence = false;
+                }
+            }
+        }
+
+        private new void OnDrawGizmos()
+        {
             base.OnDrawGizmos();
 
             if (infiniteInfluence) return;
@@ -61,14 +91,15 @@ namespace Sim.Objects
             Vector3[] points = new Vector3[res];
             for (int i = 0; i < res; i++)
             {
-                float angle = i * circleFraction * 2 * Mathf.PI;        
+                float angle = i * circleFraction * 2 * Mathf.PI;
                 float x = influenceRadius * Mathf.Sin(angle);
                 float z = influenceRadius * Mathf.Cos(angle);
 
                 points[i] = transform.position + new Vector3(x, 0, z);
             }
-            for (int i = 0; i < res; i++) {
-                Vector3 endPoint = i+1 < res ? points[i+1] : points[0];
+            for (int i = 0; i < res; i++)
+            {
+                Vector3 endPoint = i + 1 < res ? points[i + 1] : points[0];
                 Debug.DrawLine(points[i], endPoint, Color.cyan);
             }
         }

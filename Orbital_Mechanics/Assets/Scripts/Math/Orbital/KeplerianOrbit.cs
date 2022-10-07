@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Sim.Objects;
 using Sim.Visuals;
 
@@ -156,10 +157,10 @@ namespace Sim.Math
         public float timeToPeriapsis;
         public float period;
 
-        public float trueAnomalyConstant;
-        public float periodConstant;
-
-        public Vector3 angMomentum;
-        public Vector3 eccVec;
+        [NonSerialized] public float trueAnomalyConstant;
+        [NonSerialized] public float periodConstant;
+ 
+        [NonSerialized] public Vector3 angMomentum;
+        [NonSerialized] public Vector3 eccVec;
     }
 }

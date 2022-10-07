@@ -6,6 +6,10 @@ namespace Sim.Math
 {
     public class EllipticOrbit : Orbit
     {
+        float cosArgTrue, sinArgTrue;
+        float sinlon, coslon, sininc, cosinc;
+        float x, y, z;
+
         public EllipticOrbit(StateVectors stateVectors, Celestial centralBody) : base(stateVectors, centralBody) { }
         public EllipticOrbit(OrbitElements elements, Celestial centralBody) : base(elements, centralBody) { }
 
@@ -32,27 +36,19 @@ namespace Sim.Math
             this.distance = (elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity))
                             .SafeDivision(1 + elements.eccentricity * MathLib.Cos(trueAnomaly));
 
-            if (elements.eccentricity < 0.01f)
-            {
-                float cosArgTrue = MathLib.Cos(elements.argPeriapsis + trueAnomaly);
-                float sinArgTrue = MathLib.Sin(elements.argPeriapsis + trueAnomaly);
+            cosArgTrue = MathLib.Cos(elements.argPeriapsis + trueAnomaly);
+            sinArgTrue = MathLib.Sin(elements.argPeriapsis + trueAnomaly);
 
-                float sinlon = Mathf.Sin(elements.lonAscNode);
-                float coslon = Mathf.Cos(elements.lonAscNode);
-                float sininc = Mathf.Sin(elements.inclination);
-                float cosinc = Mathf.Cos(elements.inclination);
+            sinlon = Mathf.Sin(elements.lonAscNode);
+            coslon = Mathf.Cos(elements.lonAscNode);
+            sininc = Mathf.Sin(elements.inclination);
+            cosinc = Mathf.Cos(elements.inclination);
 
-                float x = this.distance * ((coslon * cosArgTrue) - (sinlon * sinArgTrue * cosinc));
-                float y = this.distance * ((sinlon * cosArgTrue) + (coslon * sinArgTrue * cosinc));
-                float z = this.distance * (sininc * sinArgTrue);
+            x = this.distance * ((coslon * cosArgTrue) - (sinlon * sinArgTrue * cosinc));
+            y = this.distance * ((sinlon * cosArgTrue) + (coslon * sinArgTrue * cosinc));
+            z = this.distance * (sininc * sinArgTrue);
 
-                return new Vector3(x, y, z);
-            }
-            else
-            {
-                // rotate periapsis direction by 'trueAnomaly' in degrees
-                return Quaternion.AngleAxis(trueAnomaly * Mathf.Rad2Deg, elements.angMomentum) * elements.eccVec.normalized * this.distance;
-            }
+            return new Vector3(x, y, z);
         }
         public override Vector3 CalculateVelocity(Vector3 relativePosition, float trueAnomaly)
         {

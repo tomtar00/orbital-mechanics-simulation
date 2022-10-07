@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Sim.Maneuvers;
@@ -22,13 +23,13 @@ namespace Sim.Visuals
         [DrawIf("showPointIndication", true, ComparisonType.Equals)] 
         public GameObject indicationPrefab;
         
-        private float scaleMultiplier = .05f;
+        private float scaleMultiplier = .02f;
         private float minScale = .1f;
         private float maxScale = 6f;
 
-        private float lineScaleMultiplier = .2f;
-        private float lineMinScale = .1f;
-        private float lineMaxScale = 3f;
+        // private float lineScaleMultiplier = .02f;
+        // private float lineMinScale = .1f;
+        // private float lineMaxScale = 3f;
 
         public GameObject indicator { get; private set; }
         public LineRenderer line { get; private set; }
@@ -97,10 +98,10 @@ namespace Sim.Visuals
                 }
             }
 
-            line.startWidth = NumericExtensions.ScaleWithDistance(
-                line.gameObject.transform.position, CameraController.Instance.cam.transform.position,
-                lineScaleMultiplier, lineMinScale, lineMaxScale
-            ).x;
+            // line.startWidth = NumericExtensions.ScaleWithDistance(
+            //     line.gameObject.transform.position, CameraController.Instance.cam.transform.position,
+            //     lineScaleMultiplier, lineMinScale, lineMaxScale
+            // ).x;
         }
 
         public void SetCustomIndicatorPositionConverter(Func<Vector3, Vector3> func) {
@@ -143,7 +144,10 @@ namespace Sim.Visuals
 
         public void BakeMesh() {
             Mesh lineMesh = new Mesh();
-            line.BakeMesh(lineMesh, true);
+            line.startWidth *= 10f;
+            // lineMesh.SetNormals(Enumerable.Repeat(Vector3.up, lineMesh.vertices.Count()).ToArray());
+            line.BakeMesh(lineMesh);
+            line.startWidth /= 10f;
             _collider.sharedMesh = lineMesh;
         }
     }

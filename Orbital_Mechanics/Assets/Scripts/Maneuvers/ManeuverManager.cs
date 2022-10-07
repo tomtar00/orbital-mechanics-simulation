@@ -63,9 +63,6 @@ namespace Sim.Maneuvers {
 
             Maneuver lastManeuver = maneuvers.Count > 0 ? maneuvers[maneuvers.Count - 1] : null;
             Orbit orbit = inOrbitObject != null && futureOrbitIdx == 0 ? inOrbitObject.Kepler.orbit : currentOrbit;
-            // if (inOrbitObject != null) {
-            //     orbit.elements.meanAnomaly = inOrbitObject.Kepler.orbit.elements.meanAnomaly;
-            // }
 
             // create prefab
             GameObject maneuverObj = Instantiate(maneuverPrefab, maneuverHolder);
@@ -76,7 +73,7 @@ namespace Sim.Maneuvers {
             // calculate state vectors of pressed point
             float trueAnomaly = Vector3.SignedAngle(orbit.elements.eccVec, relativePressPosition, orbit.elements.angMomentum) * Mathf.Deg2Rad;
             var relativePressVelocity = orbit.CalculateVelocity(relativePressPosition, trueAnomaly);
-            StateVectors pressStateVectors = new StateVectors(relativePressPosition, relativePressVelocity);
+            StateVectors pressStateVectors = new StateVectors(relativePressPosition, relativePressVelocity);    
 
             // create new maneuver
             Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, node, lastManeuver, timeToOrbit, futureOrbitIdx);
@@ -86,6 +83,7 @@ namespace Sim.Maneuvers {
                 lastManeuver.NextManeuver = maneuver;
             }
             else maneuver.PreviousDrawer = inOrbitObject.GetComponent<OrbitDrawer>();
+
             return maneuver;
         }
 
@@ -107,20 +105,20 @@ namespace Sim.Maneuvers {
                 Debug.LogWarning("Tried to remove maneuver from empty list");
         }
 
-        private void OnGUI() 
-        {
-            float startHeight = Screen.height - 300;
-            float space = 20;
-            int i = 0;
+        // private void OnGUI() 
+        // {
+        //     float startHeight = Screen.height - 300;
+        //     float space = 20;
+        //     int i = 0;
 
-            foreach (var maneuver in maneuvers)
-            {
-                GUI.Label(new Rect(10, startHeight + space * i, 300, 20), $"Maneuver {i++}: {maneuver.timeToManeuver} Burn: {maneuver.burnTime}");
-            }
-            i++;
-            Maneuver next = NextManeuver;
-            if (NextManeuver != null)
-                GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Next maneuver: Maneuver {maneuvers.IndexOf(next)}");
-        }
+        //     foreach (var maneuver in maneuvers)
+        //     {
+        //         GUI.Label(new Rect(10, startHeight + space * i, 300, 20), $"Maneuver {i++}: {maneuver.timeToManeuver} Burn: {maneuver.burnTime}");
+        //     }
+        //     i++;
+        //     Maneuver next = NextManeuver;
+        //     if (NextManeuver != null)
+        //         GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Next maneuver: Maneuver {maneuvers.IndexOf(next)}");
+        // }
     }
 }

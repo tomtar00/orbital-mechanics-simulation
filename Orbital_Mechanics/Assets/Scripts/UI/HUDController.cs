@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Text;
+using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Sim.Maneuvers;
@@ -6,6 +7,8 @@ using Sim.Objects;
 
 public class HUDController : MonoBehaviour
 {
+    [Header("Orbit")]
+    [SerializeField] private TMP_Text orbitElementsText;
     [Header("Time")]
     [SerializeField] private TMP_Text timeScaleText;
     [SerializeField] private float[] timeScales;
@@ -24,6 +27,9 @@ public class HUDController : MonoBehaviour
         Time.timeScale = timeScales[currentTimeScaleIdx];
         UpdateTimeScaleText();
     }
+    private void Update() {
+        ApplyOrbitElements();
+    }
 
     private void UpdateTimeScaleText() {
         Time.timeScale = timeScales[currentTimeScaleIdx];
@@ -32,14 +38,14 @@ public class HUDController : MonoBehaviour
 
     public void IncreaseTimeScale() {
         if (blockTimeChange) return;
-        previousTimeScaleIdx = currentTimeScaleIdx;
         if (++currentTimeScaleIdx >= timeScales.Length) currentTimeScaleIdx = timeScales.Length - 1;
+        previousTimeScaleIdx = currentTimeScaleIdx;
         UpdateTimeScaleText();
     }
     public void DecreaseTimeScale() {
         if (blockTimeChange) return;
-        previousTimeScaleIdx = currentTimeScaleIdx;
         if (--currentTimeScaleIdx < 0) currentTimeScaleIdx = 0;
+        previousTimeScaleIdx = currentTimeScaleIdx;
         UpdateTimeScaleText();
     }
 
@@ -66,5 +72,17 @@ public class HUDController : MonoBehaviour
 
     public void HandleAutoManeuversValueChange(bool isOn) {
         Spacecraft.current.AutoManeuvers = isOn;
+    }
+
+    private void ApplyOrbitElements() {
+        // StringBuilder builder = new StringBuilder();
+
+        // foreach (var item in Spacecraft.current.Kepler.orbit.elements)
+        // {
+            
+        // }
+
+        // orbitElementsText.text = builder.ToString();
+        orbitElementsText.text = JsonUtility.ToJson(Spacecraft.current.Kepler.orbit.elements, true);
     }
 }

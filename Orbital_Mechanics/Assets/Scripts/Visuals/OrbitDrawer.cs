@@ -7,7 +7,7 @@ namespace Sim.Visuals
 {
     public class OrbitDrawer : MonoBehaviour
     {
-        [SerializeField] private float lineWidth = 3f;
+        [SerializeField] private float lineWidth = 0.01f;
         [SerializeField][Range(1, 200)] private int orbitResolution = 200;
         [SerializeField][Range(1, 5)] private int depth = 2;
 
@@ -87,6 +87,12 @@ namespace Sim.Visuals
         {
             for (int i = idx; i < depth; i++) {
                 lineRenderers[i].gameObject.SetActive(false);
+            }
+        }
+        public void TurnOnRenderersFrom(int idx)
+        {
+            for (int i = idx; i < depth; i++) {
+                lineRenderers[i]?.gameObject.SetActive(true);
             }
         }
         public void DestroyRenderers() {
