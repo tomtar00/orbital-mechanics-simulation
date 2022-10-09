@@ -42,10 +42,20 @@ namespace Sim.Maneuvers {
         private void Start() {
             _collider = GetComponent<Collider>();
 
-            LineButton.onLineHovering += (line, worldPos) => {
+            LineButton.onLineHovering += (line, worldPos) =>
+            {
                 if (lineButton == null) lineButton = line;
-                if (isDragging && lineButton == line) {
+                if (isDragging && lineButton == line)
+                {
                     var relativePosition = worldPos - maneuver.orbit.centralBody.transform.position;
+                    directions = new Dictionary<string, Vector3> {
+                        { "Prograde",    gameObject.transform.forward   },
+                        { "Retrograde", -gameObject.transform.forward   },
+                        { "Normal",      gameObject.transform.up        },
+                        { "Antinormal", -gameObject.transform.up        },
+                        { "In",         -gameObject.transform.right     },
+                        { "Out",         gameObject.transform.right     },
+                    };
                     maneuver.UpdateOnDrag(relativePosition);
                 }
             };

@@ -144,10 +144,9 @@ namespace Sim.Visuals
 
         public void BakeMesh() {
             Mesh lineMesh = new Mesh();
-            line.startWidth *= 10f;
-            // lineMesh.SetNormals(Enumerable.Repeat(Vector3.up, lineMesh.vertices.Count()).ToArray());
-            line.BakeMesh(lineMesh);
-            line.startWidth /= 10f;
+            line.startWidth *= SimulationSettings.Instance.linePressTolerance;
+            line.BakeMesh(lineMesh, CameraController.Instance.dummyCamera, true);
+            line.startWidth /= SimulationSettings.Instance.linePressTolerance;
             _collider.sharedMesh = lineMesh;
         }
     }

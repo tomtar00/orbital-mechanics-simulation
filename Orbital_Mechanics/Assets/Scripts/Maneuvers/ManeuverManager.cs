@@ -13,34 +13,11 @@ namespace Sim.Maneuvers {
         public Transform maneuverOrbitsHolder;
 
         public List<Maneuver> maneuvers { get; private set; }
+
         public Maneuver NextManeuver {
             get {
-                if (maneuvers.Count > 0 && maneuvers.Where(m => m.timeToManeuver > 0).Count() > 0)
-                    return maneuvers.Where(m => m.timeToManeuver > 0).OrderBy(m => m.timeToManeuver).First();
-                else 
-                    return null;
-            }
-        }
-        public Maneuver CurrentManeuver {
-            get {
                 if (maneuvers.Count > 0)
-                {
-                    var maneuver = maneuvers.OrderBy(m => m.timeToManeuver).First();
-                    float time = maneuver.timeToManeuver;
-                    float burn = maneuver.burnTime;
-                    if (time < (burn / 2f)) {
-                        if (time > -(burn / 2f))
-                            return maneuver;
-                        else {
-                            if (!ManeuverNode.isDraggingAny) {
-                                RemoveFirst();
-                                HUDController.Instance.SetTimeScaleToPrevious();
-                            }
-                            return null;
-                        }
-                    }
-                    else return null;
-                }
+                    return maneuvers[0];
                 else 
                     return null;
             }

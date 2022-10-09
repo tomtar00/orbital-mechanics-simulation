@@ -12,6 +12,7 @@ namespace Sim.Maneuvers
         private float lastSelectTime;
         private bool addingVelocity = false;
         private bool hitNode = false;
+        private Vector3 direction;
 
         private void Update() 
         {
@@ -36,8 +37,7 @@ namespace Sim.Maneuvers
                     }   // check direction vector hit
                     else if (ManeuverNode.directionsTags.Contains(hit.collider.gameObject.tag)) 
                     {
-                        var direction = ManeuverNode.current.directions[hit.collider.gameObject.tag];
-                        ManeuverNode.current.AddVelocity(direction, SimulationSettings.Instance.G);
+                        direction = ManeuverNode.current.directions[hit.collider.gameObject.tag];
                         addingVelocity = true;
                     }
                     else {
@@ -46,7 +46,6 @@ namespace Sim.Maneuvers
                     }
                 }
                 else {
-                    addingVelocity = false;
                     hitNode = false;
                 }
             }
@@ -64,6 +63,12 @@ namespace Sim.Maneuvers
                     }            
                 }
                 hitNode = false;
+                addingVelocity = false;
+            }
+            else if (Input.GetMouseButton(0)) {
+                if (addingVelocity) {
+                    ManeuverNode.current.AddVelocity(direction, SimulationSettings.Instance.G * SimulationSettings.Instance.addVelocitySensitivity);
+                }
             }
 
             if (hitNode && ManeuverNode.current != null && Time.unscaledTime - lastSelectTime > maxClickDuration) {

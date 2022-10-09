@@ -92,7 +92,8 @@ namespace Sim.Visuals
         public void TurnOnRenderersFrom(int idx)
         {
             for (int i = idx; i < depth; i++) {
-                lineRenderers[i]?.gameObject.SetActive(true);
+                if (lineRenderers[i] != null)
+                    lineRenderers[i].gameObject.SetActive(true);
             }
         }
         public void DestroyRenderers() {

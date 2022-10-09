@@ -2,6 +2,8 @@
 
 public class CameraController : MonoBehaviour
 {
+    [Header("Dummy")]
+    public Camera dummyCamera;
     [Header("Fly")]
     [SerializeField] private float acceleration = 50;       
     [SerializeField] private float accSprintMultiplier = 4; 

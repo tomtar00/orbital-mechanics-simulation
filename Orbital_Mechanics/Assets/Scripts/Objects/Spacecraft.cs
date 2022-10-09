@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using UnityEngine;
 using Sim.Visuals;
 using Sim.Math;
@@ -42,6 +43,7 @@ namespace Sim.Objects
         public bool AutoManeuvers { set => autoManeuvers = value; }
 
         private bool canUpdateOrbit = true;
+        private bool slowingDown = false;
 
         private void Start()
         {
@@ -130,42 +132,52 @@ namespace Sim.Objects
             }
         }
         private void HandleManeuverDirection() {
-            if (ManeuverManager.Instance.maneuvers.Count > 0) {
-                Maneuver next = ManeuverManager.Instance.NextManeuver;
-                if (next != null) {
-                    if (next.addedVelocity == Vector3.zero) return;
-                    if (!maneuverDirection.gameObject.activeSelf) {
-                        maneuverDirection.gameObject.SetActive(true);
-                    }
-                    maneuverDirection.rotation = Quaternion.LookRotation(next.addedVelocity);
-                    if (Vector3.Angle(model.transform.forward, next.addedVelocity) < maneuverSuccessAngle) {
-                        foreach(var mesh in arrowMeshRenderers)
-                            mesh.material = maneuverSuccessMat;
-                    }
-                    else {
-                        foreach(var mesh in arrowMeshRenderers)
-                            mesh.material = maneuverFailMat;
-                    }
+            Maneuver next = ManeuverManager.Instance.NextManeuver;
+            if (next != null) {
+                if (next.addedVelocity == Vector3.zero) return;
+                if (!maneuverDirection.gameObject.activeSelf) {
+                    maneuverDirection.gameObject.SetActive(true);
                 }
-            }
+                maneuverDirection.rotation = Quaternion.LookRotation(next.addedVelocity);
+                if (Vector3.Angle(model.transform.forward, next.addedVelocity) < maneuverSuccessAngle) {
+                    foreach(var mesh in arrowMeshRenderers)
+                        mesh.material = maneuverSuccessMat;
+                }
+                else {
+                    foreach(var mesh in arrowMeshRenderers)
+                        mesh.material = maneuverFailMat;
+                }
+            } 
             else if (maneuverDirection.gameObject.activeSelf) {
                 maneuverDirection.gameObject.SetActive(false);
             }
         }
         private void AutomateManeuvers() {
             if (!autoManeuvers) return;
-
-            if (ManeuverManager.Instance.maneuvers.Count > 0) {
-                Maneuver next = ManeuverManager.Instance.NextManeuver;
-                Maneuver current = ManeuverManager.Instance.CurrentManeuver;
+            Maneuver next = ManeuverManager.Instance.NextManeuver;
+            if (next == null) return;
                 
-                if (current != null) {
-                    AddVelocity(model.transform.forward * thrust * Time.deltaTime);
+            if (Mathf.Abs(next.timeToManeuver) < next.burnTime / 2 + Time.deltaTime) {
+                AddVelocity(model.transform.forward * thrust * Time.deltaTime);
+            }
+            else
+            {
+                if (ManeuverNode.isDraggingAny) return;
+                if (next.timeToManeuver < -next.burnTime / 2) 
+                {
+                    HUDController.Instance.SetTimeScaleToPrevious();
+                    ManeuverManager.Instance.RemoveFirst();
                 }
-                else if (next != null && next.addedVelocity != Vector3.zero) {
-                    model.rotation = Quaternion.RotateTowards(model.rotation, Quaternion.LookRotation(next.addedVelocity), rotationSpeed * Time.deltaTime);
+                else if (next.timeToManeuver < next.burnTime / 2 + SimulationSettings.Instance.maneuverTimeSlowdownOffset) {
+                    HUDController.Instance.SetTimeScaleToDefault();
                 }
             }
+
+            if (next.addedVelocity != Vector3.zero)
+            {
+                model.rotation = Quaternion.RotateTowards(model.rotation, Quaternion.LookRotation(next.addedVelocity), rotationSpeed * Time.deltaTime);
+            }
+            
         }
         private void CheckCelestialInfluence()
         {
@@ -231,9 +243,11 @@ namespace Sim.Objects
         private void CheckWillSoonEnterExitInfluence() {
             if (timeToNextGravityChange < SimulationSettings.Instance.influenceChangeTimeSlowdownOffset && timeToNextGravityChange > 0) {
                 HUDController.Instance.SetTimeScaleToDefault();
+                slowingDown = true;
             }
-            else if (timeSinceGravityChange > SimulationSettings.Instance.influenceChangeTimeSlowdownOffset) {
+            else if (timeSinceGravityChange > SimulationSettings.Instance.influenceChangeTimeSlowdownOffset && slowingDown) {
                 HUDController.Instance.SetTimeScaleToPrevious();
+                slowingDown = false;
             }
         }
 

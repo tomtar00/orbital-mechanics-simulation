@@ -12,6 +12,9 @@ namespace Sim {
         [Space]
         public float influenceChangeTimeSlowdownOffset = 3;
         public float maneuverTimeSlowdownOffset = 3;
+        public float addVelocitySensitivity = 0.01f;
+        [Space]
+        public float linePressTolerance = 15f;
         [Space]
         public float G;
 
