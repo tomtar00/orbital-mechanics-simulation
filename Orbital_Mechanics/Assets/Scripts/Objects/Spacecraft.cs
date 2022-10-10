@@ -74,7 +74,7 @@ namespace Sim.Objects
             CheckWillSoonEnterExitInfluence();
             CheckCelestialInfluence();
 
-            HandleManeuverDirection();
+            HandleManeuverDirection();  
             AutomateManeuvers();
 
             gameObject.transform.localScale = NumericExtensions.ScaleWithDistance(
@@ -97,7 +97,7 @@ namespace Sim.Objects
         }
         private float CircularOrbitSpeed()
         {
-            return MathLib.Sqrt(KeplerianOrbit.G * centralBody.Data.Mass / relativePosition.magnitude);
+            return MathLib.Sqrt(KeplerianOrbit.G * centralBody.Data.Mass / relativePosition.magnitude) + 0.00001f;
         }
 
         private void AddVelocity(Vector3 d_vel)
@@ -157,7 +157,7 @@ namespace Sim.Objects
             Maneuver next = ManeuverManager.Instance.NextManeuver;
             if (next == null) return;
                 
-            if (Mathf.Abs(next.timeToManeuver) < next.burnTime / 2 + Time.deltaTime) {
+            if (Mathf.Abs(next.timeToManeuver) <= next.burnTime / 2 /* + Time.deltaTime * 2 */) {
                 AddVelocity(model.transform.forward * thrust * Time.deltaTime);
             }
             else

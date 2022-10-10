@@ -22,5 +22,10 @@ namespace Sim {
         private void Awake() {
             Instance = this;
         }
+
+        private void Start() {
+            Application.targetFrameRate = 144;
+            QualitySettings.vSyncCount = 0;
+        }
     }
 }

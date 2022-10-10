@@ -318,7 +318,7 @@ MonoBehaviour:
     type: 3}
   influenceChangeTimeSlowdownOffset: 5
   maneuverTimeSlowdownOffset: 3
-  addVelocitySensitivity: 0.03
+  addVelocitySensitivity: 0.02
   linePressTolerance: 15
   G: 0.0001
 --- !u!114 &153973665
@@ -3606,7 +3606,6 @@ MonoBehaviour:
   - 15
   - 50
   - 100
-  - 500
   currentTimeScaleIdx: 2
   removeManeuver: {fileID: 865185170}
 --- !u!1 &1687258581
@@ -3660,7 +3659,7 @@ MonoBehaviour:
   damping: 5
   focusOnEnable: 1
   distance: 5
-  rotationSpeed: 90
+  rotationSpeed: 40
   minVerticalAngle: -80
   maxVerticalAngle: 80
   scrollSensitivity: 7
@@ -4494,7 +4493,7 @@ PrefabInstance:
         type: 3}
       propertyPath: maneuverFailMat
       value: 
-      objectReference: {fileID: 2100000, guid: aba251bab80144840928aef4889284f4, type: 2}
+      objectReference: {fileID: 2100000, guid: b4f3fa97e11945746b2a769563b31410, type: 2}
     - target: {fileID: 7396680545357339825, guid: 0a2448000f0a59248bbae96b089d11ff,
         type: 3}
       propertyPath: startVelocity.z
@@ -4504,7 +4503,7 @@ PrefabInstance:
         type: 3}
       propertyPath: maneuverSuccessMat
       value: 
-      objectReference: {fileID: 2100000, guid: dde2043135954444ca887e2d4d5d0143, type: 2}
+      objectReference: {fileID: 2100000, guid: 2c9ea98cce2557d46a3793af0d128915, type: 2}
     - target: {fileID: 7396680545357339825, guid: 0a2448000f0a59248bbae96b089d11ff,
         type: 3}
       propertyPath: useCustomStartVelocity

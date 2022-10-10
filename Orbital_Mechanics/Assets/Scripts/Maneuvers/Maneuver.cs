@@ -76,6 +76,8 @@ namespace Sim.Maneuvers
             if (enterMeanAnomaly > meanAnomaly) enterMeanAnomaly -= Mathf.PI * 2f;
             float time = ((meanAnomaly - enterMeanAnomaly) / orbit.elements.meanMotion) + currentTimeToOrbit;
 
+            //Debug.Log("mean: " + meanAnomaly + " enter: " + enterMeanAnomaly + " on orbit time: " + (time - currentTimeToOrbit) + " to orbit time: " + currentTimeToOrbit + " mean motion: " + orbit.elements.meanMotion);
+
             if (time < 0) {
                 time += orbit.elements.period;
             }
