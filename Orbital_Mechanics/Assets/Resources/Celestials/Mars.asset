@@ -10,14 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
-  m_Name: Hyperspeed
+  m_Name: Mars
   m_EditorClassIdentifier: 
-  mass: 1
-  radius: 0.5
+  mass: 6.39e+23
+  diameter: 6779
   orbit:
-    semimajorAxis: 10
-    eccentricity: 0.001
-    inclination: 1.57
+    semimajorAxis: 227920000
+    eccentricity: 0.0167
+    inclination: 0.03228
     lonAscNode: 0
     argPeriapsis: 0
-    trueAnomaly: -2.2
+    trueAnomaly: 0.7
+    meanAnomaly: 0
+    anomaly: 0
+    semiminorAxis: 0
+    meanMotion: 0
+    semiLatusRectum: 0
+    timeToPeriapsis: 0
+    period: 0
+  isStar: 0
+  hasSpacecraft: 0
+  material: {fileID: 2100000, guid: 96770e3f2a0bf0041a57141028fa4ed8, type: 2}
+  bodiesOnOrbit: []
+  type: 1

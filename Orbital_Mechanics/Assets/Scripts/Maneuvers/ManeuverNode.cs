@@ -47,7 +47,6 @@ namespace Sim.Maneuvers {
                 if (lineButton == null) lineButton = line;
                 if (isDragging && lineButton == line)
                 {
-                    var relativePosition = worldPos - maneuver.orbit.centralBody.transform.position;
                     directions = new Dictionary<string, Vector3> {
                         { "Prograde",    gameObject.transform.forward   },
                         { "Retrograde", -gameObject.transform.forward   },
@@ -56,7 +55,7 @@ namespace Sim.Maneuvers {
                         { "In",         -gameObject.transform.right     },
                         { "Out",         gameObject.transform.right     },
                     };
-                    maneuver.UpdateOnDrag(relativePosition);
+                    maneuver.UpdateOnDrag(worldPos);
                 }
             };
 

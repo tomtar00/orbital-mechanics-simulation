@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
   m_Name: Sun
   m_EditorClassIdentifier: 
-  mass: 200
-  radius: 8
+  mass: 1.989e+30
+  diameter: 1392700
   orbit:
     semimajorAxis: 0
     eccentricity: 0
@@ -28,7 +28,10 @@ MonoBehaviour:
     semiLatusRectum: 0
     timeToPeriapsis: 0
     period: 0
-    trueAnomalyConstant: 0
-    periodConstant: 0
-    angMomentum: {x: 0, y: 0, z: 0}
-    eccVec: {x: 0, y: 0, z: 0}
+  isStar: 1
+  material: {fileID: 2100000, guid: eb925d5924befb94f8fda6dc5201d2ad, type: 2}
+  bodiesOnOrbit:
+  - {fileID: 11400000, guid: 21a0bfd2110c79d45ba9ab0b34aa36f8, type: 2}
+  - {fileID: 11400000, guid: a4f50b667466eed4088e802f055373d4, type: 2}
+  - {fileID: 11400000, guid: b09db4c067a3d3e49a4fee8f8cabdfa7, type: 2}
+  - {fileID: 11400000, guid: 883395e8f59dd7948958e427211b26d1, type: 2}

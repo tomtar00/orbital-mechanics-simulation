@@ -55,6 +55,8 @@ namespace Sim.Maneuvers {
             // create new maneuver
             Maneuver maneuver = new Maneuver(orbit, drawer, pressStateVectors, node, lastManeuver, timeToOrbit, futureOrbitIdx);
             maneuvers.Add(maneuver);
+            maneuvers = maneuvers.OrderBy(m => m.timeToManeuver).ToList();
+            lastManeuver = maneuver.PreviousManeuver = (maneuver == maneuvers[0]) ? null : lastManeuver;
             node.maneuver = maneuver;
             if (lastManeuver != null) {
                 lastManeuver.NextManeuver = maneuver;

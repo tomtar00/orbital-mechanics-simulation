@@ -62,7 +62,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dde2043135954444ca887e2d4d5d0143, type: 2}
+  - {fileID: 2100000, guid: 081b18a8fc33ee64387bdb711081d3f6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -113,7 +113,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scaleMultiplier: 0.04
   minScale: 0.2
-  maxScale: 100
+  maxScale: 10000
   vectorsHolder: {fileID: 1136877076179305813}
   prograde: {fileID: 0}
   retrograde: {fileID: 0}

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Sim.Objects;
 
 public class CameraController : MonoBehaviour
 {
@@ -9,7 +10,8 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float accSprintMultiplier = 4; 
     [SerializeField] private float sensitivity = 1; 
     [SerializeField] private float damping = 5; 
-    [SerializeField] private bool focusOnEnable = true; 
+    [SerializeField] private bool focusOnEnable = true;
+    [SerializeField] private Transform solarSystemHolder; 
     [Header("Orbit")]
     [SerializeField] private float distance = 5;
     [SerializeField] private float rotationSpeed = 90;
@@ -85,7 +87,7 @@ public class CameraController : MonoBehaviour
         transform.rotation = horizontal * rotation * vertical;
 
         velocity = Vector3.Lerp(velocity, Vector3.zero, damping * Time.unscaledDeltaTime);
-        transform.position += velocity * Time.unscaledDeltaTime;
+        solarSystemHolder.position -= velocity * Time.unscaledDeltaTime;
     }
     Vector3 GetAccelerationVector()
     {
@@ -120,10 +122,12 @@ public class CameraController : MonoBehaviour
 			-Input.GetAxis("Mouse Y"),
 			Input.GetAxis("Mouse X")
 		) : Vector2.zero;
+        solarSystemHolder.position = -focusObject.localPosition;
+        // Debug.Log(focusObject.position);
 		orbitAngles += rotationSpeed * Time.unscaledDeltaTime * input;
         Quaternion lookRotation = Quaternion.Euler(orbitAngles);
-		Vector3 lookDirection = lookRotation * Vector3.forward;
-		Vector3 lookPosition = focusObject.position - lookDirection * distance;
+		Vector3 lookDirection = lookRotation * -Vector3.forward;
+		Vector3 lookPosition = /* focusObject.position - */ lookDirection * distance;
 		transform.SetPositionAndRotation(lookPosition, lookRotation);
     }
     void UpdateDistance() {
@@ -144,12 +148,13 @@ public class CameraController : MonoBehaviour
 	}
 
     public void FocusOnShip() {
-        if (!focusingOnObject) {
-            focusObject = GameObject.FindGameObjectWithTag("Player").transform;
+        if (!focusingOnObject && Spacecraft.current != null) {
+            focusObject = Spacecraft.current.transform;
             focusingOnObject = true;
         }
         else {
             focusingOnObject = false;
+            // transform.position = Vector3.zero;
         }
         Focused = true;
     }

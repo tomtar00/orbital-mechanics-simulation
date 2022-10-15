@@ -27,10 +27,6 @@ namespace Sim.Visuals
         private float minScale = .1f;
         private float maxScale = 6f;
 
-        // private float lineScaleMultiplier = .02f;
-        // private float lineMinScale = .1f;
-        // private float lineMaxScale = 3f;
-
         public GameObject indicator { get; private set; }
         public LineRenderer line { get; private set; }
 
@@ -77,6 +73,14 @@ namespace Sim.Visuals
         }
 
         private void Update() {
+
+            line.startWidth = NumericExtensions.ScaleWithDistance(
+                line.gameObject.transform.position, CameraController.Instance.cam.transform.position,
+                SimulationSettings.Instance.lineScaleMultiplier, 
+                SimulationSettings.Instance.lineMinScale, 
+                SimulationSettings.Instance.lineMaxScale
+            ).x;
+
             if (!enabled) return;
 
             if (Input.GetKey(KeyCode.Q)) {
@@ -86,7 +90,7 @@ namespace Sim.Visuals
             if (hovering && showPointIndication) {
                 var worldPos = pointerData.pointerCurrentRaycast.worldPosition;
                 var convertedPos = converterFunction == null ? worldPos : converterFunction(worldPos);
-                indicator.transform.position = convertedPos;
+                indicator.transform.localPosition = convertedPos;
                 if (onLineHovering != null)
                     onLineHovering(this, convertedPos);
 
@@ -97,11 +101,6 @@ namespace Sim.Visuals
                     );
                 }
             }
-
-            // line.startWidth = NumericExtensions.ScaleWithDistance(
-            //     line.gameObject.transform.position, CameraController.Instance.cam.transform.position,
-            //     lineScaleMultiplier, lineMinScale, lineMaxScale
-            // ).x;
         }
 
         public void SetCustomIndicatorPositionConverter(Func<Vector3, Vector3> func) {

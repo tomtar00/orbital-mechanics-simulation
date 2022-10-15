@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Sim.Visuals;
 using Sim.Math;
+using Time = Sim.Time;
 
 namespace Sim.Objects
 {
@@ -20,7 +21,7 @@ namespace Sim.Objects
         public bool IsStationary { get => isStationary; }
 
         // Orbit
-        public Celestial CentralBody { get => centralBody; }
+        public Celestial CentralBody { get => centralBody; set => centralBody = value; }
         protected OrbitDrawer orbitDrawer;
 
         // Position
@@ -30,9 +31,10 @@ namespace Sim.Objects
         (float, float, float) mat;
         StateVectors stateVectors;
 
-        protected void Awake()
+        public virtual void Init(Celestial centralBody, CelestialSO data)
         {
             orbitDrawer = GetComponent<OrbitDrawer>();
+            orbitDrawer?.SetupOrbitRenderers();
             if (!isStationary)
             {
                 kepler = new KeplerianOrbit();
@@ -44,7 +46,7 @@ namespace Sim.Objects
             if (!isStationary)
             {
                 if (centralBody == null)
-                    transform.position += this.velocity * Time.deltaTime;
+                    transform.localPosition += this.velocity * Time.deltaTime;
                 else MoveAlongOrbit();
             }
             else
@@ -62,15 +64,15 @@ namespace Sim.Objects
             relativePosition = stateVectors.position;
             velocity = stateVectors.velocity;
 
-            transform.position = centralBody.transform.position + relativePosition;
+            transform.localPosition = centralBody.transform.localPosition + relativePosition;
         }
 
         protected void UpdateRelativePosition()
         {
             if (centralBody != null)
-                relativePosition = transform.position - centralBody.transform.position;
+                relativePosition = transform.localPosition - centralBody.transform.localPosition;
             else
-                relativePosition = transform.position;
+                relativePosition = transform.localPosition;
         }
 
         // Vector debugging

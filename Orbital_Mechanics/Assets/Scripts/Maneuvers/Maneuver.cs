@@ -58,7 +58,7 @@ namespace Sim.Maneuvers
         public void Update() {
             timeToManeuver -= Time.deltaTime;
             if (!Node.isDragging) {
-                Node.gameObject.transform.position = stateVectors.position + orbit.centralBody.transform.position;
+                Node.gameObject.transform.localPosition = stateVectors.position + orbit.centralBody.transform.localPosition;
             }
         }
 
@@ -69,7 +69,7 @@ namespace Sim.Maneuvers
             float anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);
             float meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
 
-            float enterMeanAnomaly = NumericExtensions.FitBetween0And2PI(orbit.elements.meanAnomaly);
+            float enterMeanAnomaly = Mathf.Repeat(orbit.elements.meanAnomaly, 2 * Mathf.PI);
             float timeOnCurrentOrbit = PreviousManeuver == null ? Spacecraft.current.timeSinceVelocityChanged : 0f;
             float currentTimeToOrbit = Mathf.Max(timeToOrbit - timeOnCurrentOrbit, 0f); 
             
@@ -99,7 +99,7 @@ namespace Sim.Maneuvers
             burnTime = GetBurnTime();
         }
         public void ChangePosition(Vector3 newPosition) {
-            Node.gameObject.transform.position = newPosition + orbit.centralBody.transform.position;
+            Node.gameObject.transform.localPosition = newPosition + orbit.centralBody.transform.localPosition;
 
             // rotate vector to match new position
             float angle = Vector3.SignedAngle(lastVelocity, this.stateVectors.velocity, orbit.elements.angMomentum);

@@ -55,7 +55,6 @@ namespace Sim.Objects
             }
             else
             {
-                // move out from start
                 InitializeShip();
             }
         }
@@ -86,7 +85,7 @@ namespace Sim.Objects
         private void InitializeShip()
         {
             relativePosition = startRelativePosition;
-            transform.position = centralBody.RelativePosition + startRelativePosition;
+            transform.localPosition = centralBody.RelativePosition + startRelativePosition;
 
             if (useCustomStartVelocity)
                 AddVelocity(startVelocity);
@@ -94,10 +93,12 @@ namespace Sim.Objects
                 Vector3 velDirection = Vector3.Cross(relativePosition, Vector3.up).normalized;
                 AddVelocity(velDirection * CircularOrbitSpeed());
             }
+
+            Debug.Log("spacecraft period: " + kepler.orbit.elements.period.ToTimeSpan());
         }
         private float CircularOrbitSpeed()
         {
-            return MathLib.Sqrt(KeplerianOrbit.G * centralBody.Data.Mass / relativePosition.magnitude) + 0.00001f;
+            return MathLib.Sqrt(KeplerianOrbit.G * centralBody.Data.Mass / relativePosition.magnitude) * 1.001f;
         }
 
         private void AddVelocity(Vector3 d_vel)
@@ -157,7 +158,7 @@ namespace Sim.Objects
             Maneuver next = ManeuverManager.Instance.NextManeuver;
             if (next == null) return;
                 
-            if (Mathf.Abs(next.timeToManeuver) <= next.burnTime / 2 /* + Time.deltaTime * 2 */) {
+            if (Mathf.Abs(next.timeToManeuver) <= next.burnTime / 2) {
                 AddVelocity(model.transform.forward * thrust * Time.deltaTime);
             }
             else
@@ -191,7 +192,7 @@ namespace Sim.Objects
             {
                 foreach (var orbitingCelestial in centralBody.celestialsOnOrbit)
                 {
-                    if ((transform.position - orbitingCelestial.transform.position).sqrMagnitude - orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius < 0) // -.5f
+                    if ((transform.localPosition - orbitingCelestial.transform.localPosition).sqrMagnitude - orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius < 0) // -.5f
                     {
                         EnterCelestialInfluence(orbitingCelestial);
                         break;
@@ -203,7 +204,7 @@ namespace Sim.Objects
         {
             Vector3 previousCentralBodyVelocity = centralBody.Velocity;
 
-            //Debug.Log($"Exiting {centralBody.name} with vectors: R = {transform.position - centralBody.CentralBody.transform.position}, V = {velocity + previousCentralBodyVelocity}");
+            //Debug.Log($"Exiting {centralBody.name} with vectors: R = {transform.localPosition - centralBody.CentralBody.transform.localPosition}, V = {velocity + previousCentralBodyVelocity}");
 
             centralBody = centralBody.CentralBody;
             kepler.orbit.ChangeCentralBody(centralBody);

@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using Sim.Maneuvers;
 using Sim.Objects;
+using Time = Sim.Time;
 
 public class HUDController : MonoBehaviour
 {
@@ -12,7 +13,7 @@ public class HUDController : MonoBehaviour
     [Header("Time")]
     [SerializeField] private TMP_Text timeScaleText;
     [SerializeField] private float[] timeScales;
-    [SerializeField] private int currentTimeScaleIdx = 2;
+    [SerializeField] private int defaultTimeScaleIdx = 3;
     [Header("Maneuver")]
     [SerializeField] private Button removeManeuver;
 
@@ -20,12 +21,14 @@ public class HUDController : MonoBehaviour
     public bool blockTimeChange { get; private set; } = false;
 
     private int previousTimeScaleIdx = 1;
+    private int currentTimeScaleIdx = 3;
 
     public static HUDController Instance;
     private void Awake() {
         Instance = this;
         Time.timeScale = timeScales[currentTimeScaleIdx];
         UpdateTimeScaleText();
+        currentTimeScaleIdx = defaultTimeScaleIdx;
     }
     private void Update() {
         ApplyOrbitElements();
@@ -51,7 +54,7 @@ public class HUDController : MonoBehaviour
 
     public void SetTimeScaleToDefault() {
         if (blockTimeChange) return;
-        currentTimeScaleIdx = 2;
+        currentTimeScaleIdx = defaultTimeScaleIdx;
         UpdateTimeScaleText();
         blockTimeChange = true;
     }
@@ -83,6 +86,7 @@ public class HUDController : MonoBehaviour
         // }
 
         // orbitElementsText.text = builder.ToString();
+        if (Spacecraft.current == null) return;
         orbitElementsText.text = JsonUtility.ToJson(Spacecraft.current.Kepler.orbit.elements, true);
     }
 }

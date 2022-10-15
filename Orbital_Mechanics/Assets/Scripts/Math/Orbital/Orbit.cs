@@ -1,5 +1,4 @@
 ﻿using Sim.Objects;
-using Sim.Visuals;
 using UnityEngine;
 using System.Collections.Generic;
 

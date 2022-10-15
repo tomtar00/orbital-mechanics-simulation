@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System.Linq;
+﻿using UnityEngine;
 
 namespace Sim.Maneuvers
 {
+    using Time = UnityEngine.Time;
     public class ManeuverRaycaster : MonoBehaviour
     {
         [SerializeField] private float maxClickDuration;

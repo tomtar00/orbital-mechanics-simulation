@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Sim.Maneuvers;
-using Sim.Objects;
+using Sim.Math;
 using TMPro;
 
 public class ManeuverTimeline : MonoBehaviour
@@ -57,7 +57,7 @@ public class ManeuverTimeline : MonoBehaviour
             marker.anchoredPosition3D = Vector3.up * (m.fixedTimeToManeuver / maneuver.fixedTimeToManeuver) * rectMarkers.rect.height;
 
             marker.transform.GetChild(1).GetComponent<TMP_Text>()
-                .text = $"T {((m.timeToManeuver > 0) ? "-" : "+")} {Mathf.Abs(m.timeToManeuver).ToString("f2")}\nBurn: {m.burnTime.ToString("f2")}";
+                .text = $"T {((m.timeToManeuver > 0) ? "-" : "+")} {Mathf.Abs(m.timeToManeuver).ToTimeSpan()}\nBurn: {m.burnTime.ToString("f2")}";
 
             i++;
         }

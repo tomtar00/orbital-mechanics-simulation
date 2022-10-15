@@ -27,10 +27,10 @@ namespace Sim.Visuals
             futureColors = SimulationSettings.Instance.futureOrbitColors;
             lineRenderers = new LineRenderer[depth];
             lineButtons = new LineButton[depth];
-            SetupOrbitRenderers(isManeuver);
+            if (isManeuver) SetupOrbitRenderers();
         }
 
-        private void SetupOrbitRenderers(bool isManeuver)
+        public void SetupOrbitRenderers()
         {
             for (int i = 0; i < depth; i++) {
                 string lineName = isManeuver ? "Maneuver " + i : inOrbitObject.name + " - Orbit Renderer " + i;
@@ -156,13 +156,12 @@ namespace Sim.Visuals
             lineButton.SetCustomIndicatorPositionConverter(pressWorldPosition => {
                 var pressLocalPosition = pressWorldPosition - currentCelestial.transform.position;
                 float angleToPoint = Vector3.SignedAngle(orbit.elements.eccVec, pressLocalPosition, orbit.elements.angMomentum);
-                return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad) + currentCelestial.transform.position;
+                return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad);
             });
             lineButton.ClearAllClickHandlers();
             lineButton.onLinePressed += (worldPos) => {
                 if (!hasManeuver) {
-                    var pressRelativePosition = worldPos - currentCelestial.transform.position;
-                    ManeuverManager.Instance.CreateManeuver(orbit, inOrbitObject, pressRelativePosition, timePassed, lineIdx);
+                    ManeuverManager.Instance.CreateManeuver(orbit, inOrbitObject, worldPos, timePassed, lineIdx);
                     hasManeuver = true;
                 }
                 else {

@@ -19,6 +19,15 @@ namespace Sim.Math
             return (Denominator == 0) ? Vector3.zero : Numerator / Denominator;
         }
 
+        public static string ToTimeSpan(this float seconds) {
+            TimeSpan t = TimeSpan.FromSeconds(seconds);
+            return string.Format("{0:D2}d:{1:D2}h:{2:D2}m:{3:D2}s", 
+                t.Days,
+                t.Hours, 
+                t.Minutes, 
+                t.Seconds);
+        }
+
         public static Vector3 ScaleWithDistance(Vector3 pos1, Vector3 pos2, float multiplier, float minScale, float maxScale) {
             float distance = Vector3.Distance(pos1, pos2);
             distance = Mathf.Clamp(distance, minScale, maxScale);

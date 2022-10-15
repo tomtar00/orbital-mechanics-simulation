@@ -1,17 +1,13 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using Sim.Visuals;
-using Sim.Math;
 
 namespace Sim.Objects
 {
     public class Celestial : InOrbitObject
     {
-        public const float GRAVITY_FALLOFF_MULTIPLIER = 0.005f;
-
         [Header("Celestial")]
         [SerializeField] protected CelestialSO data;
-        public CelestialSO Data { get => data; }
+        public CelestialSO Data { get => data;  set => data = value; }
 
         public List<Celestial> celestialsOnOrbit { get; private set; } = new List<Celestial>();
 
@@ -20,38 +16,39 @@ namespace Sim.Objects
         public float InfluenceRadius { get => influenceRadius; }
 
         [SerializeField] private Transform model;
+        [SerializeField] private MeshRenderer meshRenderer;
         [SerializeField] private Transform influenceSphere;
 
         private float currentCamDistance;
         private bool camInsideInfluence = false;
 
-        private new void Awake()
+        public override void Init(Celestial centralBody, CelestialSO data)
         {
-            float GRAVITY_FALLOFF = GRAVITY_FALLOFF_MULTIPLIER * SimulationSettings.Instance.G;
+            this.data = data;
+            this.centralBody = centralBody;
 
-            base.Awake();
+            base.Init(centralBody, data);
 
-            if (infiniteInfluence) influenceRadius = float.MaxValue;
-            else influenceRadius = Mathf.Sqrt((KeplerianOrbit.G * data.Mass) / GRAVITY_FALLOFF);
+            if (infiniteInfluence) {
+                influenceRadius = float.MaxValue;
+                influenceSphere.gameObject.SetActive(false);
+            }
+            else {
+                influenceRadius = Mathf.Sqrt((SimulationSettings.Instance.G * data.Mass) / SimulationSettings.Instance.gravityFalloff);
+                influenceSphere.localScale = Vector3.one * influenceRadius / 5f;
+            }
 
-            centralBody?.celestialsOnOrbit.Add(this);
+            this.centralBody?.celestialsOnOrbit.Add(this);
 
-            influenceSphere.localScale = Vector3.one * influenceRadius * 2f / 10f;
-            model.transform.localScale = Vector3.one * data.Radius;
+            model.localScale = Vector3.one * data.Diameter;
+            meshRenderer.material = data.Material;
 
             if (!isStationary)
             {
                 kepler.ApplyElementsFromStruct(data.Orbit, centralBody);
-                transform.position = centralBody.transform.position + kepler.orbit.CalculateOrbitalPosition(data.Orbit.trueAnomaly);
+                transform.localPosition = centralBody.transform.localPosition + kepler.orbit.CalculateOrbitalPosition(data.Orbit.trueAnomaly);
 
                 UpdateRelativePosition();
-            }
-        }
-
-        private void Start()
-        {
-            if (!isStationary)
-            {
                 orbitDrawer.DrawOrbit(kepler.orbit.elements);
             }
         }
@@ -62,9 +59,12 @@ namespace Sim.Objects
 
             if (!isStationary)
             {
+                float dontDrawMultiplier = data.Type == CelestialBodyType.PLANET ?
+                        SimulationSettings.Instance.dontDrawPlanetOrbitMultiplier : 
+                        SimulationSettings.Instance.dontDrawMoonOrbitMultiplier;
                 // disable and enable orbit line renderers when close to body
                 currentCamDistance = (CameraController.Instance.cam.transform.position - transform.position).sqrMagnitude;
-                if (currentCamDistance < influenceRadius * influenceRadius)
+                if (currentCamDistance < Mathf.Pow(influenceRadius * dontDrawMultiplier, 2))
                 {
                     if (!camInsideInfluence)
                     {
@@ -95,7 +95,7 @@ namespace Sim.Objects
                 float x = influenceRadius * Mathf.Sin(angle);
                 float z = influenceRadius * Mathf.Cos(angle);
 
-                points[i] = transform.position + new Vector3(x, 0, z);
+                points[i] = transform.localPosition + new Vector3(x, 0, z);
             }
             for (int i = 0; i < res; i++)
             {

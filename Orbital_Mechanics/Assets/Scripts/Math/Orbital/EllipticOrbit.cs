@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Sim.Objects;
 
 namespace Sim.Math
@@ -20,7 +19,7 @@ namespace Sim.Math
             elements.meanAnomaly = elements.anomaly - elements.eccentricity * MathLib.Sin(elements.anomaly);
             
             elements.semiminorAxis = elements.semimajorAxis * MathLib.Sqrt(1 - elements.eccentricity * elements.eccentricity);
-            elements.meanMotion = MathLib.Sqrt((GM).SafeDivision(MathLib.Pow(elements.semimajorAxis, 3)));
+            elements.meanMotion = Mathf.Sqrt((GM).SafeDivision(MathLib.Pow(elements.semimajorAxis, 3)));
             elements.semiLatusRectum = elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity);
 
             elements.trueAnomalyConstant = MathLib.Sqrt((1 + elements.eccentricity).SafeDivision(1 - elements.eccentricity));
@@ -68,23 +67,23 @@ namespace Sim.Math
         {
             float meanAnomaly = elements.meanAnomaly;
             meanAnomaly += elements.meanMotion * time;
-            meanAnomaly = NumericExtensions.FitBetween0And2PI(meanAnomaly);
+            meanAnomaly = Mathf.Repeat(meanAnomaly, 2 * Mathf.PI);
             return meanAnomaly;
         }
         public override float CalculateMeanAnomalyFromAnomaly(float anomaly) {
             float meanAnomaly = anomaly - elements.eccentricity * MathLib.Sin(anomaly);
-            meanAnomaly = NumericExtensions.FitBetween0And2PI(meanAnomaly);
+            meanAnomaly = Mathf.Repeat(meanAnomaly, 2 * Mathf.PI);
             return meanAnomaly;
         }
         public override float CalculateTrueAnomaly(float eccentricAnomaly)
         {
             float trueAnomaly = 2f * MathLib.Atan(elements.trueAnomalyConstant * MathLib.Tan(eccentricAnomaly / 2f));
-            trueAnomaly = NumericExtensions.FitBetween0And2PI(trueAnomaly);
+            trueAnomaly = Mathf.Repeat(trueAnomaly, 2 * Mathf.PI);
             return trueAnomaly;
         }
         public override float CalculateAnomalyFromTrueAnomaly(float trueAnomaly) {
             float anomaly = 2f * MathLib.Atan(MathLib.Tan(trueAnomaly / 2f) / elements.trueAnomalyConstant);
-            anomaly = NumericExtensions.FitBetween0And2PI(anomaly);
+            anomaly = Mathf.Repeat(anomaly, 2 * Mathf.PI);
             return anomaly;
         }
 
