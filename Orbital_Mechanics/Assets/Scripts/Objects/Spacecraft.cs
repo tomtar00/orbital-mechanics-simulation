@@ -18,7 +18,7 @@ namespace Sim.Objects
         [SerializeField]
         [DrawIf("useCustomStartVelocity", true, ComparisonType.Equals)] 
         protected Vector3 startVelocity;
-        [SerializeField] protected Vector3 startRelativePosition;
+        [SerializeField] protected float startSurfaceAltitude;
 
         [Header("Controls")]
         [SerializeField] protected float rotationSpeed = 50;
@@ -50,7 +50,7 @@ namespace Sim.Objects
             current = this;
             if (isStationary)
             {
-                relativePosition = startRelativePosition;
+                relativePosition = Vector3.zero;
                 Debug.LogWarning($"Ship object ({gameObject.name}) is stationary!");
             }
             else
@@ -84,17 +84,20 @@ namespace Sim.Objects
 
         private void InitializeShip()
         {
-            relativePosition = startRelativePosition;
-            transform.localPosition = centralBody.RelativePosition + startRelativePosition;
+            relativePosition = Vector3.right * (startSurfaceAltitude + centralBody.Model.transform.localScale.x / 2);
+            transform.localPosition = centralBody.RelativePosition + relativePosition;
 
             if (useCustomStartVelocity)
                 AddVelocity(startVelocity);
             else {
                 Vector3 velDirection = Vector3.Cross(relativePosition, Vector3.up).normalized;
                 AddVelocity(velDirection * CircularOrbitSpeed());
+                Debug.Log(JsonUtility.ToJson(kepler.orbit.elements, true));
+                Debug.Log(JsonUtility.ToJson(centralBody.Kepler.orbit.elements, true));
             }
 
             Debug.Log("spacecraft period: " + kepler.orbit.elements.period.ToTimeSpan());
+            Debug.Log(centralBody.name + " period: " + centralBody.Kepler.orbit.elements.period.ToTimeSpan());
         }
         private float CircularOrbitSpeed()
         {
@@ -276,6 +279,7 @@ namespace Sim.Objects
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time since velocity changed: {timeSinceVelocityChanged}");
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time to next gravity change: {timeToGravityChange}");
             GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time since gravity changed: {timeSinceGravityChange}");
+            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Velocity: {velocity.magnitude / SimulationSettings.Instance.scale} m/s");
         }
 
     }

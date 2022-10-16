@@ -47,7 +47,8 @@ namespace Sim.Math
             y = this.distance * ((sinlon * cosArgTrue) + (coslon * sinArgTrue * cosinc));
             z = this.distance * (sininc * sinArgTrue);
 
-            return new Vector3(x, y, z);
+            // reverse y and z axis to sync with unity
+            return new Vector3(x, z, y);
         }
         public override Vector3 CalculateVelocity(Vector3 relativePosition, float trueAnomaly)
         {
@@ -56,9 +57,9 @@ namespace Sim.Math
             this.speed = MathLib.Sqrt(GM * ((2f).SafeDivision(this.distance) - (1f).SafeDivision(elements.semimajorAxis)));
 
             // source: https://en.wikipedia.org/wiki/Elliptic_orbit#Flight_path_angle
-            float pathAngle = MathLib.Atan((elements.eccentricity * MathLib.Sin(trueAnomaly)) / (1 + elements.eccentricity * MathLib.Cos(trueAnomaly)));
+            float pathAngle = MathLib.Atan((elements.eccentricity * MathLib.Sin(trueAnomaly)) / (1 + elements.eccentricity * MathLib.Cos(trueAnomaly))) * MathLib.Rad2Deg;
 
-            return Quaternion.AngleAxis(-pathAngle * MathLib.Rad2Deg, elements.angMomentum) *
+            return Quaternion.AngleAxis(-pathAngle, elements.angMomentum) *
                             Quaternion.AngleAxis(90, elements.angMomentum) * relativePosition.normalized *
                             this.speed;
         }

@@ -289,9 +289,9 @@ MonoBehaviour:
   maneuverDirection: {fileID: 385384647210114175}
   useCustomStartVelocity: 0
   startVelocity: {x: 0, y: 0, z: 10}
-  startRelativePosition: {x: 2, y: 0, z: 0}
+  startSurfaceAltitude: 0.05
   rotationSpeed: 250
-  thrust: 0.00005
+  thrust: 0.000005
   autoManeuvers: 1
   maneuverSuccessMat: {fileID: 2100000, guid: 2c9ea98cce2557d46a3793af0d128915, type: 2}
   maneuverFailMat: {fileID: 2100000, guid: b4f3fa97e11945746b2a769563b31410, type: 2}
@@ -301,7 +301,7 @@ MonoBehaviour:
   - {fileID: 4194339930323367775}
   scaleMultiplier: 0.1
   minScale: 0.2
-  maxScale: 10000
+  maxScale: 10
 --- !u!1 &7396680545637218813
 GameObject:
   m_ObjectHideFlags: 0

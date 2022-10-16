@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
+using Sim.Math;
 
 namespace Sim.Objects
 {
@@ -18,6 +20,8 @@ namespace Sim.Objects
         [SerializeField] private Transform model;
         [SerializeField] private MeshRenderer meshRenderer;
         [SerializeField] private Transform influenceSphere;
+
+        public Transform Model { get => model; }
 
         private float currentCamDistance;
         private bool camInsideInfluence = false;
@@ -69,38 +73,24 @@ namespace Sim.Objects
                     if (!camInsideInfluence)
                     {
                         orbitDrawer.TurnOffRenderersFrom(0);
+                        InOrbitObject.allObjects
+                            .Where(o => o.OrbitDrawer != null && o.CentralBody.isStationary)
+                            .ForEach(o => {
+                                o.OrbitDrawer.TurnOffRenderersFrom(0);
+                            });
                         camInsideInfluence = true;
                     }
                 }
                 else if (camInsideInfluence)
                 {
                     orbitDrawer.TurnOnRenderersFrom(0);
+                    InOrbitObject.allObjects
+                            .Where(o => o.OrbitDrawer != null && o.CentralBody.isStationary && centralBody.IsStationary)
+                            .ForEach(o => {
+                                o.OrbitDrawer.TurnOnRenderersFrom(0);
+                            });
                     camInsideInfluence = false;
                 }
-            }
-        }
-
-        private new void OnDrawGizmos()
-        {
-            base.OnDrawGizmos();
-
-            if (infiniteInfluence) return;
-
-            int res = 30;
-            float circleFraction = 1f / res;
-            Vector3[] points = new Vector3[res];
-            for (int i = 0; i < res; i++)
-            {
-                float angle = i * circleFraction * 2 * Mathf.PI;
-                float x = influenceRadius * Mathf.Sin(angle);
-                float z = influenceRadius * Mathf.Cos(angle);
-
-                points[i] = transform.localPosition + new Vector3(x, 0, z);
-            }
-            for (int i = 0; i < res; i++)
-            {
-                Vector3 endPoint = i + 1 < res ? points[i + 1] : points[0];
-                Debug.DrawLine(points[i], endPoint, Color.cyan);
             }
         }
     }

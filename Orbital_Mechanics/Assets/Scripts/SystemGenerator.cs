@@ -34,7 +34,7 @@ public class SystemGenerator : MonoBehaviour
 
         var orbit = bodyData.Orbit;
         orbit.semimajorAxis *= SimulationSettings.Instance.scale;
-        orbit.inclination += Mathf.PI / 2;
+        // orbit.inclination += Mathf.PI / 2;
         
         bodyData.Orbit = orbit;
 

@@ -316,13 +316,15 @@ MonoBehaviour:
   linePressTolerance: 50
   lineScaleMultiplier: 0.001
   lineMinScale: 0.01
-  lineMaxScale: 10000
+  lineMaxScale: 100000
+  lineScaleWithSqrt: 0
+  lineSqrtMagnifier: 0.1
   influenceChangeTimeSlowdownOffset: 60
   maneuverTimeSlowdownOffset: 10
-  addVelocitySensitivity: 2e+21
-  G: 6.674e-23
-  scale: 0.0001
-  gravityFalloff: 0.000001
+  addVelocitySensitivity: 5e+18
+  G: 6.674e-11
+  scale: 0.0000001
+  gravityFalloff: 0.001
   dontDrawPlanetOrbitMultiplier: 15
   dontDrawMoonOrbitMultiplier: 1
 --- !u!114 &153973665

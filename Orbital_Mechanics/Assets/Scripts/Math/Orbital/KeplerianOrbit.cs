@@ -98,11 +98,11 @@ namespace Sim.Math
         {
             float GM = G * centralBody.Data.Mass;
 
-            elements.angMomentum = Quaternion.AngleAxis(elements.inclination * Mathf.Rad2Deg, Vector3.right) * Vector3.forward;
-            elements.angMomentum = Quaternion.AngleAxis(elements.lonAscNode * Mathf.Rad2Deg, Vector3.forward) * elements.angMomentum;
+            elements.angMomentum = Quaternion.AngleAxis(elements.inclination * Mathf.Rad2Deg, Vector3.right) * Vector3.up;
+            elements.angMomentum = Quaternion.AngleAxis(elements.lonAscNode * Mathf.Rad2Deg, Vector3.up) * elements.angMomentum;
             elements.angMomentum = elements.angMomentum.normalized * MathLib.Sqrt(GM * elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity));
 
-            elements.eccVec = Quaternion.AngleAxis(elements.lonAscNode * Mathf.Rad2Deg, Vector3.forward) * Vector3.right;
+            elements.eccVec = Quaternion.AngleAxis(elements.lonAscNode * Mathf.Rad2Deg, Vector3.up) * Vector3.right;
             elements.eccVec = Quaternion.AngleAxis(elements.argPeriapsis * Mathf.Rad2Deg, elements.angMomentum) * elements.eccVec;
             elements.eccVec = elements.eccVec.normalized * elements.eccentricity;
 

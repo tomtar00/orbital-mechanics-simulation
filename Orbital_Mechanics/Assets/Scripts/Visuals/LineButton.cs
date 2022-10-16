@@ -78,7 +78,9 @@ namespace Sim.Visuals
                 line.gameObject.transform.position, CameraController.Instance.cam.transform.position,
                 SimulationSettings.Instance.lineScaleMultiplier, 
                 SimulationSettings.Instance.lineMinScale, 
-                SimulationSettings.Instance.lineMaxScale
+                SimulationSettings.Instance.lineMaxScale,
+                sqrtDistance: SimulationSettings.Instance.lineScaleWithSqrt,
+                sqrtMagnifier: SimulationSettings.Instance.lineSqrtMagnifier
             ).x;
 
             if (!enabled) return;

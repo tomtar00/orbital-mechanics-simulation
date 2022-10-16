@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: Earth
   m_EditorClassIdentifier: 
   mass: 5.97219e+24
-  diameter: 12742
+  diameter: 12742000
   orbit:
-    semimajorAxis: 149589020
+    semimajorAxis: 1.49589e+11
     eccentricity: 0.0167
     inclination: 0
     lonAscNode: 0
-    argPeriapsis: 0
+    argPeriapsis: -1.7966
     trueAnomaly: 0
     meanAnomaly: 0
     anomaly: 0

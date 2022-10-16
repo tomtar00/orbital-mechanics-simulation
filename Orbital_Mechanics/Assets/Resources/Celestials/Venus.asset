@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: Venus
   m_EditorClassIdentifier: 
   mass: 4.867e+24
-  diameter: 12104
+  diameter: 12104000
   orbit:
-    semimajorAxis: 108210000
+    semimajorAxis: 1.0821e+11
     eccentricity: 0.006
     inclination: 0.05923
-    lonAscNode: 0
-    argPeriapsis: 0
+    lonAscNode: 1.3383157
+    argPeriapsis: 0.95858
     trueAnomaly: 0.7
     meanAnomaly: 0
     anomaly: 0

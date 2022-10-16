@@ -15,6 +15,8 @@ namespace Sim {
         public float lineScaleMultiplier = .001f;
         public float lineMinScale = 0.01f;
         public float lineMaxScale = 1e+20f;
+        public bool lineScaleWithSqrt = false;
+        public float lineSqrtMagnifier = 0.1f;
         [Header("Maneuvers")]
         public float influenceChangeTimeSlowdownOffset = 3;
         public float maneuverTimeSlowdownOffset = 3;
@@ -30,7 +32,7 @@ namespace Sim {
         public static SimulationSettings Instance;
         private void Awake() {
             Instance = this;
-            G *= scale;
+            G *= scale * scale;
             gravityFalloff *= scale;
         }
 

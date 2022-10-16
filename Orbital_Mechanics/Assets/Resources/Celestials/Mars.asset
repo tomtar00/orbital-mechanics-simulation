@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: Mars
   m_EditorClassIdentifier: 
   mass: 6.39e+23
-  diameter: 6779
+  diameter: 6779000
   orbit:
-    semimajorAxis: 227920000
-    eccentricity: 0.0167
+    semimajorAxis: 2.2792e+11
+    eccentricity: 0.093
     inclination: 0.03228
-    lonAscNode: 0
-    argPeriapsis: 0
+    lonAscNode: 0.8649771
+    argPeriapsis: -1.2828733
     trueAnomaly: 0.7
     meanAnomaly: 0
     anomaly: 0

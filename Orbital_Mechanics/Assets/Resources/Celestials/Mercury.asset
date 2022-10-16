@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: Mercury
   m_EditorClassIdentifier: 
   mass: 3.285e+23
-  diameter: 4879.4
+  diameter: 4879000.5
   orbit:
-    semimajorAxis: 57910000
+    semimajorAxis: 5.791e+10
     eccentricity: 0.205
     inclination: 0.122
-    lonAscNode: 0
-    argPeriapsis: 0
+    lonAscNode: 0.843531
+    argPeriapsis: 0.508362
     trueAnomaly: 0.7
     meanAnomaly: 0
     anomaly: 0

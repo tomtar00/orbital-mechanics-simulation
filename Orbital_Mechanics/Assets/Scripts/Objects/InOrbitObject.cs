@@ -1,12 +1,14 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using Sim.Visuals;
 using Sim.Math;
-using Time = Sim.Time;
 
 namespace Sim.Objects
 {
     public abstract class InOrbitObject : MonoBehaviour
     {
+        public static List<InOrbitObject> allObjects { get; private set; }
+
         [Header("Orbit")]
         [SerializeField] protected bool isStationary;
         [SerializeField] protected Celestial centralBody;
@@ -23,6 +25,7 @@ namespace Sim.Objects
         // Orbit
         public Celestial CentralBody { get => centralBody; set => centralBody = value; }
         protected OrbitDrawer orbitDrawer;
+        public OrbitDrawer OrbitDrawer { get => orbitDrawer; }
 
         // Position
         protected Vector3 relativePosition;
@@ -30,6 +33,13 @@ namespace Sim.Objects
 
         (float, float, float) mat;
         StateVectors stateVectors;
+
+        private void Awake() {
+            if (allObjects == null) {
+                allObjects = new List<InOrbitObject>();
+            }
+            allObjects.Add(this);
+        }
 
         public virtual void Init(Celestial centralBody, CelestialSO data)
         {
@@ -81,16 +91,20 @@ namespace Sim.Objects
             if (Application.isPlaying)
             {
                 /// Draw velocity vector
-                Debug.DrawLine(transform.position, this.velocity + transform.position);
+                Debug.DrawLine(transform.position, this.velocity*1000f + transform.position);
 
                 /// Draw orbit plane normal vector
                 if (centralBody != null)
                 {
                     Debug.DrawLine(centralBody.transform.position, transform.position, Color.red);
-                    Debug.DrawLine(centralBody.transform.position, kepler.orbit.elements.angMomentum + centralBody.transform.position, Color.blue);
-                    // Debug.DrawLine(centralBody.transform.position, trajectory.orbit.eccVec + centralBody.transform.position, Color.yellow);
+                    Debug.DrawLine(centralBody.transform.position, kepler.orbit.elements.angMomentum*100000f + centralBody.transform.position, Color.blue);
+                    Debug.DrawLine(centralBody.transform.position, kepler.orbit.elements.eccVec * 100000f + centralBody.transform.position, Color.yellow);
                 }
             }
+        }
+
+        private void OnDestroy() {
+            allObjects.Remove(this);
         }
     }
 }

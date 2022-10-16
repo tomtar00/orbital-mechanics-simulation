@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Moon
   m_EditorClassIdentifier: 
   mass: 7.347e+22
-  diameter: 3474.8
+  diameter: 3474000.8
   orbit:
-    semimajorAxis: 384400
+    semimajorAxis: 384400000
     eccentricity: 0.0549
     inclination: 0
     lonAscNode: 0

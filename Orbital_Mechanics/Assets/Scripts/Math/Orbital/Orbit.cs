@@ -63,7 +63,8 @@ namespace Sim.Math
 
             // Inclination
             // source: https://en.wikipedia.org/wiki/Orbital_inclination
-            elements.inclination = MathLib.Acos(elements.angMomentum.z.SafeDivision(angMomMag));
+            elements.inclination = MathLib.Acos(elements.angMomentum.y.SafeDivision(angMomMag));
+            if (Mathf.Abs(elements.inclination - Mathf.PI) < 0.01 && elements.inclination > 0) elements.inclination = 0; // FIXME: DANGEROUS
 
             // Longitude of the ascending node
             // source: https://en.wikipedia.org/wiki/Longitude_of_the_ascending_node
