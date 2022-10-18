@@ -18,6 +18,7 @@ namespace Sim.Math
             elements.meanMotion = MathLib.Sqrt((GM).SafeDivision(MathLib.Pow(-elements.semimajorAxis, 3)));
             elements.semiminorAxis = -elements.semimajorAxis * MathLib.Sqrt(elements.eccentricity * elements.eccentricity - 1f);
             elements.semiLatusRectum = elements.semimajorAxis * (elements.eccentricity * elements.eccentricity - 1f);
+
             elements.trueAnomalyConstant = MathLib.Sqrt((elements.eccentricity + 1f).SafeDivision(elements.eccentricity - 1f));
 
             return elements;
@@ -29,22 +30,20 @@ namespace Sim.Math
             float distance = -elements.semiLatusRectum / (1f + elements.eccentricity * MathLib.Cos(trueAnomaly));
 
             Vector3 periapsisDir = elements.eccVec.normalized;
-            Vector3 pos = Quaternion.AngleAxis(trueAnomaly * Mathf.Rad2Deg, elements.angMomentum) * periapsisDir;
+            Vector3 pos = Quaternion.AngleAxis(-trueAnomaly * Mathf.Rad2Deg, elements.angMomentum) * periapsisDir;
 
             return pos * distance;
         }
         public override Vector3 CalculateVelocity(Vector3 relativePosition, float trueAnomaly)
         {
-            float distance = -elements.semiLatusRectum / (1f + elements.eccentricity * MathLib.Cos(trueAnomaly));
-            float speed = MathLib.Sqrt(GM * ((2f).SafeDivision(distance) - (1f).SafeDivision(elements.semimajorAxis)));
+            this.distance = -elements.semiLatusRectum / (1f + elements.eccentricity * MathLib.Cos(trueAnomaly));
+            this.speed = MathLib.Sqrt(GM * ((2f).SafeDivision(distance) - (1f).SafeDivision(elements.semimajorAxis)));
 
             // source: https://en.wikipedia.org/wiki/Elliptic_orbit#Flight_path_angle
-            float e = elements.eccentricity;
-            float pathAngle = MathLib.Atan((e * MathLib.Sin(trueAnomaly)) / (1 + e * MathLib.Cos(trueAnomaly)));
-            Vector3 radDir = Quaternion.AngleAxis(90, elements.angMomentum) * relativePosition.normalized;
-            Vector3 dir = Quaternion.AngleAxis(-pathAngle * MathLib.Rad2Deg, elements.angMomentum) * radDir;
-
-            return dir * speed;
+            float pathAngle = MathLib.Atan((elements.eccentricity * MathLib.Sin(trueAnomaly)) / (1 + elements.eccentricity * MathLib.Cos(trueAnomaly))) * Mathf.Rad2Deg;
+            return Quaternion.AngleAxis(pathAngle, elements.angMomentum) *
+                            Quaternion.AngleAxis(-90, elements.angMomentum) * relativePosition.normalized *
+                            this.speed;
         }
 
         public override float CalculateMeanAnomaly(float time)

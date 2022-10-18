@@ -50,34 +50,32 @@ namespace Sim.Math
             var elements = new OrbitElements();
 
             // Semi-major axis
-            // source: wyprowadzenie_semimajor.png
             // source2: https://en.wikipedia.org/wiki/Vis-viva_equation
             elements.semimajorAxis = (GM * posMagnitude).SafeDivision((2 * GM - velMagnitude * velMagnitude * posMagnitude));
 
             // Eccentricity
             // source: https://en.wikipedia.org/wiki/Eccentricity_vector
-            elements.angMomentum = Vector3.Cross(relativePosition, velocity);
+            elements.angMomentum = Vector3.Cross(velocity, relativePosition);
             float angMomMag = elements.angMomentum.magnitude;
-            elements.eccVec = (Vector3.Cross(velocity, elements.angMomentum) / GM) - (relativePosition.SafeDivision(posMagnitude));
+            elements.eccVec = (Vector3.Cross(elements.angMomentum, velocity) / GM) - (relativePosition.SafeDivision(posMagnitude));
             elements.eccentricity = elements.eccVec.magnitude;
 
             // Inclination
             // source: https://en.wikipedia.org/wiki/Orbital_inclination
             elements.inclination = MathLib.Acos(elements.angMomentum.y.SafeDivision(angMomMag));
-            if (Mathf.Abs(elements.inclination - Mathf.PI) < 0.01 && elements.inclination > 0) elements.inclination = 0; // FIXME: DANGEROUS
 
             // Longitude of the ascending node
             // source: https://en.wikipedia.org/wiki/Longitude_of_the_ascending_node
-            Vector3 nodeVector = Vector3.Cross(Vector3.forward, elements.angMomentum);
+            Vector3 nodeVector = -Vector3.Cross(Vector3.up, elements.angMomentum);
             float nodeMag = nodeVector.magnitude;
             elements.lonAscNode = MathLib.Acos(nodeVector.x.SafeDivision(nodeMag));
-            if (nodeVector.y < 0)
+            if (nodeVector.z < 0)
                 elements.lonAscNode = PI2 - elements.lonAscNode;
 
             // Argument of periapsis
             // source: https://en.wikipedia.org/wiki/Argument_of_periapsis
             elements.argPeriapsis = MathLib.Acos(Vector3.Dot(nodeVector, elements.eccVec).SafeDivision(nodeMag * elements.eccentricity));
-            if (elements.eccVec.z < 0)
+            if (elements.eccVec.y < 0)
                 elements.argPeriapsis = PI2 - elements.argPeriapsis;
 
             // True anomaly

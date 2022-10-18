@@ -314,14 +314,12 @@ MonoBehaviour:
   indicationPrefab: {fileID: 4719440009590465397, guid: 73434a6245f2fe74f82e70e8342cb730,
     type: 3}
   linePressTolerance: 50
-  lineScaleMultiplier: 0.001
-  lineMinScale: 0.01
+  lineScaleMultiplier: 0.003
+  lineMinScale: 1
   lineMaxScale: 100000
-  lineScaleWithSqrt: 0
-  lineSqrtMagnifier: 0.1
-  influenceChangeTimeSlowdownOffset: 60
+  influenceChangeTimeSlowdownOffset: 15
   maneuverTimeSlowdownOffset: 10
-  addVelocitySensitivity: 5e+18
+  addVelocitySensitivity: 1e+18
   G: 6.674e-11
   scale: 0.0000001
   gravityFalloff: 0.001
@@ -3434,7 +3432,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dummyCamera: {fileID: 1182821789}
-  acceleration: 50
+  acceleration: 90
   accSprintMultiplier: 1000
   sensitivity: 2
   damping: 5

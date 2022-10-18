@@ -47,6 +47,7 @@ namespace Sim.Maneuvers
 
             currentTrueAnomaly = GetTrueAnomaly(newWorldPosition);
             timeToManeuver = GetTimeToManeuver(currentTrueAnomaly);
+
             fixedTimeToManeuver = timeToManeuver;
             lastVelocity = this.stateVectors.velocity;
             this.stateVectors.velocity = orbit.CalculateVelocity(newWorldPosition, currentTrueAnomaly);
@@ -63,7 +64,7 @@ namespace Sim.Maneuvers
         }
 
         public float GetTrueAnomaly(Vector3 relativePressPosition) {
-            return Vector3.SignedAngle(orbit.elements.eccVec, relativePressPosition, orbit.elements.angMomentum) * Mathf.Deg2Rad;
+            return -Vector3.SignedAngle(orbit.elements.eccVec, relativePressPosition, orbit.elements.angMomentum) * Mathf.Deg2Rad;
         }
         public float GetTimeToManeuver(float trueAnomaly) {
             float anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);

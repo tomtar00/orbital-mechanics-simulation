@@ -92,8 +92,6 @@ namespace Sim.Objects
             else {
                 Vector3 velDirection = Vector3.Cross(relativePosition, Vector3.up).normalized;
                 AddVelocity(velDirection * CircularOrbitSpeed());
-                Debug.Log(JsonUtility.ToJson(kepler.orbit.elements, true));
-                Debug.Log(JsonUtility.ToJson(centralBody.Kepler.orbit.elements, true));
             }
 
             Debug.Log("spacecraft period: " + kepler.orbit.elements.period.ToTimeSpan());

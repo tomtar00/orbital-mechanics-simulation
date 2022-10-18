@@ -59,8 +59,8 @@ namespace Sim.Math
             // source: https://en.wikipedia.org/wiki/Elliptic_orbit#Flight_path_angle
             float pathAngle = MathLib.Atan((elements.eccentricity * MathLib.Sin(trueAnomaly)) / (1 + elements.eccentricity * MathLib.Cos(trueAnomaly))) * MathLib.Rad2Deg;
 
-            return Quaternion.AngleAxis(-pathAngle, elements.angMomentum) *
-                            Quaternion.AngleAxis(90, elements.angMomentum) * relativePosition.normalized *
+            return Quaternion.AngleAxis(pathAngle, elements.angMomentum) *
+                            Quaternion.AngleAxis(-90, elements.angMomentum) * relativePosition.normalized *
                             this.speed;
         }
 

@@ -16,11 +16,11 @@ MonoBehaviour:
   diameter: 3474000.8
   orbit:
     semimajorAxis: 384400000
-    eccentricity: 0.0549
+    eccentricity: 0.055
     inclination: 0
     lonAscNode: 0
     argPeriapsis: 0
-    trueAnomaly: 1.57
+    trueAnomaly: 1.2
     meanAnomaly: 0
     anomaly: 0
     semiminorAxis: 0

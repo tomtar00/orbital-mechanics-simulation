@@ -153,11 +153,7 @@ namespace Sim.Visuals
 
             // make indicator show always on the orbit
             var lineButton = lineButtons[lineIdx];
-            lineButton.SetCustomIndicatorPositionConverter(pressWorldPosition => {
-                var pressLocalPosition = pressWorldPosition - currentCelestial.transform.position;
-                float angleToPoint = Vector3.SignedAngle(orbit.elements.eccVec, pressLocalPosition, orbit.elements.angMomentum);
-                return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad);
-            });
+            lineButton.orbit = orbit;
             lineButton.ClearAllClickHandlers();
             lineButton.onLinePressed += (worldPos) => {
                 if (!hasManeuver) {
@@ -192,6 +188,8 @@ namespace Sim.Visuals
                 out _,
                 out _
             );
+
+            lineButtons[0].orbit = orbit;
 
             // loop if no gravity change reported
             LineRenderer line = lineRenderers[0];

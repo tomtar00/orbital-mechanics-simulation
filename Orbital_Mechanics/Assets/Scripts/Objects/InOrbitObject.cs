@@ -94,11 +94,11 @@ namespace Sim.Objects
                 Debug.DrawLine(transform.position, this.velocity*1000f + transform.position);
 
                 /// Draw orbit plane normal vector
-                if (centralBody != null)
+                if (centralBody != null && this is Spacecraft)
                 {
                     Debug.DrawLine(centralBody.transform.position, transform.position, Color.red);
-                    Debug.DrawLine(centralBody.transform.position, kepler.orbit.elements.angMomentum*100000f + centralBody.transform.position, Color.blue);
-                    Debug.DrawLine(centralBody.transform.position, kepler.orbit.elements.eccVec * 100000f + centralBody.transform.position, Color.yellow);
+                    Debug.DrawLine(centralBody.transform.position, kepler.orbit.elements.angMomentum * 10000f + centralBody.transform.position, Color.blue);
+                    Debug.DrawLine(centralBody.transform.position, kepler.orbit.elements.eccVec * 1000f + centralBody.transform.position, Color.yellow);
                 }
             }
         }

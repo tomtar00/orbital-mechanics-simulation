@@ -35,8 +35,10 @@ namespace Sim.Visuals
 
         private bool hovering = false;
         private new bool enabled = true;
+        
+        public Orbit orbit { get; set; }
 
-        private Func<Vector3, Vector3> converterFunction;
+        Vector3 closestWorldPoint;
 
         public bool Enabled {
             get => enabled;
@@ -74,14 +76,15 @@ namespace Sim.Visuals
 
         private void Update() {
 
-            line.startWidth = NumericExtensions.ScaleWithDistance(
-                line.gameObject.transform.position, CameraController.Instance.cam.transform.position,
-                SimulationSettings.Instance.lineScaleMultiplier, 
-                SimulationSettings.Instance.lineMinScale, 
-                SimulationSettings.Instance.lineMaxScale,
-                sqrtDistance: SimulationSettings.Instance.lineScaleWithSqrt,
-                sqrtMagnifier: SimulationSettings.Instance.lineSqrtMagnifier
-            ).x;
+            if (orbit != null)
+            {
+                closestWorldPoint = ConvertWorldPosToOrbitPos(CameraController.Instance.cam.transform.position, true);
+
+                float distance = Vector3.Distance(closestWorldPoint, CameraController.Instance.cam.transform.position);
+                distance = Mathf.Clamp(distance, 0, orbit.centralBody.InfluenceRadius);
+                distance = Mathf.Clamp(distance, SimulationSettings.Instance.lineMinScale, SimulationSettings.Instance.lineMaxScale);
+                line.startWidth = distance * SimulationSettings.Instance.lineScaleMultiplier;
+            }
 
             if (!enabled) return;
 
@@ -91,7 +94,7 @@ namespace Sim.Visuals
 
             if (hovering && showPointIndication) {
                 var worldPos = pointerData.pointerCurrentRaycast.worldPosition;
-                var convertedPos = converterFunction == null ? worldPos : converterFunction(worldPos);
+                var convertedPos = ConvertWorldPosToOrbitPos(worldPos);
                 indicator.transform.localPosition = convertedPos;
                 if (onLineHovering != null)
                     onLineHovering(this, convertedPos);
@@ -105,8 +108,17 @@ namespace Sim.Visuals
             }
         }
 
-        public void SetCustomIndicatorPositionConverter(Func<Vector3, Vector3> func) {
-            converterFunction = func;
+        public Vector3 ConvertWorldPosToOrbitPos(Vector3 worldPos, bool returnWorldOrbitPos = false) {
+            if (orbit != null) {
+                var pressLocalPosition = worldPos - orbit.centralBody.transform.position;
+                float angleToPoint = -Vector3.SignedAngle(orbit.elements.eccVec, pressLocalPosition, orbit.elements.angMomentum);
+                if (!returnWorldOrbitPos)
+                    return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad);
+                else {
+                    return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad) + orbit.centralBody.transform.position;
+                }
+            }
+            else return worldPos;
         }
 
         public void OnPointerClick(PointerEventData pointerEventData)
@@ -115,7 +127,7 @@ namespace Sim.Visuals
             if (onLinePressed == null) return;
 
             var worldPos = pointerEventData.pointerCurrentRaycast.worldPosition;
-            onLinePressed(converterFunction == null ? worldPos : converterFunction(worldPos));
+            onLinePressed(ConvertWorldPosToOrbitPos(worldPos));
             if (showPointIndication) {
                 indicator.SetActive(false);
             }
