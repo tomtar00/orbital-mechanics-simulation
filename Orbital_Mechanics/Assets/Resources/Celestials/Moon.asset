@@ -20,7 +20,7 @@ MonoBehaviour:
     inclination: 0
     lonAscNode: 0
     argPeriapsis: 0
-    trueAnomaly: 1.2
+    trueAnomaly: 0
     meanAnomaly: 0
     anomaly: 0
     semiminorAxis: 0

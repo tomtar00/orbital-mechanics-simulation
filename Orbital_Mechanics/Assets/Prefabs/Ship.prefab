@@ -268,7 +268,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lineWidth: 3
-  orbitResolution: 200
+  orbitResolution: 201
   depth: 5
   isManeuver: 0
 --- !u!114 &7396680545357339825
@@ -288,8 +288,8 @@ MonoBehaviour:
   model: {fileID: 7396680545637218754}
   maneuverDirection: {fileID: 385384647210114175}
   useCustomStartVelocity: 0
-  startVelocity: {x: 0, y: 0.0002, z: 0.0008}
-  startSurfaceAltitude: 0.05
+  startVelocity: {x: 0, y: 0, z: 0.0008304}
+  startSurfaceAltitude: 0.5
   rotationSpeed: 250
   thrust: 0.00005
   autoManeuvers: 1
@@ -327,7 +327,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7396680545637218813}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.3, y: 0.3, z: 0.7}
   m_Children: []

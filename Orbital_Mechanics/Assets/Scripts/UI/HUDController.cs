@@ -65,8 +65,11 @@ public class HUDController : MonoBehaviour
         blockTimeChange = false;
     }
 
-    public void ChangeFocus() {
-        CameraController.Instance.FocusOnShip();
+    public void SpacecraftFocus() {
+        CameraController.Instance.Focus(Spacecraft.current.transform);
+    }
+    public void FreeCamera() {
+        CameraController.Instance.Focus(null);
     }
 
     public void RemoveCurrentManeuver() {
@@ -78,14 +81,6 @@ public class HUDController : MonoBehaviour
     }
 
     private void ApplyOrbitElements() {
-        // StringBuilder builder = new StringBuilder();
-
-        // foreach (var item in Spacecraft.current.Kepler.orbit.elements)
-        // {
-            
-        // }
-
-        // orbitElementsText.text = builder.ToString();
         if (Spacecraft.current == null) return;
         orbitElementsText.text = JsonUtility.ToJson(Spacecraft.current.Kepler.orbit.elements, true);
     }

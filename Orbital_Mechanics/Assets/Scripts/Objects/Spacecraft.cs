@@ -5,6 +5,8 @@ using Sim.Visuals;
 using Sim.Math;
 using Sim.Maneuvers;
 
+// v = (0, 0, 0.000829)
+
 namespace Sim.Objects
 {
     [RequireComponent(typeof(OrbitDrawer))]
@@ -185,7 +187,7 @@ namespace Sim.Objects
         {
             if (centralBody == null) return;
 
-            if (relativePosition.sqrMagnitude - centralBody.InfluenceRadius * centralBody.InfluenceRadius > .1f) // .5f
+            if (relativePosition.sqrMagnitude - centralBody.InfluenceRadius * centralBody.InfluenceRadius > 0) // .5f
             {
                 ExitCelestialInfluence();
             }
@@ -274,10 +276,10 @@ namespace Sim.Objects
             // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Anomaly:        {elements.anomaly}");
             // i++;
             // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time to periapsis: {elements.timeToPeriapsis}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time since velocity changed: {timeSinceVelocityChanged}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time to next gravity change: {timeToGravityChange}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time since gravity changed: {timeSinceGravityChange}");
-            GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Velocity: {velocity.magnitude / SimulationSettings.Instance.scale} m/s");
+            GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Time since velocity changed: {timeSinceVelocityChanged}");
+            GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Time to next gravity change: {timeToGravityChange}");
+            GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Time since gravity changed: {timeSinceGravityChange}");
+            GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Velocity: {velocity.magnitude / SimulationSettings.Instance.scale} m/s");
         }
 
     }

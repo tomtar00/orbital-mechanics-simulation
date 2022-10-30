@@ -8,7 +8,7 @@ namespace Sim.Visuals
     public class OrbitDrawer : MonoBehaviour
     {
         [SerializeField] private float lineWidth = 0.01f;
-        [SerializeField][Range(1, 200)] private int orbitResolution = 200;
+        [SerializeField][Range(1, 500)] private int orbitResolution = 200;
         [SerializeField][Range(1, 5)] private int depth = 2;
 
         [SerializeField] private bool isManeuver;

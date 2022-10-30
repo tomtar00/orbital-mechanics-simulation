@@ -53,9 +53,9 @@ public class CameraController : MonoBehaviour
     private void Start() {
         targetDistance = distance;
         cam = GetComponent<Camera>();
-        FocusOnShip();
+        Focus(Spacecraft.current?.transform);
     }
-    private void Update()
+    private void LateUpdate()
     {
         if (focusingOnObject) {
             Orbit();
@@ -123,11 +123,10 @@ public class CameraController : MonoBehaviour
 			Input.GetAxis("Mouse X")
 		) : Vector2.zero;
         solarSystemHolder.position = -focusObject.localPosition;
-        // Debug.Log(focusObject.position);
 		orbitAngles += rotationSpeed * Time.unscaledDeltaTime * input;
         Quaternion lookRotation = Quaternion.Euler(orbitAngles);
 		Vector3 lookDirection = lookRotation * -Vector3.forward;
-		Vector3 lookPosition = /* focusObject.position - */ lookDirection * distance;
+		Vector3 lookPosition = lookDirection * distance;
 		transform.SetPositionAndRotation(lookPosition, lookRotation);
     }
     void UpdateDistance() {
@@ -147,14 +146,17 @@ public class CameraController : MonoBehaviour
 		}
 	}
 
-    public void FocusOnShip() {
-        if (!focusingOnObject && Spacecraft.current != null) {
-            focusObject = Spacecraft.current.transform;
+    public void Focus(Transform objectTransform) {
+        if (objectTransform != null) {
+            focusObject = objectTransform;
             focusingOnObject = true;
+            
+            InOrbitObject inOrbitObject = objectTransform.GetComponent<InOrbitObject>();
+            if (inOrbitObject != null && inOrbitObject is Celestial)
+                inOrbitObject.EnableOtherOrbitRenderer(false);
         }
         else {
             focusingOnObject = false;
-            // transform.position = Vector3.zero;
         }
         Focused = true;
     }

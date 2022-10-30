@@ -56,7 +56,7 @@ namespace Sim.Maneuvers
             ChangePosition(newWorldPosition);
         }
 
-        public void Update() {
+        public void LateUpdate() {
             timeToManeuver -= Time.deltaTime;
             if (!Node.isDragging) {
                 Node.gameObject.transform.localPosition = stateVectors.position + orbit.centralBody.transform.localPosition;

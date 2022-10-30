@@ -2,6 +2,7 @@
 using UnityEngine;
 using Sim.Visuals;
 using Sim.Math;
+using System.Linq;
 
 namespace Sim.Objects
 {
@@ -17,7 +18,7 @@ namespace Sim.Objects
 
         public KeplerianOrbit Kepler { get => kepler; }
 
-        // Moving
+        // Movement
         protected Vector3 velocity;
         public Vector3 Velocity { get => velocity; }
         public bool IsStationary { get => isStationary; }
@@ -31,8 +32,8 @@ namespace Sim.Objects
         protected Vector3 relativePosition;
         public Vector3 RelativePosition { get => relativePosition; }
 
-        (float, float, float) mat;
-        StateVectors stateVectors;
+        protected (float, float, float) mat;
+        protected StateVectors stateVectors;
 
         private void Awake() {
             if (allObjects == null) {
@@ -83,6 +84,30 @@ namespace Sim.Objects
                 relativePosition = transform.localPosition - centralBody.transform.localPosition;
             else
                 relativePosition = transform.localPosition;
+        }
+
+        public void EnableOtherOrbitRenderer(bool enable)
+        {
+            if (enable)
+            {
+                orbitDrawer.TurnOnRenderersFrom(0);
+                InOrbitObject.allObjects
+                        .Where(o => o.OrbitDrawer != null && o.CentralBody.isStationary && centralBody.IsStationary)
+                        .ForEach(o =>
+                        {
+                            o.OrbitDrawer.TurnOnRenderersFrom(0);
+                        });
+            }
+            else
+            {
+                orbitDrawer.TurnOffRenderersFrom(0);
+                InOrbitObject.allObjects
+                    .Where(o => o.OrbitDrawer != null && o.CentralBody.isStationary)
+                    .ForEach(o =>
+                    {
+                        o.OrbitDrawer.TurnOffRenderersFrom(0);
+                    });
+            }
         }
 
         // Vector debugging

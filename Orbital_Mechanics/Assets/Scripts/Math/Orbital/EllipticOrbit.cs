@@ -68,18 +68,18 @@ namespace Sim.Math
         {
             float meanAnomaly = elements.meanAnomaly;
             meanAnomaly += elements.meanMotion * time;
-            meanAnomaly = Mathf.Repeat(meanAnomaly, 2 * Mathf.PI);
+            meanAnomaly = Mathf.Repeat(meanAnomaly, PI2);
             return meanAnomaly;
         }
         public override float CalculateMeanAnomalyFromAnomaly(float anomaly) {
             float meanAnomaly = anomaly - elements.eccentricity * MathLib.Sin(anomaly);
-            meanAnomaly = Mathf.Repeat(meanAnomaly, 2 * Mathf.PI);
+            meanAnomaly = Mathf.Repeat(meanAnomaly, PI2);
             return meanAnomaly;
         }
         public override float CalculateTrueAnomaly(float eccentricAnomaly)
         {
             float trueAnomaly = 2f * MathLib.Atan(elements.trueAnomalyConstant * MathLib.Tan(eccentricAnomaly / 2f));
-            trueAnomaly = Mathf.Repeat(trueAnomaly, 2 * Mathf.PI);
+            trueAnomaly = Mathf.Repeat(trueAnomaly, PI2);
             return trueAnomaly;
         }
         public override float CalculateAnomalyFromTrueAnomaly(float trueAnomaly) {
@@ -100,6 +100,7 @@ namespace Sim.Math
         public override Vector3 GetPointOnOrbit(int i, float orbitFraction, out float meanAnomaly, out float trueAnomaly)
         {
             float eccentricAnomaly = elements.anomaly + i * orbitFraction * PI2;
+            eccentricAnomaly = Mathf.Repeat(eccentricAnomaly, PI2);
             meanAnomaly = eccentricAnomaly - elements.eccentricity * MathLib.Sin(eccentricAnomaly);
             trueAnomaly = CalculateTrueAnomaly(eccentricAnomaly);
             return CalculateOrbitalPosition(trueAnomaly);

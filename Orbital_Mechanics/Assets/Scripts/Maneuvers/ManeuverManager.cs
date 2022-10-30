@@ -29,10 +29,10 @@ namespace Sim.Maneuvers {
             maneuvers = new List<Maneuver>();
         }
 
-        private void Update() {
+        private void LateUpdate() {
             foreach (var maneuver in maneuvers)
             {
-                maneuver.Update();
+                maneuver.LateUpdate();
             }
         }
 

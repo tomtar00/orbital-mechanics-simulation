@@ -8,7 +8,8 @@ namespace Sim.Math
     public abstract class Orbit
     {
         public const float PI2 = 6.28318531f;
-        public const float FUTURE_PRECISION = .005f;
+        public const float FUTURE_PRECISION = .5f;
+        public const int MAX_BISECTION_STEPS = 50;
 
         public Celestial centralBody { get; private set; }
         public float GM { get; private set; }
@@ -66,7 +67,8 @@ namespace Sim.Math
 
             // Longitude of the ascending node
             // source: https://en.wikipedia.org/wiki/Longitude_of_the_ascending_node
-            Vector3 nodeVector = -Vector3.Cross(Vector3.up, elements.angMomentum);
+            Vector3 nodeVector = elements.inclination != 0 && elements.inclination != Mathf.PI ?
+                -Vector3.Cross(Vector3.up, elements.angMomentum) : Vector3.right;
             float nodeMag = nodeVector.magnitude;
             elements.lonAscNode = MathLib.Acos(nodeVector.x.SafeDivision(nodeMag));
             if (nodeVector.z < 0)
@@ -74,9 +76,18 @@ namespace Sim.Math
 
             // Argument of periapsis
             // source: https://en.wikipedia.org/wiki/Argument_of_periapsis
-            elements.argPeriapsis = MathLib.Acos(Vector3.Dot(nodeVector, elements.eccVec).SafeDivision(nodeMag * elements.eccentricity));
-            if (elements.eccVec.y < 0)
-                elements.argPeriapsis = PI2 - elements.argPeriapsis;
+            if (elements.lonAscNode != 0) {
+                elements.argPeriapsis = MathLib.Acos(Vector3.Dot(nodeVector, elements.eccVec).SafeDivision(nodeMag * elements.eccentricity));
+                if (elements.eccVec.y < 0) {
+                    elements.argPeriapsis = PI2 - elements.argPeriapsis;
+                }
+            }
+            else {
+                elements.argPeriapsis = MathLib.Atan2(elements.eccVec.z, elements.eccVec.x);
+                if (elements.angMomentum.y < 0) {
+                    elements.argPeriapsis = PI2 - elements.argPeriapsis;
+                }
+            }
 
             // True anomaly
             // source: https://en.wikipedia.org/wiki/True_anomaly                
@@ -179,7 +190,7 @@ namespace Sim.Math
                 if (position.sqrMagnitude > influenceRadius * influenceRadius)
                 {
                     // move last point closer to influence border         
-                    timeToGravityChange = GetTimeToOutsideInfluence(lastTime, time, influenceRadius, 50);
+                    timeToGravityChange = GetTimeToOutsideInfluence(lastTime, time, influenceRadius);
 
                     (float, float, float) _mat = GetFutureAnomalies(timeToGravityChange);
                     position = CalculateOrbitalPosition(_mat.Item3);
@@ -195,7 +206,7 @@ namespace Sim.Math
                         celestialPosition = centralBodyOrbit.CalculateOrbitalPosition(mat.Item3);
                         celestialVelocity = centralBodyOrbit.CalculateVelocity(celestialPosition, mat.Item3);
 
-                        if (stateVectors == null){
+                        if (stateVectors == null) {
                             stateVectors = new StateVectors(position + celestialPosition, spacecraftVelocity + celestialVelocity);
                         }
                         else {
@@ -213,7 +224,7 @@ namespace Sim.Math
                         }
                     }
 
-                    //Debug.Log($"Will exit {this.centralBody.name} with vectors: R = {stateVectors.position}, V = {stateVectors.velocity} after {timeToGravityChange}");
+                    //Debug.Log($"Will exit {this.centralBody.name} with vectors: R = {stateVectors.position}, V = {stateVectors.velocity} in {timeToGravityChange}");
                     nextCelestial = this.centralBody.CentralBody;
 
                     break;
@@ -241,7 +252,7 @@ namespace Sim.Math
 
                         while (MathLib.Abs(diff) > FUTURE_PRECISION || diff > 0)
                         {
-                            if (++iter > 50)
+                            if (++iter > MAX_BISECTION_STEPS)
                             {
                                 break;
                             }
@@ -264,12 +275,12 @@ namespace Sim.Math
                             else t2 = timeToGravityChange;
                         }
 
-                        points.Add(relativePosition + celestialPosition);
+                        points.Add(spacecraftPosition);
                         encounter = true;
                         // get encounter state vectors
                         spacecraftVelocity = CalculateVelocity(spacecraftPosition, _mat.Item3);
                         celestialVelocity = celestial.Kepler.orbit.CalculateVelocity(celestialPosition, mat.Item3);
-                        if (stateVectors == null){
+                        if (stateVectors == null) {
                             stateVectors = new StateVectors(relativePosition, spacecraftVelocity - celestialVelocity);
                         }
                         else {
@@ -283,7 +294,7 @@ namespace Sim.Math
                         break;
                     }
                 }
-
+                
                 lastTime = time;
                 if (encounter) break;
                 points.Add(position);
@@ -293,17 +304,18 @@ namespace Sim.Math
         }
         public abstract Vector3 GetPointOnOrbit(int i, float orbitFraction, out float meanAnomaly, out float trueAnomaly);
 
-        protected float GetTimeToOutsideInfluence(float lastTime, float time, float influenceRadius, int steps)
+        protected float GetTimeToOutsideInfluence(float lastTime, float time, float influenceRadius)
         {
             // Bisection method
             float diff = 1;
             float timeToChange = 0;
             int i = 0;
             Vector3 pos = Vector3.zero;
+            float resultTime = 0;
 
             while (Mathf.Abs(diff) > FUTURE_PRECISION || diff < 0)
             {
-                if (++i > steps)
+                if (++i > MAX_BISECTION_STEPS)
                 {
                     break;
                 }
@@ -318,9 +330,12 @@ namespace Sim.Math
                     lastTime = timeToChange;
                 }
                 else time = timeToChange;
+
+                if (diff > 0) 
+                    resultTime = timeToChange;
             }
 
-            return timeToChange;
+            return resultTime;
         }
     }
 }

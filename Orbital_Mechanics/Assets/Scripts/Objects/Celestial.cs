@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using Sim.Math;
@@ -7,6 +8,8 @@ namespace Sim.Objects
 {
     public class Celestial : InOrbitObject
     {
+        public static List<Celestial> celestials { get; private set; }
+
         [Header("Celestial")]
         [SerializeField] protected CelestialSO data;
         public CelestialSO Data { get => data;  set => data = value; }
@@ -49,12 +52,17 @@ namespace Sim.Objects
 
             if (!isStationary)
             {
-                kepler.ApplyElementsFromStruct(data.Orbit, centralBody);
-                transform.localPosition = centralBody.transform.localPosition + kepler.orbit.CalculateOrbitalPosition(data.Orbit.trueAnomaly);
+                kepler.ApplyElementsFromStruct(data.Orbit, centralBody); 
+                mat = kepler.UpdateAnomalies((float)(DateTime.Now.ToOADate() + 2415018.5) - 2451545f);
+                stateVectors = kepler.UpdateStateVectors(mat.Item3);
+                transform.localPosition = centralBody.transform.localPosition + kepler.orbit.CalculateOrbitalPosition(mat.Item3);
 
                 UpdateRelativePosition();
                 orbitDrawer.DrawOrbit(kepler.orbit.elements);
             }
+
+            if (celestials == null) celestials = new List<Celestial>();
+            celestials.Add(this);
         }
 
         private new void Update()
@@ -72,23 +80,13 @@ namespace Sim.Objects
                 {
                     if (!camInsideInfluence)
                     {
-                        orbitDrawer.TurnOffRenderersFrom(0);
-                        InOrbitObject.allObjects
-                            .Where(o => o.OrbitDrawer != null && o.CentralBody.isStationary)
-                            .ForEach(o => {
-                                o.OrbitDrawer.TurnOffRenderersFrom(0);
-                            });
+                        EnableOtherOrbitRenderer(false);
                         camInsideInfluence = true;
                     }
                 }
                 else if (camInsideInfluence)
                 {
-                    orbitDrawer.TurnOnRenderersFrom(0);
-                    InOrbitObject.allObjects
-                            .Where(o => o.OrbitDrawer != null && o.CentralBody.isStationary && centralBody.IsStationary)
-                            .ForEach(o => {
-                                o.OrbitDrawer.TurnOnRenderersFrom(0);
-                            });
+                    EnableOtherOrbitRenderer(true);
                     camInsideInfluence = false;
                 }
             }

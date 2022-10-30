@@ -12,6 +12,7 @@ TagManager:
   - In
   - Out
   - ManeuverVector
+  - Celestial
   layers:
   - Default
   - TransparentFX
