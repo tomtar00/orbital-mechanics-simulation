@@ -34,6 +34,8 @@ namespace Sim.Objects
 
         protected (float, float, float) mat;
         protected StateVectors stateVectors;
+        public bool camInsideInfluence { get; private set; } = false;
+        public static bool camInsideAnyInfluence = false;
 
         private void Awake() {
             if (allObjects == null) {
@@ -52,7 +54,7 @@ namespace Sim.Objects
             }
         }
 
-        protected void Update()
+        protected void UpdateObject()
         {
             if (!isStationary)
             {
@@ -88,10 +90,15 @@ namespace Sim.Objects
 
         public void EnableOtherOrbitRenderer(bool enable)
         {
+            camInsideInfluence = !enable;
+
             if (enable)
             {
+                camInsideAnyInfluence = InOrbitObject.allObjects.Where(o => o is Celestial && !(o as Celestial).IsStationary).Any(o => o.camInsideInfluence);
+                if (camInsideAnyInfluence && centralBody.IsStationary) return;
+
                 orbitDrawer.TurnOnRenderersFrom(0);
-                InOrbitObject.allObjects
+                allObjects
                         .Where(o => o.OrbitDrawer != null && o.CentralBody.isStationary && centralBody.IsStationary)
                         .ForEach(o =>
                         {
@@ -101,13 +108,15 @@ namespace Sim.Objects
             else
             {
                 orbitDrawer.TurnOffRenderersFrom(0);
-                InOrbitObject.allObjects
+                allObjects
                     .Where(o => o.OrbitDrawer != null && o.CentralBody.isStationary)
                     .ForEach(o =>
                     {
                         o.OrbitDrawer.TurnOffRenderersFrom(0);
                     });
-            }
+
+                camInsideAnyInfluence = true;
+            }   
         }
 
         // Vector debugging

@@ -27,7 +27,6 @@ namespace Sim.Objects
         public Transform Model { get => model; }
 
         private float currentCamDistance;
-        private bool camInsideInfluence = false;
 
         public override void Init(Celestial centralBody, CelestialSO data)
         {
@@ -65,15 +64,16 @@ namespace Sim.Objects
             celestials.Add(this);
         }
 
-        private new void Update()
+        private void Update()
         {
-            base.Update();
+            base.UpdateObject();
 
             if (!isStationary)
             {
                 float dontDrawMultiplier = data.Type == CelestialBodyType.PLANET ?
                         SimulationSettings.Instance.dontDrawPlanetOrbitMultiplier : 
                         SimulationSettings.Instance.dontDrawMoonOrbitMultiplier;
+
                 // disable and enable orbit line renderers when close to body
                 currentCamDistance = (CameraController.Instance.cam.transform.position - transform.position).sqrMagnitude;
                 if (currentCamDistance < Mathf.Pow(influenceRadius * dontDrawMultiplier, 2))
@@ -81,13 +81,11 @@ namespace Sim.Objects
                     if (!camInsideInfluence)
                     {
                         EnableOtherOrbitRenderer(false);
-                        camInsideInfluence = true;
                     }
                 }
                 else if (camInsideInfluence)
                 {
                     EnableOtherOrbitRenderer(true);
-                    camInsideInfluence = false;
                 }
             }
         }

@@ -1,17 +1,18 @@
 ﻿using UnityEngine;
 using Sim.Objects;
+using System.Linq;
 
 public class CameraController : MonoBehaviour
 {
     [Header("Dummy")]
     public Camera dummyCamera;
     [Header("Fly")]
-    [SerializeField] private float acceleration = 50;       
-    [SerializeField] private float accSprintMultiplier = 4; 
-    [SerializeField] private float sensitivity = 1; 
-    [SerializeField] private float damping = 5; 
+    [SerializeField] private float acceleration = 50;
+    [SerializeField] private float accSprintMultiplier = 4;
+    [SerializeField] private float sensitivity = 1;
+    [SerializeField] private float damping = 5;
     [SerializeField] private bool focusOnEnable = true;
-    [SerializeField] private Transform solarSystemHolder; 
+    [SerializeField] private Transform solarSystemHolder;
     [Header("Orbit")]
     [SerializeField] private float distance = 5;
     [SerializeField] private float rotationSpeed = 90;
@@ -47,25 +48,31 @@ public class CameraController : MonoBehaviour
     void OnDisable() => Focused = false;
 
     public static CameraController Instance;
-    private void Awake() {
+    private void Awake()
+    {
         Instance = this;
     }
-    private void Start() {
+    private void Start()
+    {
         targetDistance = distance;
         cam = GetComponent<Camera>();
         Focus(Spacecraft.current?.transform);
     }
+
     private void LateUpdate()
     {
-        if (focusingOnObject) {
+        if (focusingOnObject)
+        {
             Orbit();
         }
-        else {
+        else
+        {
             if (Focused)
                 Fly();
         }
-        
-        if (!Focused && Input.GetMouseButtonDown(0) && !GUIHoverListener.focusingOnGUI) {
+
+        if (!Focused && Input.GetMouseButtonDown(0) && !GUIHoverListener.focusingOnGUI)
+        {
             Focused = true;
         }
 
@@ -112,50 +119,55 @@ public class CameraController : MonoBehaviour
         return direction * acceleration;
     }
 
-    private void Orbit() {
+    private void Orbit()
+    {
         UpdateRotation();
         ConstrainAngles();
         UpdateDistance();
     }
-    void UpdateRotation() {
+    void UpdateRotation()
+    {
         Vector2 input = Focused ? new Vector2(
-			-Input.GetAxis("Mouse Y"),
-			Input.GetAxis("Mouse X")
-		) : Vector2.zero;
+            -Input.GetAxis("Mouse Y"),
+            Input.GetAxis("Mouse X")
+        ) : Vector2.zero;
         solarSystemHolder.position = -focusObject.localPosition;
-		orbitAngles += rotationSpeed * Time.unscaledDeltaTime * input;
+        orbitAngles += rotationSpeed * Time.unscaledDeltaTime * input;
         Quaternion lookRotation = Quaternion.Euler(orbitAngles);
-		Vector3 lookDirection = lookRotation * -Vector3.forward;
-		Vector3 lookPosition = lookDirection * distance;
-		transform.SetPositionAndRotation(lookPosition, lookRotation);
+        Vector3 lookDirection = lookRotation * -Vector3.forward;
+        Vector3 lookPosition = lookDirection * distance;
+        transform.SetPositionAndRotation(lookPosition, lookRotation);
     }
-    void UpdateDistance() {
+    void UpdateDistance()
+    {
         targetDistance -= Input.GetAxis("Mouse ScrollWheel") * scrollSensitivity;
         targetDistance = Mathf.Clamp(targetDistance, minDistance, maxDistance);
         distance = Mathf.Lerp(distance, targetDistance, Time.unscaledDeltaTime * scrollDamping);
     }
-    void ConstrainAngles() {
-		orbitAngles.x =
-			Mathf.Clamp(orbitAngles.x, minVerticalAngle, maxVerticalAngle);
+    void ConstrainAngles()
+    {
+        orbitAngles.x =
+            Mathf.Clamp(orbitAngles.x, minVerticalAngle, maxVerticalAngle);
 
-		if (orbitAngles.y < 0f) {
-			orbitAngles.y += 360f;
-		}
-		else if (orbitAngles.y >= 360f) {
-			orbitAngles.y -= 360f;
-		}
-	}
+        if (orbitAngles.y < 0f)
+        {
+            orbitAngles.y += 360f;
+        }
+        else if (orbitAngles.y >= 360f)
+        {
+            orbitAngles.y -= 360f;
+        }
+    }
 
-    public void Focus(Transform objectTransform) {
-        if (objectTransform != null) {
+    public void Focus(Transform objectTransform)
+    {
+        if (objectTransform != null)
+        {
             focusObject = objectTransform;
             focusingOnObject = true;
-            
-            InOrbitObject inOrbitObject = objectTransform.GetComponent<InOrbitObject>();
-            if (inOrbitObject != null && inOrbitObject is Celestial)
-                inOrbitObject.EnableOtherOrbitRenderer(false);
         }
-        else {
+        else
+        {
             focusingOnObject = false;
         }
         Focused = true;

@@ -1,6 +1,7 @@
 ﻿using Sim.Objects;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sim.Math
 {
@@ -336,6 +337,19 @@ namespace Sim.Math
             }
 
             return resultTime;
+        }
+    
+        public bool Equals(Orbit orbit, float precision, out float inaccuracy) {
+            float[] diffs = new[] {
+                MathLib.Abs(elements.semimajorAxis - orbit.elements.semimajorAxis),
+                MathLib.Abs(elements.eccentricity - orbit.elements.eccentricity),
+                MathLib.Abs(elements.inclination - orbit.elements.inclination),
+                MathLib.Abs(elements.argPeriapsis - orbit.elements.argPeriapsis),
+                MathLib.Abs(elements.lonAscNode - orbit.elements.lonAscNode)
+            };
+            inaccuracy = diffs.Sum();
+            return diffs.All(diff => diff < precision);
+            // return diffs.Sum() < diffs.Length * precision;
         }
     }
 }

@@ -14,6 +14,7 @@ namespace Sim.Visuals
         [SerializeField] private bool isManeuver;
         
         public LineRenderer[] lineRenderers { get; private set; }
+        public Orbit[] orbits { get; private set; }
         public bool hasManeuver { get; set; }
 
         public LineButton[] lineButtons { get; private set; }
@@ -27,6 +28,7 @@ namespace Sim.Visuals
             futureColors = SimulationSettings.Instance.futureOrbitColors;
             lineRenderers = new LineRenderer[depth];
             lineButtons = new LineButton[depth];
+            orbits = new Orbit[depth];
             if (isManeuver) SetupOrbitRenderers();
         }
 
@@ -119,7 +121,7 @@ namespace Sim.Visuals
 
                 float timeToGravityChange;
                 Celestial nextCelestial;
-                StateVectors gravityChangePoint = DrawOrbit(stateVectors, i, currentCelestial, timePassed, out nextCelestial, out timeToGravityChange);
+                StateVectors gravityChangePoint = DrawOrbit(stateVectors, i, currentCelestial, timePassed, out nextCelestial, out timeToGravityChange, out orbits[i]);
                 line.colorGradient = CreateLineGradient(i);
 
                 if (!isManeuver && i == 0) {
@@ -136,9 +138,10 @@ namespace Sim.Visuals
                 timePassed += timeToGravityChange;
             }
         }
-        private StateVectors DrawOrbit(StateVectors stateVectors, int lineIdx, Celestial currentCelestial, float timePassed, out Celestial nextCelestial, out float timeToGravityChange)
+        private StateVectors DrawOrbit(StateVectors stateVectors, int lineIdx, Celestial currentCelestial, float timePassed, out Celestial nextCelestial, out float timeToGravityChange, out Orbit orbit)
         {
-            Orbit orbit = KeplerianOrbit.CreateOrbit(stateVectors, currentCelestial, out _);
+            Orbit _orbit = KeplerianOrbit.CreateOrbit(stateVectors, currentCelestial, out _);
+            orbit = _orbit;
 
             // get orbit points
             StateVectors gravityChangeVectors;
@@ -157,7 +160,7 @@ namespace Sim.Visuals
             lineButton.ClearAllClickHandlers();
             lineButton.onLinePressed += (worldPos) => {
                 if (!hasManeuver) {
-                    ManeuverManager.Instance.CreateManeuver(orbit, inOrbitObject, worldPos, timePassed, lineIdx);
+                    ManeuverManager.Instance.CreateManeuver(_orbit, inOrbitObject, worldPos, timePassed, lineIdx);
                     hasManeuver = true;
                 }
                 else {

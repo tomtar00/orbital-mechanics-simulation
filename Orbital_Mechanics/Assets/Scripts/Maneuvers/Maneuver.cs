@@ -70,14 +70,18 @@ namespace Sim.Maneuvers
             float anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);
             float meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
 
-            float enterMeanAnomaly = Mathf.Repeat(orbit.elements.meanAnomaly, 2 * Mathf.PI);
+            float enterMeanAnomaly = orbit.elements.meanAnomaly;
             float timeOnCurrentOrbit = PreviousManeuver == null ? Spacecraft.current.timeSinceVelocityChanged : 0f;
             float currentTimeToOrbit = Mathf.Max(timeToOrbit - timeOnCurrentOrbit, 0f); 
             
             if (enterMeanAnomaly > meanAnomaly) enterMeanAnomaly -= Mathf.PI * 2f;
             float time = ((meanAnomaly - enterMeanAnomaly) / orbit.elements.meanMotion) + currentTimeToOrbit;
 
-            //Debug.Log("mean: " + meanAnomaly + " enter: " + enterMeanAnomaly + " on orbit time: " + (time - currentTimeToOrbit) + " to orbit time: " + currentTimeToOrbit + " mean motion: " + orbit.elements.meanMotion);
+            // Debug.Log("===== MANEUVER ======");
+            // Debug.Log("maneuver anomaly: " + anomaly + " mean: " + meanAnomaly);
+            // Debug.Log("enter mean: " + enterMeanAnomaly + " mean motion: " + orbit.elements.meanMotion);
+            // Debug.Log("time on orbit: " +  (time - currentTimeToOrbit).ToTimeSpan() + " to orbit: " + currentTimeToOrbit.ToTimeSpan());
+            // Debug.Log("=====================");
 
             if (time < 0) {
                 time += orbit.elements.period;

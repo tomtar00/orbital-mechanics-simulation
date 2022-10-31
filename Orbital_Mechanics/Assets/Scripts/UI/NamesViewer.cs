@@ -17,7 +17,7 @@ public class NamesViewer : MonoBehaviour
         }
     }
 
-    private void Update() {
+    private void LateUpdate() {
         foreach(KeyValuePair<Transform, Celestial> keyValue in names) {
             UpdateName(keyValue);
         }
@@ -35,10 +35,20 @@ public class NamesViewer : MonoBehaviour
     }
 
     private void UpdateName(KeyValuePair<Transform, Celestial> pair) {
-        pair.Key.position = CameraController.Instance.cam.WorldToScreenPoint(pair.Value.transform.position);
-        if (pair.Key.position.z > 0)
-            pair.Key.position = new Vector3(pair.Key.position.x, pair.Key.position.y, 0);
-        else
-            pair.Key.position = Vector3.up * 1000f;
+
+        if (pair.Value.CentralBody != null && !pair.Value.CentralBody.IsStationary && !pair.Value.CentralBody.camInsideInfluence) {
+            if (pair.Key.gameObject.activeSelf)
+                pair.Key.gameObject.SetActive(false);
+        }
+        else {
+            pair.Key.position = CameraController.Instance.cam.WorldToScreenPoint(pair.Value.transform.position);
+            if (pair.Key.position.z > 0)
+                pair.Key.position = new Vector3(pair.Key.position.x, pair.Key.position.y, 0);
+            else
+                pair.Key.position = Vector3.up * 1000f;
+
+            if (!pair.Key.gameObject.activeSelf)
+                pair.Key.gameObject.SetActive(true);
+        }
     }
 }

@@ -26,7 +26,7 @@ namespace Sim.Objects
         [SerializeField] protected float rotationSpeed = 50;
         [SerializeField] protected float thrust;
         [Space]
-        [SerializeField] private bool autoManeuvers;
+        [SerializeField] private bool autopilot;
         [SerializeField] private Material maneuverSuccessMat;
         [SerializeField] private Material maneuverFailMat;
         [SerializeField] private float maneuverSuccessAngle = 5f;
@@ -42,10 +42,11 @@ namespace Sim.Objects
         public float timeToNextGravityChange { get; set; }
         public float timeSinceGravityChange { get; set; }
         public float Thrust { get => thrust; }
-        public bool AutoManeuvers { set => autoManeuvers = value; }
+        public bool Autopilot { set => autopilot = value; }
 
         private bool canUpdateOrbit = true;
         private bool slowingDown = false;
+        private float maneuverInaccuracy = float.MaxValue;
 
         private void Start()
         {
@@ -61,13 +62,13 @@ namespace Sim.Objects
             }
         }
 
-        private new void Update()
+        private void LateUpdate()
         {
             timeSinceVelocityChanged += Time.deltaTime;
             timeToNextGravityChange -= Time.deltaTime;
             timeSinceGravityChange += Time.deltaTime;
             
-            base.Update();
+            base.UpdateObject();
 
             UpdateOrbitRenderer();
             
@@ -157,15 +158,20 @@ namespace Sim.Objects
             }
         }
         private void AutomateManeuvers() {
-            if (!autoManeuvers) return;
+            if (!autopilot) return;
             Maneuver next = ManeuverManager.Instance.NextManeuver;
             if (next == null) return;
                 
-            if (Mathf.Abs(next.timeToManeuver) <= next.burnTime / 2) {
+            float currentManeuverInaccuracy;
+            bool isTargetOrbit = kepler.orbit.Equals(next.drawer.orbits[0], SimulationSettings.Instance.maneuverPrecision, out currentManeuverInaccuracy);
+            
+            if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit && currentManeuverInaccuracy < maneuverInaccuracy) {
                 AddVelocity(model.transform.forward * thrust * Time.deltaTime);
+                maneuverInaccuracy = currentManeuverInaccuracy;
             }
             else
             {
+                maneuverInaccuracy = float.MaxValue;
                 if (ManeuverNode.isDraggingAny) return;
                 if (next.timeToManeuver < -next.burnTime / 2) 
                 {

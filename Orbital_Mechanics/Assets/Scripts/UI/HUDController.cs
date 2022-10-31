@@ -77,7 +77,7 @@ public class HUDController : MonoBehaviour
     }
 
     public void HandleAutoManeuversValueChange(bool isOn) {
-        Spacecraft.current.AutoManeuvers = isOn;
+        Spacecraft.current.Autopilot = isOn;
     }
 
     private void ApplyOrbitElements() {

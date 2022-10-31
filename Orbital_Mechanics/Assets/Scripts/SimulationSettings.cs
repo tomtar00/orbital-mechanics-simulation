@@ -19,6 +19,7 @@ namespace Sim {
         public float influenceChangeTimeSlowdownOffset = 3;
         public float maneuverTimeSlowdownOffset = 3;
         public float addVelocitySensitivity = 0.01f;
+        public float maneuverPrecision = 0.01f;
         [Header("Constants")]
         public float G;
         public float scale = 1e-10f;
