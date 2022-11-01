@@ -12,7 +12,7 @@ namespace Sim.Visuals
     {
         public static List<LineButton> allLineButtons = null;
 
-        public delegate void OnClick(Vector3 worldPosition);
+        public delegate void OnClick(Vector3Double worldPosition);
         public event OnClick onLinePressed;
         public delegate void OnHover(LineButton lineButton, Vector3 worldPosition);
         public static event OnHover onLineHovering;
@@ -36,7 +36,7 @@ namespace Sim.Visuals
         
         public Orbit orbit { get; set; }
 
-        Vector3 closestWorldPoint;
+        Vector3Double closestWorldPoint;
 
         public bool Enabled {
             get => enabled;
@@ -72,16 +72,16 @@ namespace Sim.Visuals
             onLinePressed = null;
         }
 
-        private void Update() {
+        private void LateUpdate() {
 
             if (orbit != null)
             {
                 closestWorldPoint = ConvertWorldPosToOrbitPos(CameraController.Instance.cam.transform.position, true);
 
-                float distance = Vector3.Distance(closestWorldPoint, CameraController.Instance.cam.transform.position);
-                distance = Mathf.Clamp(distance, 0, orbit.centralBody.InfluenceRadius);
-                distance = Mathf.Clamp(distance, SimulationSettings.Instance.lineMinScale, SimulationSettings.Instance.lineMaxScale);
-                line.startWidth = distance * SimulationSettings.Instance.lineScaleMultiplier;
+                double distance = Vector3Double.Distance(closestWorldPoint, (Vector3Double)CameraController.Instance.cam.transform.position);
+                distance = MathLib.Clamp(distance, 0, orbit.centralBody.InfluenceRadius);
+                distance = MathLib.Clamp(distance, SimulationSettings.Instance.lineMinScale, SimulationSettings.Instance.lineMaxScale);
+                line.startWidth = (float)(distance * SimulationSettings.Instance.lineScaleMultiplier);
             }
 
             if (!enabled) return;
@@ -93,9 +93,9 @@ namespace Sim.Visuals
             if (hovering && showPointIndication) {
                 var worldPos = pointerData.pointerCurrentRaycast.worldPosition;
                 var convertedPos = ConvertWorldPosToOrbitPos(worldPos);
-                indicator.transform.localPosition = convertedPos;
+                indicator.transform.localPosition = (Vector3)convertedPos;
                 if (onLineHovering != null)
-                    onLineHovering(this, convertedPos);
+                    onLineHovering(this, (Vector3)convertedPos);
 
                 if (showPointIndication && indicator.activeSelf) {
                     indicator.transform.localScale = NumericExtensions.ScaleWithDistance(
@@ -106,17 +106,17 @@ namespace Sim.Visuals
             }
         }
 
-        public Vector3 ConvertWorldPosToOrbitPos(Vector3 worldPos, bool returnWorldOrbitPos = false) {
+        public Vector3Double ConvertWorldPosToOrbitPos(Vector3 worldPos, bool returnWorldOrbitPos = false) {
             if (orbit != null) {
                 var pressLocalPosition = worldPos - orbit.centralBody.transform.position;
-                float angleToPoint = -Vector3.SignedAngle(orbit.elements.eccVec, pressLocalPosition, orbit.elements.angMomentum);
+                double angleToPoint = -Vector3Double.SignedAngle(orbit.elements.eccVec, (Vector3Double)pressLocalPosition, orbit.elements.angMomentum);
                 if (!returnWorldOrbitPos)
-                    return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad);
+                    return orbit.CalculateOrbitalPosition(angleToPoint * MathLib.Deg2Rad);
                 else {
-                    return orbit.CalculateOrbitalPosition(angleToPoint * Mathf.Deg2Rad) + orbit.centralBody.transform.position;
+                    return orbit.CalculateOrbitalPosition(angleToPoint * MathLib.Deg2Rad) + (Vector3Double)orbit.centralBody.transform.position;
                 }
             }
-            else return worldPos;
+            else return (Vector3Double)worldPos;
         }
 
         public void OnPointerClick(PointerEventData pointerEventData)

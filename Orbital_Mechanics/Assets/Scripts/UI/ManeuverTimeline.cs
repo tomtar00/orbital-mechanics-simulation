@@ -39,7 +39,7 @@ public class ManeuverTimeline : MonoBehaviour
         if (!timelineHolder.activeSelf) return;
 
         var maneuver = ManeuverManager.Instance.maneuvers.Last();
-        timelineFill.fillAmount = 1 - maneuver.timeToManeuver / maneuver.fixedTimeToManeuver;
+        timelineFill.fillAmount = (float)(1.0 - maneuver.timeToManeuver / maneuver.fixedTimeToManeuver);
 
     }
 
@@ -54,10 +54,10 @@ public class ManeuverTimeline : MonoBehaviour
             var marker = rectMarkers.GetChild(i) as RectTransform;
 
             marker.gameObject.SetActive(true);
-            marker.anchoredPosition3D = Vector3.up * (m.fixedTimeToManeuver / maneuver.fixedTimeToManeuver) * rectMarkers.rect.height;
+            marker.anchoredPosition3D = (Vector3Double.up * (m.fixedTimeToManeuver / maneuver.fixedTimeToManeuver) * rectMarkers.rect.height);
 
             marker.transform.GetChild(1).GetComponent<TMP_Text>()
-                .text = $"T {((m.timeToManeuver > 0) ? "-" : "+")} {Mathf.Abs(m.timeToManeuver).ToTimeSpan()}\nBurn: {m.burnTime.ToString("f2")}";
+                .text = $"T {((m.timeToManeuver > 0) ? "-" : "+")} {MathLib.Abs(m.timeToManeuver).ToTimeSpan()}\nBurn: {m.burnTime.ToString("f2")}";
 
             i++;
         }

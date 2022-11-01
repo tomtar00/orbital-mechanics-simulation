@@ -18,9 +18,9 @@ namespace Sim.Objects
 
         public KeplerianOrbit Kepler { get => kepler; }
 
-        // Movement
-        protected Vector3 velocity;
-        public Vector3 Velocity { get => velocity; }
+        // State
+        protected StateVectors stateVectors;
+        public StateVectors StateVectors { get => stateVectors; }
         public bool IsStationary { get => isStationary; }
 
         // Orbit
@@ -28,12 +28,8 @@ namespace Sim.Objects
         protected OrbitDrawer orbitDrawer;
         public OrbitDrawer OrbitDrawer { get => orbitDrawer; }
 
-        // Position
-        protected Vector3 relativePosition;
-        public Vector3 RelativePosition { get => relativePosition; }
-
-        protected (float, float, float) mat;
-        protected StateVectors stateVectors;
+        protected (double, double, double) mat;
+        
         public bool camInsideInfluence { get; private set; } = false;
         public static bool camInsideAnyInfluence = false;
 
@@ -46,6 +42,7 @@ namespace Sim.Objects
 
         public virtual void Init(Celestial centralBody, CelestialSO data)
         {
+            stateVectors = new StateVectors();
             orbitDrawer = GetComponent<OrbitDrawer>();
             orbitDrawer?.SetupOrbitRenderers();
             if (!isStationary)
@@ -59,7 +56,7 @@ namespace Sim.Objects
             if (!isStationary)
             {
                 if (centralBody == null)
-                    transform.localPosition += this.velocity * Time.deltaTime;
+                    transform.localPosition += stateVectors.velocity * Time.deltaTime;
                 else MoveAlongOrbit();
             }
             else
@@ -74,18 +71,15 @@ namespace Sim.Objects
             stateVectors = kepler.UpdateStateVectors(mat.Item3);
             kepler.UpdateTimeToPeriapsis();
 
-            relativePosition = stateVectors.position;
-            velocity = stateVectors.velocity;
-
-            transform.localPosition = centralBody.transform.localPosition + relativePosition;
+            transform.localPosition = centralBody.transform.localPosition + stateVectors.position;
         }
 
         protected void UpdateRelativePosition()
         {
             if (centralBody != null)
-                relativePosition = transform.localPosition - centralBody.transform.localPosition;
+                stateVectors.position = (Vector3Double)(transform.localPosition - centralBody.transform.localPosition);
             else
-                relativePosition = transform.localPosition;
+                stateVectors.position = (Vector3Double)(transform.localPosition);
         }
 
         public void EnableOtherOrbitRenderer(bool enable)
@@ -125,14 +119,14 @@ namespace Sim.Objects
             if (Application.isPlaying)
             {
                 /// Draw velocity vector
-                Debug.DrawLine(transform.position, this.velocity*1000f + transform.position);
+                Debug.DrawLine(transform.position, stateVectors.velocity * 1000f + transform.position);
 
                 /// Draw orbit plane normal vector
                 if (centralBody != null && this is Spacecraft)
                 {
                     Debug.DrawLine(centralBody.transform.position, transform.position, Color.red);
-                    Debug.DrawLine(centralBody.transform.position, kepler.orbit.elements.angMomentum * 10000f + centralBody.transform.position, Color.blue);
-                    Debug.DrawLine(centralBody.transform.position, kepler.orbit.elements.eccVec * 1000f + centralBody.transform.position, Color.yellow);
+                    Debug.DrawLine(centralBody.transform.position, (Vector3)(kepler.orbit.elements.angMomentum) * 10000f + centralBody.transform.position, Color.blue);
+                    Debug.DrawLine(centralBody.transform.position, (Vector3)(kepler.orbit.elements.eccVec) * 1000f + centralBody.transform.position, Color.yellow);
                 }
             }
         }

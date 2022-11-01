@@ -6,7 +6,7 @@ namespace Sim.Math
 {
     public class KeplerianOrbit
     {
-        public static float G { get; private set; }
+        public static double G { get; private set; }
 
         public Orbit orbit { get; set; }
         public OrbitType orbitType { get; set; } = OrbitType.NONE;
@@ -15,12 +15,12 @@ namespace Sim.Math
             G = SimulationSettings.Instance.G;
         }
 
-        private (float, float, float) mat;
+        private (double, double, double) mat;
 
         public void CheckOrbitType(StateVectors stateVectors, Celestial centralBody)
         {
-            float centralMass = centralBody.Data.Mass;
-            float eccentricity = Orbit.CalculateEccentricity(stateVectors, centralMass);
+            double centralMass = centralBody.Data.Mass;
+            double eccentricity = Orbit.CalculateEccentricity(stateVectors, centralMass);
 
             if (eccentricity >= 0 && eccentricity < 1 && orbitType != OrbitType.ELLIPTIC)
             {
@@ -36,8 +36,8 @@ namespace Sim.Math
 
         public static Orbit CreateOrbit(StateVectors stateVectors, Celestial body, out OrbitType type)
         {
-            float centralMass = body.Data.Mass;
-            float eccentricity = Orbit.CalculateEccentricity(stateVectors, centralMass);
+            double centralMass = body.Data.Mass;
+            double eccentricity = Orbit.CalculateEccentricity(stateVectors, centralMass);
 
             if (eccentricity >= 0 && eccentricity < 1)
             {
@@ -57,8 +57,8 @@ namespace Sim.Math
         }
         public static Orbit CreateOrbit(OrbitElements elements, Celestial body, out OrbitType type)
         {
-            float centralMass = body.Data.Mass;
-            float eccentricity = elements.eccentricity;
+            double centralMass = body.Data.Mass;
+            double eccentricity = elements.eccentricity;
 
             if (eccentricity >= 0 && eccentricity < 1)
             {
@@ -77,7 +77,7 @@ namespace Sim.Math
             }
         }
 
-        public (float, float, float) UpdateAnomalies(float time)
+        public (double, double, double) UpdateAnomalies(double time)
         {
             mat = orbit.GetFutureAnomalies(time);
             orbit.elements.meanAnomaly = mat.Item1;
@@ -86,7 +86,7 @@ namespace Sim.Math
 
             return mat;
         }
-        public StateVectors UpdateStateVectors(float trueAnomaly)
+        public StateVectors UpdateStateVectors(double trueAnomaly)
         {
             return orbit.ConvertOrbitElementsToStateVectors(trueAnomaly);
         }
@@ -96,14 +96,14 @@ namespace Sim.Math
 
         public void ApplyElementsFromStruct(OrbitElements elements, Celestial centralBody)
         {
-            float GM = G * centralBody.Data.Mass;
+            double GM = G * centralBody.Data.Mass;
 
-            elements.angMomentum = Quaternion.AngleAxis(elements.inclination * Mathf.Rad2Deg, Vector3.right) * Vector3.up;
-            elements.angMomentum = Quaternion.AngleAxis(elements.lonAscNode * Mathf.Rad2Deg, Vector3.up) * elements.angMomentum;
-            elements.angMomentum = elements.angMomentum.normalized * MathLib.Sqrt(GM * elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity));
+            elements.angMomentum = (Vector3Double)(Quaternion.AngleAxis((float)(elements.inclination * MathLib.Rad2Deg), Vector3.right) * Vector3.up);
+            elements.angMomentum = (Vector3Double)(Quaternion.AngleAxis((float)(elements.lonAscNode * MathLib.Rad2Deg), Vector3.up) * elements.angMomentum);
+            elements.angMomentum = elements.angMomentum.normalized * (double)MathLib.Sqrt(GM * elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity));
 
-            elements.eccVec = Quaternion.AngleAxis(-elements.lonAscNode * Mathf.Rad2Deg, Vector3.up) * Vector3.right;
-            elements.eccVec = Quaternion.AngleAxis(-elements.argPeriapsis * Mathf.Rad2Deg, elements.angMomentum) * elements.eccVec;
+            elements.eccVec = (Vector3Double)(Quaternion.AngleAxis((float)(-elements.lonAscNode * MathLib.Rad2Deg), Vector3.up) * Vector3.right);
+            elements.eccVec = (Vector3Double)(Quaternion.AngleAxis((float)(-elements.argPeriapsis * MathLib.Rad2Deg), elements.angMomentum) * elements.eccVec);
             elements.eccVec = elements.eccVec.normalized * elements.eccentricity;
 
             this.orbit = CreateOrbit(elements, centralBody, out _);
@@ -120,10 +120,14 @@ namespace Sim.Math
 
     public class StateVectors
     {
-        public Vector3 position;
-        public Vector3 velocity;
+        public Vector3Double position;
+        public Vector3Double velocity;
 
-        public StateVectors(Vector3 pos, Vector3 vel)
+        public StateVectors() {
+            position = velocity = Vector3Double.zero;
+        }
+
+        public StateVectors(Vector3Double pos, Vector3Double vel)
         {
             this.position = pos;
             this.velocity = vel;
@@ -138,28 +142,28 @@ namespace Sim.Math
     [System.Serializable]
     public struct OrbitElements
     {
-        public float semimajorAxis;
-        public float eccentricity;
-        public float inclination;
-        public float lonAscNode;
-        public float argPeriapsis;
-        public float trueAnomaly;
+        public double semimajorAxis;
+        public double eccentricity;
+        public double inclination;
+        public double lonAscNode;
+        public double argPeriapsis;
+        public double trueAnomaly;
 
         [Space]
 
-        public float meanAnomaly;
-        public float anomaly;
+        public double meanAnomaly;
+        public double anomaly;
 
-        public float semiminorAxis;
-        public float meanMotion;
-        public float semiLatusRectum;
-        public float timeToPeriapsis;
-        public float period;
+        public double semiminorAxis;
+        public double meanMotion;
+        public double semiLatusRectum;
+        public double timeToPeriapsis;
+        public double period;
 
-        [NonSerialized] public float trueAnomalyConstant;
-        [NonSerialized] public float periodConstant;
+        [NonSerialized] public double trueAnomalyConstant;
+        [NonSerialized] public double periodConstant;
  
-        [NonSerialized] public Vector3 angMomentum;
-        [NonSerialized] public Vector3 eccVec;
+        [NonSerialized] public Vector3Double angMomentum;
+        [NonSerialized] public Vector3Double eccVec;
     }
 }

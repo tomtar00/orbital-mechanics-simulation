@@ -38,22 +38,21 @@ namespace Sim.Objects
         [SerializeField] private float maxScale = 10f;
 
         public static Spacecraft current { get; private set; }
-        public float timeSinceVelocityChanged { get; private set; }
-        public float timeToNextGravityChange { get; set; }
-        public float timeSinceGravityChange { get; set; }
+        public double timeSinceVelocityChanged { get; private set; }
+        public double timeToNextGravityChange { get; set; }
+        public double timeSinceGravityChange { get; set; }
         public float Thrust { get => thrust; }
         public bool Autopilot { set => autopilot = value; }
 
         private bool canUpdateOrbit = true;
         private bool slowingDown = false;
-        private float maneuverInaccuracy = float.MaxValue;
+        private double maneuverInaccuracy = float.MaxValue;
 
         private void Start()
         {
             current = this;
             if (isStationary)
             {
-                relativePosition = Vector3.zero;
                 Debug.LogWarning($"Ship object ({gameObject.name}) is stationary!");
             }
             else
@@ -87,13 +86,13 @@ namespace Sim.Objects
 
         private void InitializeShip()
         {
-            relativePosition = Vector3.right * (startSurfaceAltitude + centralBody.Model.transform.localScale.x / 2);
-            transform.localPosition = centralBody.RelativePosition + relativePosition;
+            stateVectors.position = Vector3Double.right * (startSurfaceAltitude + centralBody.Model.transform.localScale.x / 2);
+            transform.localPosition = centralBody.StateVectors.position + stateVectors.position;
 
             if (useCustomStartVelocity)
                 AddVelocity(startVelocity);
             else {
-                Vector3 velDirection = Vector3.Cross(relativePosition, Vector3.up).normalized;
+                Vector3 velDirection = Vector3.Cross(stateVectors.position, Vector3.up).normalized;
                 AddVelocity(velDirection * CircularOrbitSpeed());
             }
 
@@ -102,15 +101,15 @@ namespace Sim.Objects
         }
         private float CircularOrbitSpeed()
         {
-            return MathLib.Sqrt(KeplerianOrbit.G * centralBody.Data.Mass / relativePosition.magnitude) * 1.001f;
+            return (float)MathLib.Sqrt(KeplerianOrbit.G * centralBody.Data.Mass / stateVectors.position.magnitude) * 1.001f;
         }
 
         private void AddVelocity(Vector3 d_vel)
         {
             timeSinceVelocityChanged = 0;
-            Vector3 newVelocity = this.velocity + d_vel;
+            Vector3Double newVelocity = this.stateVectors.velocity + (Vector3Double)d_vel;
 
-            StateVectors stateVectors = new StateVectors(relativePosition, newVelocity);
+            StateVectors stateVectors = new StateVectors(this.stateVectors.position, newVelocity);
             kepler.CheckOrbitType(stateVectors, centralBody);
 
             kepler.orbit.ConvertStateVectorsToOrbitElements(stateVectors);
@@ -139,12 +138,12 @@ namespace Sim.Objects
         private void HandleManeuverDirection() {
             Maneuver next = ManeuverManager.Instance.NextManeuver;
             if (next != null) {
-                if (next.addedVelocity == Vector3.zero) return;
+                if ((Vector3)next.addedVelocity == Vector3.zero) return;
                 if (!maneuverDirection.gameObject.activeSelf) {
                     maneuverDirection.gameObject.SetActive(true);
                 }
-                maneuverDirection.rotation = Quaternion.LookRotation(next.addedVelocity);
-                if (Vector3.Angle(model.transform.forward, next.addedVelocity) < maneuverSuccessAngle) {
+                maneuverDirection.rotation = Quaternion.LookRotation((Vector3)next.addedVelocity);
+                if (Vector3Double.Angle((Vector3Double)model.transform.forward, next.addedVelocity) < maneuverSuccessAngle) {
                     foreach(var mesh in arrowMeshRenderers)
                         mesh.material = maneuverSuccessMat;
                 }
@@ -162,7 +161,7 @@ namespace Sim.Objects
             Maneuver next = ManeuverManager.Instance.NextManeuver;
             if (next == null) return;
                 
-            float currentManeuverInaccuracy;
+            double currentManeuverInaccuracy;
             bool isTargetOrbit = kepler.orbit.Equals(next.drawer.orbits[0], SimulationSettings.Instance.maneuverPrecision, out currentManeuverInaccuracy);
             
             if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit && currentManeuverInaccuracy < maneuverInaccuracy) {
@@ -183,9 +182,9 @@ namespace Sim.Objects
                 }
             }
 
-            if (next.addedVelocity != Vector3.zero)
+            if ((Vector3)next.addedVelocity != Vector3.zero)
             {
-                model.rotation = Quaternion.RotateTowards(model.rotation, Quaternion.LookRotation(next.addedVelocity), rotationSpeed * Time.deltaTime);
+                model.rotation = Quaternion.RotateTowards(model.rotation, Quaternion.LookRotation((Vector3)next.addedVelocity), rotationSpeed * Time.deltaTime);
             }
             
         }
@@ -193,7 +192,7 @@ namespace Sim.Objects
         {
             if (centralBody == null) return;
 
-            if (relativePosition.sqrMagnitude - centralBody.InfluenceRadius * centralBody.InfluenceRadius > 0) // .5f
+            if (stateVectors.position.sqrMagnitude - centralBody.InfluenceRadius * centralBody.InfluenceRadius > 0) // .5f
             {
                 ExitCelestialInfluence();
             }
@@ -211,7 +210,7 @@ namespace Sim.Objects
         }
         private void ExitCelestialInfluence()
         {
-            Vector3 previousCentralBodyVelocity = centralBody.Velocity;
+            Vector3 previousCentralBodyVelocity = centralBody.StateVectors.velocity;
 
             //Debug.Log($"Exiting {centralBody.name} with vectors: R = {transform.localPosition - centralBody.CentralBody.transform.localPosition}, V = {velocity + previousCentralBodyVelocity}");
 
@@ -232,7 +231,7 @@ namespace Sim.Objects
             kepler.orbit.ChangeCentralBody(centralBody);
 
             UpdateRelativePosition();
-            AddVelocity(-centralBody.Velocity);
+            AddVelocity(-centralBody.StateVectors.velocity);
 
             timeSinceGravityChange = 0;
 
@@ -244,7 +243,6 @@ namespace Sim.Objects
                 orbitDrawer.lineRenderers[0].loop &&
                 canUpdateOrbit) 
             {
-                StateVectors stateVectors = new StateVectors(relativePosition, velocity);
                 orbitDrawer.DrawOrbits(stateVectors, centralBody);
                 canUpdateOrbit = false;
             }
@@ -285,7 +283,7 @@ namespace Sim.Objects
             GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Time since velocity changed: {timeSinceVelocityChanged}");
             GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Time to next gravity change: {timeToGravityChange}");
             GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Time since gravity changed: {timeSinceGravityChange}");
-            GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Velocity: {velocity.magnitude / SimulationSettings.Instance.scale} m/s");
+            GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Velocity: {stateVectors.velocity.magnitude / SimulationSettings.Instance.scale} m/s");
         }
 
     }

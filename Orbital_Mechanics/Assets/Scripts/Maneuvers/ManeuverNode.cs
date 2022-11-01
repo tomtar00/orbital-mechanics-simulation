@@ -55,7 +55,7 @@ namespace Sim.Maneuvers {
                         { "In",         -gameObject.transform.right     },
                         { "Out",         gameObject.transform.right     },
                     };
-                    maneuver.UpdateOnDrag(worldPos);
+                    maneuver.UpdateOnDrag((Vector3Double)worldPos);
                 }
             };
 
@@ -76,8 +76,8 @@ namespace Sim.Maneuvers {
             );
         }
 
-        public void AddVelocity(Vector3 direction, float strength) {
-            maneuver.ChangeVelocity(direction * strength);
+        public void AddVelocity(Vector3 direction, double strength) {
+            maneuver.ChangeVelocity((Vector3Double)direction * strength);
         }
 
         public void OnSelect() {

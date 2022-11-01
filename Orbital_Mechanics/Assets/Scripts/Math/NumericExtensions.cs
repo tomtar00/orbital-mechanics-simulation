@@ -5,21 +5,17 @@ namespace Sim.Math
 {
     public static class NumericExtensions
     {
-        public static float SafeDivision(this float Numerator, float Denominator)
-        {
-            return (Denominator == 0) ? 0 : Numerator / Denominator;
-        }
         public static double SafeDivision(this double Numerator, double Denominator)
         {
             return (Denominator == 0) ? 0 : Numerator / Denominator;
         }
 
-        public static Vector3 SafeDivision(this Vector3 Numerator, float Denominator)
+        public static Vector3Double SafeDivision(this Vector3Double Numerator, double Denominator)
         {
-            return (Denominator == 0) ? Vector3.zero : Numerator / Denominator;
+            return (Denominator == 0) ? Vector3Double.zero : Numerator / Denominator;
         }
 
-        public static string ToTimeSpan(this float seconds) {
+        public static string ToTimeSpan(this double seconds) {
             TimeSpan t = TimeSpan.FromSeconds(seconds);
             return string.Format("{0:D2}d:{1:D2}h:{2:D2}m:{3:D2}s", 
                 t.Days,

@@ -8,31 +8,31 @@ namespace Sim.Math
     // Mostly based on: http://control.asu.edu/Classes/MAE462/462Lecture05.pdf
     public abstract class Orbit
     {
-        public const float PI2 = 6.28318531f;
-        public const float FUTURE_PRECISION = .5f;
+        public const double PI2 = 6.28318531;
+        public const double FUTURE_PRECISION = .5;
         public const int MAX_BISECTION_STEPS = 50;
 
         public Celestial centralBody { get; private set; }
-        public float GM { get; private set; }
+        public double GM { get; private set; }
 
         public OrbitElements elements;
 
         protected StateVectors stateVectors;
-        protected float distance, speed;
-        protected float m, a, t;
+        protected double distance, speed;
+        protected double m, a, t;
 
         public Orbit(StateVectors stateVectors, Celestial centralBody)
         {
             ChangeCentralBody(centralBody);
             ConvertStateVectorsToOrbitElements(stateVectors);
-            this.stateVectors = new StateVectors(Vector3.zero, Vector3.zero);
+            this.stateVectors = new StateVectors(Vector3Double.zero, Vector3Double.zero);
         }
         public Orbit(OrbitElements elements, Celestial centralBody)
         {
             ChangeCentralBody(centralBody);
             this.elements = elements;
             this.elements = CalculateOtherElements(this.elements);
-            this.stateVectors = new StateVectors(Vector3.zero, Vector3.zero);
+            this.stateVectors = new StateVectors(Vector3Double.zero, Vector3Double.zero);
         }
 
         public void ChangeCentralBody(Celestial centralBody)
@@ -44,10 +44,10 @@ namespace Sim.Math
 
         public virtual void ConvertStateVectorsToOrbitElements(StateVectors stateVectors)
         {
-            Vector3 relativePosition = stateVectors.position;
-            Vector3 velocity = stateVectors.velocity;
-            float posMagnitude = relativePosition.magnitude;
-            float velMagnitude = velocity.magnitude;
+            Vector3Double relativePosition = stateVectors.position;
+            Vector3Double velocity = stateVectors.velocity;
+            double posMagnitude = relativePosition.magnitude;
+            double velMagnitude = velocity.magnitude;
 
             var elements = new OrbitElements();
 
@@ -57,9 +57,9 @@ namespace Sim.Math
 
             // Eccentricity
             // source: https://en.wikipedia.org/wiki/Eccentricity_vector
-            elements.angMomentum = Vector3.Cross(velocity, relativePosition);
-            float angMomMag = elements.angMomentum.magnitude;
-            elements.eccVec = (Vector3.Cross(elements.angMomentum, velocity) / GM) - (relativePosition.SafeDivision(posMagnitude));
+            elements.angMomentum = Vector3Double.Cross(velocity, relativePosition);
+            double angMomMag = elements.angMomentum.magnitude;
+            elements.eccVec = (Vector3Double.Cross(elements.angMomentum, velocity) / GM) - (relativePosition.SafeDivision(posMagnitude));
             elements.eccentricity = elements.eccVec.magnitude;
 
             // Inclination
@@ -68,9 +68,9 @@ namespace Sim.Math
 
             // Longitude of the ascending node
             // source: https://en.wikipedia.org/wiki/Longitude_of_the_ascending_node
-            Vector3 nodeVector = elements.inclination != 0 && elements.inclination != Mathf.PI ?
-                -Vector3.Cross(Vector3.up, elements.angMomentum) : Vector3.right;
-            float nodeMag = nodeVector.magnitude;
+            Vector3Double nodeVector = elements.inclination != 0 && elements.inclination != Mathf.PI ?
+                -Vector3Double.Cross(Vector3Double.up, elements.angMomentum) : Vector3Double.right;
+            double nodeMag = nodeVector.magnitude;
             elements.lonAscNode = MathLib.Acos(nodeVector.x.SafeDivision(nodeMag));
             if (nodeVector.z < 0)
                 elements.lonAscNode = PI2 - elements.lonAscNode;
@@ -78,7 +78,7 @@ namespace Sim.Math
             // Argument of periapsis
             // source: https://en.wikipedia.org/wiki/Argument_of_periapsis
             if (elements.lonAscNode != 0) {
-                elements.argPeriapsis = MathLib.Acos(Vector3.Dot(nodeVector, elements.eccVec).SafeDivision(nodeMag * elements.eccentricity));
+                elements.argPeriapsis = MathLib.Acos(Vector3Double.Dot(nodeVector, elements.eccVec).SafeDivision(nodeMag * elements.eccentricity));
                 if (elements.eccVec.y < 0) {
                     elements.argPeriapsis = PI2 - elements.argPeriapsis;
                 }
@@ -92,44 +92,44 @@ namespace Sim.Math
 
             // True anomaly
             // source: https://en.wikipedia.org/wiki/True_anomaly                
-            float eccPosDot = Vector3.Dot(elements.eccVec, relativePosition);
+            double eccPosDot = Vector3Double.Dot(elements.eccVec, relativePosition);
             elements.trueAnomaly = MathLib.Acos(eccPosDot.SafeDivision(elements.eccentricity * posMagnitude));
-            if (Vector3.Dot(relativePosition, velocity) < 0)
+            if (Vector3Double.Dot(relativePosition, velocity) < 0)
                 elements.trueAnomaly = PI2 - elements.trueAnomaly;
 
             elements = CalculateOtherElements(elements);
             this.elements = elements;
         }
         public abstract OrbitElements CalculateOtherElements(OrbitElements elements);
-        public static float CalculateEccentricity(StateVectors stateVectors, float centralMass)
+        public static double CalculateEccentricity(StateVectors stateVectors, double centralMass)
         {
-            Vector3 pos = stateVectors.position;
-            Vector3 vel = stateVectors.velocity;
+            Vector3Double pos = stateVectors.position;
+            Vector3Double vel = stateVectors.velocity;
 
-            float GM = KeplerianOrbit.G * centralMass;
-            Vector3 angMomentum = Vector3.Cross(pos, vel);
-            float angMomMag = angMomentum.magnitude;
-            Vector3 eccVec = (Vector3.Cross(vel, angMomentum) / GM) - (pos.SafeDivision(pos.magnitude));
+            double GM = KeplerianOrbit.G * centralMass;
+            Vector3Double angMomentum = Vector3Double.Cross(pos, vel);
+            double angMomMag = angMomentum.magnitude;
+            Vector3Double eccVec = (Vector3Double.Cross(vel, angMomentum) / GM) - (pos.SafeDivision(pos.magnitude));
             return eccVec.magnitude;
         }
 
-        public abstract Vector3 CalculateOrbitalPosition(float trueAnomaly);
-        public abstract Vector3 CalculateVelocity(Vector3 relativePosition, float trueAnomaly);
-        public StateVectors ConvertOrbitElementsToStateVectors(float trueAnomaly)
+        public abstract Vector3Double CalculateOrbitalPosition(double trueAnomaly);
+        public abstract Vector3Double CalculateVelocity(Vector3Double relativePosition, double trueAnomaly);
+        public StateVectors ConvertOrbitElementsToStateVectors(double trueAnomaly)
         {
             this.stateVectors.position = CalculateOrbitalPosition(trueAnomaly);
             this.stateVectors.velocity = CalculateVelocity(this.stateVectors.position, trueAnomaly);
             return this.stateVectors;
         }
 
-        public abstract float CalculateMeanAnomaly(float time);
-        public virtual float CalculateAnomaly(float meanAnomaly)
+        public abstract double CalculateMeanAnomaly(double time);
+        public virtual double CalculateAnomaly(double meanAnomaly)
         {
             // source: https://en.wikipedia.org/wiki/Eccentric_anomaly
             // numerical method: https://en.wikipedia.org/wiki/Newton%27s_method
 
-            float a1 = meanAnomaly;
-            float a0 = float.MaxValue;
+            double a1 = meanAnomaly;
+            double a0 = double.MaxValue;
             double eq, deq;
 
             while (MathLib.Abs(a1 - a0) > 0.0001f)
@@ -137,15 +137,15 @@ namespace Sim.Math
                 a0 = a1;
                 eq = MeanAnomalyEquation(a0, elements.eccentricity, meanAnomaly);
                 deq = d_MeanAnomalyEquation(a0, elements.eccentricity);
-                a1 = a0 - (float)eq.SafeDivision(deq);
+                a1 = a0 - (double)eq.SafeDivision(deq);
             }
 
             return a1;
         }
-        public abstract float CalculateAnomalyFromTrueAnomaly(float trueAnomaly);
-        public abstract float CalculateTrueAnomaly(float anomaly);
-        public abstract float CalculateMeanAnomalyFromAnomaly(float anomaly);
-        public (float, float, float) GetFutureAnomalies(float time)
+        public abstract double CalculateAnomalyFromTrueAnomaly(double trueAnomaly);
+        public abstract double CalculateTrueAnomaly(double anomaly);
+        public abstract double CalculateMeanAnomalyFromAnomaly(double anomaly);
+        public (double, double, double) GetFutureAnomalies(double time)
         {
             m = CalculateMeanAnomaly(time);
             a = CalculateAnomaly(m);
@@ -153,32 +153,32 @@ namespace Sim.Math
             return (m, a, t);
         }
 
-        public float CalculateTimeToPeriapsis(float meanAnomaly)
+        public double CalculateTimeToPeriapsis(double meanAnomaly)
         {
             return (PI2 - meanAnomaly) * elements.periodConstant;
         }
 
-        public abstract double MeanAnomalyEquation(float anomaly, float e, float M);
-        public abstract double d_MeanAnomalyEquation(float anomaly, float e);
+        public abstract double MeanAnomalyEquation(double anomaly, double e, double M);
+        public abstract double d_MeanAnomalyEquation(double anomaly, double e);
 
-        public Vector3[] GenerateOrbitPoints(int resolution, InOrbitObject self, float timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out float timeToGravityChange)
+        public Vector3Double[] GenerateOrbitPoints(int resolution, InOrbitObject self, double timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out double timeToGravityChange)
         {
-            List<Vector3> points = new List<Vector3>(resolution);
-            float influenceRadius = this.centralBody.InfluenceRadius;
+            List<Vector3Double> points = new List<Vector3Double>(resolution);
+            double influenceRadius = this.centralBody.InfluenceRadius;
             bool encounter = false;
 
-            float meanAnomaly, trueAnomaly;
-            float time = 0, lastTime = 0;
+            double meanAnomaly, trueAnomaly;
+            double time = 0, lastTime = 0;
 
-            Vector3 position, relativePosition;
-            Vector3 spacecraftPosition, celestialPosition;
-            Vector3 spacecraftVelocity, celestialVelocity;
+            Vector3Double position, relativePosition;
+            Vector3Double spacecraftPosition, celestialPosition;
+            Vector3Double spacecraftVelocity, celestialVelocity;
 
             nextCelestial = null;
             stateVectors = null;
             timeToGravityChange = -1f;
 
-            float orbitFraction = 1f / resolution;
+            double orbitFraction = 1f / resolution;
             for (int i = 0; i < resolution; i++)
             {
                 position = GetPointOnOrbit(i, orbitFraction, out meanAnomaly, out trueAnomaly);
@@ -193,7 +193,7 @@ namespace Sim.Math
                     // move last point closer to influence border         
                     timeToGravityChange = GetTimeToOutsideInfluence(lastTime, time, influenceRadius);
 
-                    (float, float, float) _mat = GetFutureAnomalies(timeToGravityChange);
+                    (double, double, double) _mat = GetFutureAnomalies(timeToGravityChange);
                     position = CalculateOrbitalPosition(_mat.Item3);
                     points.Add(position);
 
@@ -203,7 +203,7 @@ namespace Sim.Math
                     if (!this.centralBody.IsStationary)
                     {
                         Orbit centralBodyOrbit = this.centralBody.Kepler.orbit;
-                        (float, float, float) mat = centralBodyOrbit.GetFutureAnomalies(timeToGravityChange + timePassed);
+                        (double, double, double) mat = centralBodyOrbit.GetFutureAnomalies(timeToGravityChange + timePassed);
                         celestialPosition = centralBodyOrbit.CalculateOrbitalPosition(mat.Item3);
                         celestialVelocity = centralBodyOrbit.CalculateVelocity(celestialPosition, mat.Item3);
 
@@ -237,19 +237,19 @@ namespace Sim.Math
                     if (celestial == self)
                         continue;
 
-                    (float, float, float) mat = celestial.Kepler.orbit.GetFutureAnomalies(time + timePassed);
+                    (double, double, double) mat = celestial.Kepler.orbit.GetFutureAnomalies(time + timePassed);
                     celestialPosition = celestial.Kepler.orbit.CalculateOrbitalPosition(mat.Item3);
                     relativePosition = (position - celestialPosition);
 
                     if (relativePosition.sqrMagnitude < MathLib.Pow(celestial.InfluenceRadius, 2))
                     {
-                        float t1 = time;
-                        float t2 = lastTime;
+                        double t1 = time;
+                        double t2 = lastTime;
 
                         int iter = 0;
-                        float diff = 1;
-                        spacecraftPosition = Vector3.zero;
-                        (float, float, float) _mat = (0, 0, 0);
+                        double diff = 1;
+                        spacecraftPosition = Vector3Double.zero;
+                        (double, double, double) _mat = (0, 0, 0);
 
                         while (MathLib.Abs(diff) > FUTURE_PRECISION || diff > 0)
                         {
@@ -303,18 +303,18 @@ namespace Sim.Math
 
             return points.ToArray();
         }
-        public abstract Vector3 GetPointOnOrbit(int i, float orbitFraction, out float meanAnomaly, out float trueAnomaly);
+        public abstract Vector3Double GetPointOnOrbit(int i, double orbitFraction, out double meanAnomaly, out double trueAnomaly);
 
-        protected float GetTimeToOutsideInfluence(float lastTime, float time, float influenceRadius)
+        protected double GetTimeToOutsideInfluence(double lastTime, double time, double influenceRadius)
         {
             // Bisection method
-            float diff = 1;
-            float timeToChange = 0;
+            double diff = 1;
+            double timeToChange = 0;
             int i = 0;
-            Vector3 pos = Vector3.zero;
-            float resultTime = 0;
+            Vector3Double pos = Vector3Double.zero;
+            double resultTime = 0;
 
-            while (Mathf.Abs(diff) > FUTURE_PRECISION || diff < 0)
+            while (MathLib.Abs(diff) > FUTURE_PRECISION || diff < 0)
             {
                 if (++i > MAX_BISECTION_STEPS)
                 {
@@ -322,7 +322,7 @@ namespace Sim.Math
                 }
 
                 timeToChange = (lastTime + time) / 2f;
-                (float, float, float) mat = GetFutureAnomalies(timeToChange);
+                (double, double, double) mat = GetFutureAnomalies(timeToChange);
                 pos = CalculateOrbitalPosition(mat.Item3);
                 diff = pos.sqrMagnitude - influenceRadius * influenceRadius;
 
@@ -339,8 +339,8 @@ namespace Sim.Math
             return resultTime;
         }
     
-        public bool Equals(Orbit orbit, float precision, out float inaccuracy) {
-            float[] diffs = new[] {
+        public bool Equals(Orbit orbit, double precision, out double inaccuracy) {
+            double[] diffs = new[] {
                 MathLib.Abs(elements.semimajorAxis - orbit.elements.semimajorAxis),
                 MathLib.Abs(elements.eccentricity - orbit.elements.eccentricity),
                 MathLib.Abs(elements.inclination - orbit.elements.inclination),

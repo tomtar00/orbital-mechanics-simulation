@@ -10,11 +10,11 @@ namespace Sim.Maneuvers
         public Orbit orbit { get; private set; }
         public OrbitDrawer drawer { get; private set; }
         public StateVectors stateVectors { get; private set; }
-        public Vector3 addedVelocity { get; private set; }
-        public float currentTrueAnomaly { get; private set; }
-        public float timeToManeuver { get; private set; }
-        public float fixedTimeToManeuver { get; private set; } = -1f;
-        public float burnTime { get; private set; }
+        public Vector3Double addedVelocity { get; private set; }
+        public double currentTrueAnomaly { get; private set; }
+        public double timeToManeuver { get; private set; }
+        public double fixedTimeToManeuver { get; private set; } = -1f;
+        public double burnTime { get; private set; }
 
         public Maneuver PreviousManeuver { get; set; }
         public OrbitDrawer PreviousDrawer { get; set; }
@@ -22,16 +22,16 @@ namespace Sim.Maneuvers
         public ManeuverNode Node { get; set; }
         public Spacecraft spacecraft { get; set; }
 
-        private Vector3 lastVelocity;
-        private float timeToOrbit;
+        private Vector3Double lastVelocity;
+        private double timeToOrbit;
         private int orbitIdx;
 
-        public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors, ManeuverNode node, Maneuver lastManeuver, float timeToOrbit, int orbitIdx) {
+        public Maneuver(Orbit orbit, OrbitDrawer drawer, StateVectors startStateVectors, ManeuverNode node, Maneuver lastManeuver, double timeToOrbit, int orbitIdx) {
             this.orbit = orbit;
             this.drawer = drawer;
             this.stateVectors = startStateVectors;
             this.Node = node;
-            this.addedVelocity = Vector3.zero;
+            this.addedVelocity = Vector3Double.zero;
             this.spacecraft = Spacecraft.current;
             this.PreviousManeuver = lastManeuver;
             this.timeToOrbit = timeToOrbit;
@@ -42,7 +42,7 @@ namespace Sim.Maneuvers
             UpdateOnDrag(this.stateVectors.position);
         }
 
-        public void UpdateOnDrag(Vector3 newWorldPosition) {
+        public void UpdateOnDrag(Vector3Double newWorldPosition) {
             if (NextManeuver != null) return;
 
             currentTrueAnomaly = GetTrueAnomaly(newWorldPosition);
@@ -59,23 +59,23 @@ namespace Sim.Maneuvers
         public void LateUpdate() {
             timeToManeuver -= Time.deltaTime;
             if (!Node.isDragging) {
-                Node.gameObject.transform.localPosition = stateVectors.position + orbit.centralBody.transform.localPosition;
+                Node.gameObject.transform.localPosition = (Vector3)stateVectors.position + orbit.centralBody.transform.localPosition;
             }
         }
 
-        public float GetTrueAnomaly(Vector3 relativePressPosition) {
-            return -Vector3.SignedAngle(orbit.elements.eccVec, relativePressPosition, orbit.elements.angMomentum) * Mathf.Deg2Rad;
+        public double GetTrueAnomaly(Vector3Double relativePressPosition) {
+            return -Vector3Double.SignedAngle(orbit.elements.eccVec, relativePressPosition, orbit.elements.angMomentum) * MathLib.Deg2Rad;
         }
-        public float GetTimeToManeuver(float trueAnomaly) {
-            float anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);
-            float meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
+        public double GetTimeToManeuver(double trueAnomaly) {
+            double anomaly = orbit.CalculateAnomalyFromTrueAnomaly(trueAnomaly);
+            double meanAnomaly = orbit.CalculateMeanAnomalyFromAnomaly(anomaly);
 
-            float enterMeanAnomaly = orbit.elements.meanAnomaly;
-            float timeOnCurrentOrbit = PreviousManeuver == null ? Spacecraft.current.timeSinceVelocityChanged : 0f;
-            float currentTimeToOrbit = Mathf.Max(timeToOrbit - timeOnCurrentOrbit, 0f); 
+            double enterMeanAnomaly = orbit.elements.meanAnomaly;
+            double timeOnCurrentOrbit = PreviousManeuver == null ? Spacecraft.current.timeSinceVelocityChanged : 0f;
+            double currentTimeToOrbit = MathLib.Max(timeToOrbit - timeOnCurrentOrbit, 0f); 
             
-            if (enterMeanAnomaly > meanAnomaly) enterMeanAnomaly -= Mathf.PI * 2f;
-            float time = ((meanAnomaly - enterMeanAnomaly) / orbit.elements.meanMotion) + currentTimeToOrbit;
+            if (enterMeanAnomaly > meanAnomaly) enterMeanAnomaly -= MathLib.PI * 2f;
+            double time = ((meanAnomaly - enterMeanAnomaly) / orbit.elements.meanMotion) + currentTimeToOrbit;
 
             // Debug.Log("===== MANEUVER ======");
             // Debug.Log("maneuver anomaly: " + anomaly + " mean: " + meanAnomaly);
@@ -88,14 +88,14 @@ namespace Sim.Maneuvers
             }
             return time;
         }
-        private float GetBurnTime() {
+        private double GetBurnTime() {
             return addedVelocity.magnitude / spacecraft.Thrust;
         }
-        public void RotateNode(Vector3 orbitPosition) {
-            Node.gameObject.transform.rotation = Quaternion.LookRotation(stateVectors.velocity);
+        public void RotateNode(Vector3Double orbitPosition) {
+            Node.gameObject.transform.rotation = Quaternion.LookRotation((Vector3)stateVectors.velocity);
         }
 
-        public void ChangeVelocity(Vector3 dV) {
+        public void ChangeVelocity(Vector3Double dV) {
             addedVelocity += dV;
             StateVectors newVectors = new StateVectors(stateVectors.position, stateVectors.velocity + addedVelocity);
 
@@ -103,12 +103,12 @@ namespace Sim.Maneuvers
 
             burnTime = GetBurnTime();
         }
-        public void ChangePosition(Vector3 newPosition) {
-            Node.gameObject.transform.localPosition = newPosition + orbit.centralBody.transform.localPosition;
+        public void ChangePosition(Vector3Double newPosition) {
+            Node.gameObject.transform.localPosition = (Vector3)newPosition + orbit.centralBody.transform.localPosition;
 
             // rotate vector to match new position
-            float angle = Vector3.SignedAngle(lastVelocity, this.stateVectors.velocity, orbit.elements.angMomentum);
-            addedVelocity = Quaternion.AngleAxis(angle, orbit.elements.angMomentum) * addedVelocity;
+            double angle = Vector3Double.SignedAngle(lastVelocity, this.stateVectors.velocity, orbit.elements.angMomentum);
+            addedVelocity = (Vector3Double)(Quaternion.AngleAxis((float)angle, (Vector3)orbit.elements.angMomentum) * (Vector3)addedVelocity);
 
             stateVectors.position = newPosition;
             StateVectors newVectors = new StateVectors(newPosition, stateVectors.velocity + addedVelocity);

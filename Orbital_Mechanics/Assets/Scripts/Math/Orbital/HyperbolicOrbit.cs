@@ -11,9 +11,9 @@ namespace Sim.Math
 
         public override OrbitElements CalculateOtherElements(OrbitElements elements)
         {
-            float sqrt = MathLib.Sqrt((elements.eccentricity - 1).SafeDivision(elements.eccentricity + 1));
+            double sqrt = MathLib.Sqrt((elements.eccentricity - 1).SafeDivision(elements.eccentricity + 1));
             elements.anomaly = 2f * MathLib.Atanh(sqrt * MathLib.Tan(elements.trueAnomaly / 2f));
-            elements.meanAnomaly = (float)(elements.eccentricity * MathLib.Sinh(elements.anomaly) - elements.anomaly);
+            elements.meanAnomaly = (double)(elements.eccentricity * MathLib.Sinh(elements.anomaly) - elements.anomaly);
 
             elements.meanMotion = MathLib.Sqrt((GM).SafeDivision(MathLib.Pow(-elements.semimajorAxis, 3)));
             elements.semiminorAxis = -elements.semimajorAxis * MathLib.Sqrt(elements.eccentricity * elements.eccentricity - 1f);
@@ -25,60 +25,60 @@ namespace Sim.Math
         }
 
         // https://www.orbiter-forum.com/threads/plotting-a-hyperbolic-trajectory.22004/
-        public override Vector3 CalculateOrbitalPosition(float trueAnomaly)
+        public override Vector3Double CalculateOrbitalPosition(double trueAnomaly)
         {
-            float distance = -elements.semiLatusRectum / (1f + elements.eccentricity * MathLib.Cos(trueAnomaly));
+            double distance = -elements.semiLatusRectum / (1f + elements.eccentricity * MathLib.Cos(trueAnomaly));
 
-            Vector3 periapsisDir = elements.eccVec.normalized;
-            Vector3 pos = Quaternion.AngleAxis(-trueAnomaly * Mathf.Rad2Deg, elements.angMomentum) * periapsisDir;
+            Vector3Double periapsisDir = elements.eccVec.normalized;
+            Vector3Double pos = (Vector3Double)(Quaternion.AngleAxis((float)(-trueAnomaly * MathLib.Rad2Deg), (Vector3)elements.angMomentum) * (Vector3)periapsisDir);
 
             return pos * distance;
         }
-        public override Vector3 CalculateVelocity(Vector3 relativePosition, float trueAnomaly)
+        public override Vector3Double CalculateVelocity(Vector3Double relativePosition, double trueAnomaly)
         {
             this.distance = -elements.semiLatusRectum / (1f + elements.eccentricity * MathLib.Cos(trueAnomaly));
-            this.speed = MathLib.Sqrt(GM * ((2f).SafeDivision(distance) - (1f).SafeDivision(elements.semimajorAxis)));
+            this.speed = MathLib.Sqrt(GM * ((2.0).SafeDivision(distance) - (1.0).SafeDivision(elements.semimajorAxis)));
 
             // source: https://en.wikipedia.org/wiki/Elliptic_orbit#Flight_path_angle
-            float pathAngle = MathLib.Atan((elements.eccentricity * MathLib.Sin(trueAnomaly)) / (1 + elements.eccentricity * MathLib.Cos(trueAnomaly))) * Mathf.Rad2Deg;
-            return Quaternion.AngleAxis(pathAngle, elements.angMomentum) *
-                            Quaternion.AngleAxis(-90, elements.angMomentum) * relativePosition.normalized *
-                            this.speed;
+            double pathAngle = MathLib.Atan((elements.eccentricity * MathLib.Sin(trueAnomaly)) / (1 + elements.eccentricity * MathLib.Cos(trueAnomaly))) * MathLib.Rad2Deg;
+            return (Vector3Double)(Quaternion.AngleAxis((float)pathAngle, (Vector3)elements.angMomentum) *
+                            Quaternion.AngleAxis(-90, (Vector3)elements.angMomentum) * (Vector3)relativePosition.normalized *
+                            (float)this.speed);
         }
 
-        public override float CalculateMeanAnomaly(float time)
+        public override double CalculateMeanAnomaly(double time)
         {
-            float meanAnomaly = elements.meanAnomaly;
+            double meanAnomaly = elements.meanAnomaly;
             meanAnomaly += elements.meanMotion * time;
             return meanAnomaly;
         }
-        public override float CalculateMeanAnomalyFromAnomaly(float anomaly) {
-            return (float)((double)elements.eccentricity * MathLib.Sinh(anomaly) - (double)anomaly);
+        public override double CalculateMeanAnomalyFromAnomaly(double anomaly) {
+            return (double)((double)elements.eccentricity * MathLib.Sinh(anomaly) - (double)anomaly);
         }
-        public override float CalculateTrueAnomaly(float anomaly)
+        public override double CalculateTrueAnomaly(double anomaly)
         {
             return 2f * MathLib.Atan(elements.trueAnomalyConstant * MathLib.Tanh(anomaly / 2f));
         }
-        public override float CalculateAnomalyFromTrueAnomaly(float trueAnomaly) {
+        public override double CalculateAnomalyFromTrueAnomaly(double trueAnomaly) {
             return 2f * MathLib.Atan(MathLib.Tanh(trueAnomaly / 2f) / elements.trueAnomalyConstant);
         }
 
-        public override double MeanAnomalyEquation(float H, float e, float M)
+        public override double MeanAnomalyEquation(double H, double e, double M)
         {
             return M - e * MathLib.Sinh(H) + H; // M - e*sinh(H) + H = 0
         }
-        public override double d_MeanAnomalyEquation(float H, float e)
+        public override double d_MeanAnomalyEquation(double H, double e)
         {
             return -e * MathLib.Cosh(H) + 1f; //  -e*cosh(H) + 1 = 0
         }
 
-        public override Vector3 GetPointOnOrbit(int i, float orbitFraction, out float meanAnomaly, out float trueAnomaly)
+        public override Vector3Double GetPointOnOrbit(int i, double orbitFraction, out double meanAnomaly, out double trueAnomaly)
         {
-            float theta = MathLib.Acos(-1.0f / elements.eccentricity) - 0.01f;
-            float e = elements.eccentricity;
+            double theta = MathLib.Acos(-1.0f / elements.eccentricity) - 0.01f;
+            double e = elements.eccentricity;
             trueAnomaly = elements.trueAnomaly + i * orbitFraction * 2 * theta;
-            float hyperbolicAnomaly = 2 * MathLib.Atanh(MathLib.Sqrt((e - 1) / (e + 1)) * MathLib.Tan(trueAnomaly / 2));
-            meanAnomaly = (float)(e * MathLib.Sinh(hyperbolicAnomaly) - hyperbolicAnomaly);
+            double hyperbolicAnomaly = 2 * MathLib.Atanh(MathLib.Sqrt((e - 1) / (e + 1)) * MathLib.Tan(trueAnomaly / 2));
+            meanAnomaly = (double)(e * MathLib.Sinh(hyperbolicAnomaly) - hyperbolicAnomaly);
             return CalculateOrbitalPosition(trueAnomaly);
         }
     }

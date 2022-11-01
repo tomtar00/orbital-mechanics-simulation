@@ -1,7 +1,9 @@
-﻿using Sim.Maneuvers;
+﻿using System;
+using Sim.Maneuvers;
 using UnityEngine;
 using Sim.Math;
 using Sim.Objects;
+using System.Linq;
 
 namespace Sim.Visuals
 {
@@ -107,10 +109,10 @@ namespace Sim.Visuals
             }
         }
 
-        public void DrawOrbits(StateVectors stateVectors, Celestial centralBody, float timeToDraw = 0)
+        public void DrawOrbits(StateVectors stateVectors, Celestial centralBody, double timeToDraw = 0)
         {
             Celestial currentCelestial = centralBody;
-            float timePassed = timeToDraw;
+            double timePassed = timeToDraw;
 
             for (int i = 0; i < this.depth; i++)
             {
@@ -119,7 +121,7 @@ namespace Sim.Visuals
                 line.gameObject.transform.SetParent(currentCelestial.transform);
                 line.transform.localPosition = Vector3.zero;
 
-                float timeToGravityChange;
+                double timeToGravityChange;
                 Celestial nextCelestial;
                 StateVectors gravityChangePoint = DrawOrbit(stateVectors, i, currentCelestial, timePassed, out nextCelestial, out timeToGravityChange, out orbits[i]);
                 line.colorGradient = CreateLineGradient(i);
@@ -138,14 +140,14 @@ namespace Sim.Visuals
                 timePassed += timeToGravityChange;
             }
         }
-        private StateVectors DrawOrbit(StateVectors stateVectors, int lineIdx, Celestial currentCelestial, float timePassed, out Celestial nextCelestial, out float timeToGravityChange, out Orbit orbit)
+        private StateVectors DrawOrbit(StateVectors stateVectors, int lineIdx, Celestial currentCelestial, double timePassed, out Celestial nextCelestial, out double timeToGravityChange, out Orbit orbit)
         {
             Orbit _orbit = KeplerianOrbit.CreateOrbit(stateVectors, currentCelestial, out _);
             orbit = _orbit;
 
             // get orbit points
             StateVectors gravityChangeVectors;
-            Vector3[] points = orbit.GenerateOrbitPoints(
+            Vector3Double[] points = orbit.GenerateOrbitPoints(
                 orbitResolution,
                 inOrbitObject,
                 timePassed,
@@ -172,7 +174,7 @@ namespace Sim.Visuals
             var line = lineRenderers[lineIdx];
             line.loop = gravityChangeVectors == null;
             line.positionCount = points.Length;
-            line.SetPositions(points);
+            line.SetPositions(Array.ConvertAll(points, p => (Vector3)p));
 
             return gravityChangeVectors;
         }
@@ -183,7 +185,7 @@ namespace Sim.Visuals
 
             // get orbit points
             StateVectors gravityChangeVectors;
-            Vector3[] points = orbit.GenerateOrbitPoints(
+            Vector3Double[] points = orbit.GenerateOrbitPoints(
                 orbitResolution,
                 inOrbitObject,
                 0f,
@@ -200,7 +202,7 @@ namespace Sim.Visuals
             line.gameObject.SetActive(true);
             line.loop = gravityChangeVectors == null;
             line.positionCount = points.Length;
-            line.SetPositions(points);
+            line.SetPositions(Array.ConvertAll(points, p => (Vector3)p));
         }
     }
 }

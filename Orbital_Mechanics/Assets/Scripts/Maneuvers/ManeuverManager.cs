@@ -36,7 +36,7 @@ namespace Sim.Maneuvers {
             }
         }
 
-        public Maneuver CreateManeuver(Orbit currentOrbit, InOrbitObject inOrbitObject, Vector3 relativePressPosition, float timeToOrbit, int futureOrbitIdx) {
+        public Maneuver CreateManeuver(Orbit currentOrbit, InOrbitObject inOrbitObject, Vector3Double relativePressPosition, double timeToOrbit, int futureOrbitIdx) {
 
             Maneuver lastManeuver = maneuvers.Count > 0 ? maneuvers[maneuvers.Count - 1] : null;
             Orbit orbit = inOrbitObject != null && futureOrbitIdx == 0 ? inOrbitObject.Kepler.orbit : currentOrbit;
@@ -48,7 +48,7 @@ namespace Sim.Maneuvers {
             ManeuverNode node = maneuverObj.GetComponent<ManeuverNode>();
 
             // calculate state vectors of pressed point
-            float trueAnomaly = Vector3.SignedAngle(orbit.elements.eccVec, relativePressPosition, orbit.elements.angMomentum) * Mathf.Deg2Rad;
+            double trueAnomaly = Vector3Double.SignedAngle(orbit.elements.eccVec, relativePressPosition, orbit.elements.angMomentum) * Mathf.Deg2Rad;
             var relativePressVelocity = orbit.CalculateVelocity(relativePressPosition, trueAnomaly);
             StateVectors pressStateVectors = new StateVectors(relativePressPosition, relativePressVelocity);    
 
@@ -83,21 +83,5 @@ namespace Sim.Maneuvers {
             else
                 Debug.LogWarning("Tried to remove maneuver from empty list");
         }
-
-        // private void OnGUI() 
-        // {
-        //     float startHeight = Screen.height - 300;
-        //     float space = 20;
-        //     int i = 0;
-
-        //     foreach (var maneuver in maneuvers)
-        //     {
-        //         GUI.Label(new Rect(10, startHeight + space * i, 300, 20), $"Maneuver {i++}: {maneuver.timeToManeuver} Burn: {maneuver.burnTime}");
-        //     }
-        //     i++;
-        //     Maneuver next = NextManeuver;
-        //     if (NextManeuver != null)
-        //         GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Next maneuver: Maneuver {maneuvers.IndexOf(next)}");
-        // }
     }
 }

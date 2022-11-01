@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
-using Sim.Math;
 
 namespace Sim.Objects
 {
