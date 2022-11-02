@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Sim.Objects;
+using Sim.Math;
 
-namespace Sim.Math
+namespace Sim.Orbits
 {
     public class HyperbolicOrbit : Orbit
     {
         public HyperbolicOrbit(StateVectors stateVectors, Celestial centralBody) : base(stateVectors, centralBody) { }
-        public HyperbolicOrbit(OrbitElements elements, Celestial centralBody) : base(elements, centralBody) { }
+        public HyperbolicOrbit(OrbitalElements elements, Celestial centralBody) : base(elements, centralBody) { }
 
-        public override OrbitElements CalculateOtherElements(OrbitElements elements)
+        public override OrbitalElements CalculateOtherElements(OrbitalElements elements)
         {
             double sqrt = MathLib.Sqrt((elements.eccentricity - 1).SafeDivision(elements.eccentricity + 1));
             elements.anomaly = 2f * MathLib.Atanh(sqrt * MathLib.Tan(elements.trueAnomaly / 2f));
@@ -30,7 +30,7 @@ namespace Sim.Math
             double distance = -elements.semiLatusRectum / (1f + elements.eccentricity * MathLib.Cos(trueAnomaly));
 
             Vector3Double periapsisDir = elements.eccVec.normalized;
-            Vector3Double pos = (Vector3Double)(Quaternion.AngleAxis((float)(-trueAnomaly * MathLib.Rad2Deg), (Vector3)elements.angMomentum) * (Vector3)periapsisDir);
+            Vector3Double pos = (Quaternion.AngleAxis((float)(-trueAnomaly * MathLib.Rad2Deg), elements.angMomentum) * periapsisDir);
 
             return pos * distance;
         }
@@ -41,8 +41,8 @@ namespace Sim.Math
 
             // source: https://en.wikipedia.org/wiki/Elliptic_orbit#Flight_path_angle
             double pathAngle = MathLib.Atan((elements.eccentricity * MathLib.Sin(trueAnomaly)) / (1 + elements.eccentricity * MathLib.Cos(trueAnomaly))) * MathLib.Rad2Deg;
-            return (Vector3Double)(Quaternion.AngleAxis((float)pathAngle, (Vector3)elements.angMomentum) *
-                            Quaternion.AngleAxis(-90, (Vector3)elements.angMomentum) * (Vector3)relativePosition.normalized *
+            return (Quaternion.AngleAxis((float)pathAngle, elements.angMomentum) *
+                            Quaternion.AngleAxis(-90, elements.angMomentum) * relativePosition.normalized *
                             (float)this.speed);
         }
 

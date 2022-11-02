@@ -1,6 +1,7 @@
 ﻿using Sim.Visuals;
 using Sim.Math;
 using Sim.Objects;
+using Sim.Orbits;
 using UnityEngine;
 
 namespace Sim.Maneuvers
@@ -59,7 +60,7 @@ namespace Sim.Maneuvers
         public void LateUpdate() {
             timeToManeuver -= Time.deltaTime;
             if (!Node.isDragging) {
-                Node.gameObject.transform.localPosition = (Vector3)stateVectors.position + orbit.centralBody.transform.localPosition;
+                Node.gameObject.transform.localPosition = stateVectors.position + orbit.centralBody.transform.localPosition;
             }
         }
 
@@ -92,7 +93,7 @@ namespace Sim.Maneuvers
             return addedVelocity.magnitude / spacecraft.Thrust;
         }
         public void RotateNode(Vector3Double orbitPosition) {
-            Node.gameObject.transform.rotation = Quaternion.LookRotation((Vector3)stateVectors.velocity);
+            Node.gameObject.transform.rotation = Quaternion.LookRotation(stateVectors.velocity);
         }
 
         public void ChangeVelocity(Vector3Double dV) {
@@ -104,11 +105,11 @@ namespace Sim.Maneuvers
             burnTime = GetBurnTime();
         }
         public void ChangePosition(Vector3Double newPosition) {
-            Node.gameObject.transform.localPosition = (Vector3)newPosition + orbit.centralBody.transform.localPosition;
+            Node.gameObject.transform.localPosition = newPosition + orbit.centralBody.transform.localPosition;
 
             // rotate vector to match new position
             double angle = Vector3Double.SignedAngle(lastVelocity, this.stateVectors.velocity, orbit.elements.angMomentum);
-            addedVelocity = (Vector3Double)(Quaternion.AngleAxis((float)angle, (Vector3)orbit.elements.angMomentum) * (Vector3)addedVelocity);
+            addedVelocity = (Quaternion.AngleAxis((float)angle, orbit.elements.angMomentum) * addedVelocity);
 
             stateVectors.position = newPosition;
             StateVectors newVectors = new StateVectors(newPosition, stateVectors.velocity + addedVelocity);

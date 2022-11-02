@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using Sim.Objects;
-using System.Linq;
 
 public class CameraController : MonoBehaviour
 {
@@ -24,6 +23,7 @@ public class CameraController : MonoBehaviour
     private Vector3 velocity;
     private float targetDistance;
     private Vector3 targetPosition;
+    public bool initialized { get; private set; } = false;
 
     private Transform focusObject;
     private Vector2 orbitAngles = new Vector2(45f, 0f);
@@ -40,27 +40,25 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    void OnEnable()
-    {
-        if (focusOnEnable) Focused = true;
-    }
-
     void OnDisable() => Focused = false;
 
     public static CameraController Instance;
-    private void Awake()
+
+    public void Init()
     {
+        if (initialized) return;
         Instance = this;
-    }
-    private void Start()
-    {
+        if (focusOnEnable) Focused = true;
         targetDistance = distance;
         cam = GetComponent<Camera>();
         Focus(Spacecraft.current?.transform);
+        initialized = true;
     }
 
     private void LateUpdate()
     {
+        if (!initialized) return;
+
         if (focusingOnObject)
         {
             Orbit();

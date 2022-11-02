@@ -1,6 +1,6 @@
-﻿using System;
-using System.Threading;
-using UnityEngine;
+﻿using UnityEngine;
+
+using Sim.Orbits;
 using Sim.Visuals;
 using Sim.Math;
 using Sim.Maneuvers;
@@ -48,9 +48,12 @@ namespace Sim.Objects
         private bool slowingDown = false;
         private double maneuverInaccuracy = float.MaxValue;
 
+        private void Awake() {
+            current = this;
+        }
+
         private void Start()
         {
-            current = this;
             if (isStationary)
             {
                 Debug.LogWarning($"Ship object ({gameObject.name}) is stationary!");
@@ -107,7 +110,7 @@ namespace Sim.Objects
         private void AddVelocity(Vector3 d_vel)
         {
             timeSinceVelocityChanged = 0;
-            Vector3Double newVelocity = this.stateVectors.velocity + (Vector3Double)d_vel;
+            Vector3Double newVelocity = this.stateVectors.velocity + d_vel;
 
             StateVectors stateVectors = new StateVectors(this.stateVectors.position, newVelocity);
             kepler.CheckOrbitType(stateVectors, centralBody);
@@ -138,12 +141,12 @@ namespace Sim.Objects
         private void HandleManeuverDirection() {
             Maneuver next = ManeuverManager.Instance.NextManeuver;
             if (next != null) {
-                if ((Vector3)next.addedVelocity == Vector3.zero) return;
+                if (next.addedVelocity == Vector3.zero) return;
                 if (!maneuverDirection.gameObject.activeSelf) {
                     maneuverDirection.gameObject.SetActive(true);
                 }
-                maneuverDirection.rotation = Quaternion.LookRotation((Vector3)next.addedVelocity);
-                if (Vector3Double.Angle((Vector3Double)model.transform.forward, next.addedVelocity) < maneuverSuccessAngle) {
+                maneuverDirection.rotation = Quaternion.LookRotation(next.addedVelocity);
+                if (Vector3Double.Angle(model.transform.forward, next.addedVelocity) < maneuverSuccessAngle) {
                     foreach(var mesh in arrowMeshRenderers)
                         mesh.material = maneuverSuccessMat;
                 }
@@ -182,9 +185,9 @@ namespace Sim.Objects
                 }
             }
 
-            if ((Vector3)next.addedVelocity != Vector3.zero)
+            if (next.addedVelocity != Vector3.zero)
             {
-                model.rotation = Quaternion.RotateTowards(model.rotation, Quaternion.LookRotation((Vector3)next.addedVelocity), rotationSpeed * Time.deltaTime);
+                model.rotation = Quaternion.RotateTowards(model.rotation, Quaternion.LookRotation(next.addedVelocity), rotationSpeed * Time.deltaTime);
             }
             
         }

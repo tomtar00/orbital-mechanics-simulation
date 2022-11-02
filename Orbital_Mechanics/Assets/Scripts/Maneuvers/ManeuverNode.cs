@@ -55,7 +55,7 @@ namespace Sim.Maneuvers {
                         { "In",         -gameObject.transform.right     },
                         { "Out",         gameObject.transform.right     },
                     };
-                    maneuver.UpdateOnDrag((Vector3Double)worldPos);
+                    maneuver.UpdateOnDrag(worldPos);
                 }
             };
 

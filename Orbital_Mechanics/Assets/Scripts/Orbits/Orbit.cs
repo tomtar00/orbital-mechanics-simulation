@@ -2,8 +2,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Sim.Math;
 
-namespace Sim.Math
+namespace Sim.Orbits
 {
     // Mostly based on: http://control.asu.edu/Classes/MAE462/462Lecture05.pdf
     public abstract class Orbit
@@ -15,7 +16,7 @@ namespace Sim.Math
         public Celestial centralBody { get; private set; }
         public double GM { get; private set; }
 
-        public OrbitElements elements;
+        public OrbitalElements elements;
 
         protected StateVectors stateVectors;
         protected double distance, speed;
@@ -27,7 +28,7 @@ namespace Sim.Math
             ConvertStateVectorsToOrbitElements(stateVectors);
             this.stateVectors = new StateVectors(Vector3Double.zero, Vector3Double.zero);
         }
-        public Orbit(OrbitElements elements, Celestial centralBody)
+        public Orbit(OrbitalElements elements, Celestial centralBody)
         {
             ChangeCentralBody(centralBody);
             this.elements = elements;
@@ -49,7 +50,7 @@ namespace Sim.Math
             double posMagnitude = relativePosition.magnitude;
             double velMagnitude = velocity.magnitude;
 
-            var elements = new OrbitElements();
+            var elements = new OrbitalElements();
 
             // Semi-major axis
             // source2: https://en.wikipedia.org/wiki/Vis-viva_equation
@@ -100,7 +101,7 @@ namespace Sim.Math
             elements = CalculateOtherElements(elements);
             this.elements = elements;
         }
-        public abstract OrbitElements CalculateOtherElements(OrbitElements elements);
+        public abstract OrbitalElements CalculateOtherElements(OrbitalElements elements);
         public static double CalculateEccentricity(StateVectors stateVectors, double centralMass)
         {
             Vector3Double pos = stateVectors.position;

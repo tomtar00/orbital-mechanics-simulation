@@ -14,6 +14,8 @@ namespace Sim.Maneuvers
 
         private void Update() 
         {
+            if (CameraController.Instance == null) return;
+
             if (Input.GetMouseButtonDown(0))
             {
                 Physics.autoSimulation = false;

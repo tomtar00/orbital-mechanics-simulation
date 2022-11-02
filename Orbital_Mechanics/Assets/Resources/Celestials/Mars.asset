@@ -15,7 +15,7 @@ MonoBehaviour:
   mass: 6.39e+23
   diameter: 6779000
   orbit:
-    semimajorAxis: 2.2792e+11
+    semimajorAxis: 227920000000
     eccentricity: 0.093
     inclination: 0.03228
     lonAscNode: 0.8649771

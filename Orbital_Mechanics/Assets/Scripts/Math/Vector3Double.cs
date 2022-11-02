@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Sim.Math
 {
@@ -14,7 +12,7 @@ namespace Sim.Math
             get => x*x + y*y + z*z;
         }
         public double magnitude {
-            get => MathLib.Sqrt(x*x + y*y + z*z);
+            get => MathLib.Sqrt(sqrMagnitude);
         }
         public Vector3Double normalized {
             get => this / magnitude;
@@ -80,11 +78,24 @@ namespace Sim.Math
             return new Vector3Double(vec1.x - vec2.x, vec1.y - vec2.y, vec1.z - vec2.z);
         }
 
+        public static Vector3Double operator + (Vector3Double vec1, Vector3 vec2) {
+            return new Vector3Double(vec1.x + vec2.x, vec1.y + vec2.y, vec1.z + vec2.z);
+        }
+        public static Vector3Double operator + (Vector3 vec1, Vector3Double vec2) {
+            return new Vector3Double(vec1.x + vec2.x, vec1.y + vec2.y, vec1.z + vec2.z);
+        }
+        public static Vector3Double operator - (Vector3Double vec1, Vector3 vec2) {
+            return new Vector3Double(vec1.x - vec2.x, vec1.y - vec2.y, vec1.z - vec2.z);
+        }
+        public static Vector3Double operator - (Vector3 vec1, Vector3Double vec2) {
+            return new Vector3Double(vec1.x - vec2.x, vec1.y - vec2.y, vec1.z - vec2.z);
+        }
+
         public static Vector3Double operator - (Vector3Double vec) {
             return new Vector3Double(-vec.x, -vec.y, -vec.z);
         }
 
         public static implicit operator Vector3(Vector3Double vec) => new Vector3((float)vec.x, (float)vec.y, (float)vec.z);
-        public static explicit operator Vector3Double(Vector3 vec) => new Vector3Double(vec.x, vec.y, vec.z);
+        public static implicit operator Vector3Double(Vector3 vec) => new Vector3Double(vec.x, vec.y, vec.z);
     }
 }

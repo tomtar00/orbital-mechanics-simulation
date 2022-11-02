@@ -14,16 +14,15 @@ namespace Sim.Objects
         [SerializeField] private float modelScale = 1;
         [Space]
         [SerializeField] private NamesViewer namesViewer;
+        [SerializeField] private CameraController cameraController;
 
-        private void Awake()
-        {
-            Generate();
-        }
+        public CelestialSO Star { get => star; }
 
-        private void Generate()
+        public void Generate()
         {
             GenerateBody(star, centralBody: null);
             namesViewer.Init();
+            cameraController.Init();
         }
 
         private void GenerateBody(CelestialSO body, Celestial centralBody)

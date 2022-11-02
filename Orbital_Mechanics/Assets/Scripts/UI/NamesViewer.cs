@@ -10,14 +10,19 @@ public class NamesViewer : MonoBehaviour
 
     private Dictionary<Transform, Celestial> names;
 
+    private bool initialized = false;
+
     public void Init() {
+        if (initialized) return;
         names = new Dictionary<Transform, Celestial>();
         foreach(Celestial celestial in Celestial.celestials) {
             SetupName(celestial);
         }
+        initialized = true;
     }
 
     private void LateUpdate() {
+        if (!initialized) return;
         foreach(KeyValuePair<Transform, Celestial> keyValue in names) {
             UpdateName(keyValue);
         }

@@ -15,7 +15,7 @@ MonoBehaviour:
   mass: 5.97219e+24
   diameter: 12742000
   orbit:
-    semimajorAxis: 1.49589e+11
+    semimajorAxis: 149589000000
     eccentricity: 0.0167
     inclination: 0
     lonAscNode: 0
@@ -29,7 +29,7 @@ MonoBehaviour:
     timeToPeriapsis: 0
     period: 0
   isStar: 0
-  hasSpacecraft: 1
+  hasSpacecraft: 0
   material: {fileID: 2100000, guid: aba251bab80144840928aef4889284f4, type: 2}
   bodiesOnOrbit:
   - {fileID: 11400000, guid: 9b09114719179fd4e92a6328f6d73ba3, type: 2}

@@ -3,7 +3,7 @@ using Sim.Maneuvers;
 using UnityEngine;
 using Sim.Math;
 using Sim.Objects;
-using System.Linq;
+using Sim.Orbits;
 
 namespace Sim.Visuals
 {
@@ -178,7 +178,7 @@ namespace Sim.Visuals
 
             return gravityChangeVectors;
         }
-        public void DrawOrbit(OrbitElements elements)
+        public void DrawOrbit(OrbitalElements elements)
         {
             Celestial body = inOrbitObject.CentralBody;
             Orbit orbit = KeplerianOrbit.CreateOrbit(elements, body, out _);

@@ -33,17 +33,6 @@ namespace Sim.Math
             distance = Mathf.Clamp(distance, minScale, maxScale);
             return Vector3.one * distance * multiplier;
         }
-        public static float FitBetween0And2PI(float number) {
-            float result = number;
-            float PI2 = 2 * Mathf.PI;
-
-            while(result > PI2)
-                result -= PI2;
-            while(result < 0)
-                result += PI2;
-
-            return result;
-        }
     }
 
 }

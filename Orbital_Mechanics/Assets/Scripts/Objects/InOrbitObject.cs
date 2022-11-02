@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+
+using Sim.Orbits;
 using Sim.Visuals;
 using Sim.Math;
 using System.Linq;
@@ -77,9 +79,9 @@ namespace Sim.Objects
         protected void UpdateRelativePosition()
         {
             if (centralBody != null)
-                stateVectors.position = (Vector3Double)(transform.localPosition - centralBody.transform.localPosition);
+                stateVectors.position = (transform.localPosition - centralBody.transform.localPosition);
             else
-                stateVectors.position = (Vector3Double)(transform.localPosition);
+                stateVectors.position = (transform.localPosition);
         }
 
         public void EnableOtherOrbitRenderer(bool enable)
@@ -125,8 +127,8 @@ namespace Sim.Objects
                 if (centralBody != null && this is Spacecraft)
                 {
                     Debug.DrawLine(centralBody.transform.position, transform.position, Color.red);
-                    Debug.DrawLine(centralBody.transform.position, (Vector3)(kepler.orbit.elements.angMomentum) * 10000f + centralBody.transform.position, Color.blue);
-                    Debug.DrawLine(centralBody.transform.position, (Vector3)(kepler.orbit.elements.eccVec) * 1000f + centralBody.transform.position, Color.yellow);
+                    Debug.DrawLine(centralBody.transform.position, (kepler.orbit.elements.angMomentum) * 10000f + centralBody.transform.position, Color.blue);
+                    Debug.DrawLine(centralBody.transform.position, (kepler.orbit.elements.eccVec) * 1000f + centralBody.transform.position, Color.yellow);
                 }
             }
         }

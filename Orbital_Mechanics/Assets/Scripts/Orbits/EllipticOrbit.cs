@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using Sim.Objects;
+using Sim.Math;
 
-namespace Sim.Math
+namespace Sim.Orbits
 {
     public class EllipticOrbit : Orbit
     {
@@ -10,9 +11,9 @@ namespace Sim.Math
         double x, y, z;
 
         public EllipticOrbit(StateVectors stateVectors, Celestial centralBody) : base(stateVectors, centralBody) { }
-        public EllipticOrbit(OrbitElements elements, Celestial centralBody) : base(elements, centralBody) { }
+        public EllipticOrbit(OrbitalElements elements, Celestial centralBody) : base(elements, centralBody) { }
 
-        public override OrbitElements CalculateOtherElements(OrbitElements elements)
+        public override OrbitalElements CalculateOtherElements(OrbitalElements elements)
         {
             double sqrt = MathLib.Sqrt((1 - elements.eccentricity).SafeDivision(1 + elements.eccentricity));
             elements.anomaly = 2 * MathLib.Atan(sqrt * MathLib.Tan(elements.trueAnomaly / 2));
@@ -59,8 +60,8 @@ namespace Sim.Math
             // source: https://en.wikipedia.org/wiki/Elliptic_orbit#Flight_path_angle
             double pathAngle = MathLib.Atan((elements.eccentricity * MathLib.Sin(trueAnomaly)) / (1 + elements.eccentricity * MathLib.Cos(trueAnomaly))) * MathLib.Rad2Deg;
 
-            return (Vector3Double)(Quaternion.AngleAxis((float)pathAngle, (Vector3)elements.angMomentum) *
-                            Quaternion.AngleAxis(-90, (Vector3)elements.angMomentum) * (Vector3)relativePosition.normalized *
+            return (Quaternion.AngleAxis((float)pathAngle, elements.angMomentum) *
+                            Quaternion.AngleAxis(-90, elements.angMomentum) * relativePosition.normalized *
                             (float)this.speed);
         }
 

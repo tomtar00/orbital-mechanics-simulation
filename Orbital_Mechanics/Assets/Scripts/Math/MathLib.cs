@@ -19,7 +19,7 @@ namespace Sim.Math
                 if (clampInDomain)
                 {
                     var clamp = Clamp(param, domainStart, domainEnd);
-                    Debug.Log($"Need to clamp param in domain: {param} -> {clamp}");
+                    // Debug.Log($"Need to clamp param in domain: {param} -> {clamp}");
                     param = clamp;
                 }
                 else throw new ArgumentOutOfRangeException($"Parameter out of function domain! Passed: {param}");

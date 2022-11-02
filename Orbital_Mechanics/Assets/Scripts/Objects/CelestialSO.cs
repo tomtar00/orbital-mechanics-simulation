@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using Sim.Math;
+using Sim.Orbits;
 
 namespace Sim.Objects
 {
@@ -13,13 +13,13 @@ namespace Sim.Objects
         [SerializeField] private float diameter;
         public float Diameter { get => diameter; set => diameter = value; }
 
-        [SerializeField] private OrbitElements orbit;
-        public OrbitElements Orbit { get => orbit; set => orbit = value; }
+        [SerializeField] private OrbitalElements orbit;
+        public OrbitalElements Orbit { get => orbit; set => orbit = value; }
 
         [SerializeField] private bool isStar;
         public bool IsStar { get => isStar; }
         [SerializeField] private bool hasSpacecraft;
-        public bool HasSpacecraft { get => hasSpacecraft; }
+        public bool HasSpacecraft { get => hasSpacecraft; set => hasSpacecraft = value; }
         
         [SerializeField] private Material material;
         public Material Material { get => material; }
