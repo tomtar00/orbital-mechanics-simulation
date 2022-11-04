@@ -69,7 +69,7 @@ namespace Sim.Orbits
 
             // Longitude of the ascending node
             // source: https://en.wikipedia.org/wiki/Longitude_of_the_ascending_node
-            Vector3Double nodeVector = elements.inclination != 0 && elements.inclination != Mathf.PI ?
+            Vector3Double nodeVector = elements.inclination != 0 && elements.inclination != MathLib.PI ?
                 -Vector3Double.Cross(Vector3Double.up, elements.angMomentum) : Vector3Double.right;
             double nodeMag = nodeVector.magnitude;
             elements.lonAscNode = MathLib.Acos(nodeVector.x.SafeDivision(nodeMag));

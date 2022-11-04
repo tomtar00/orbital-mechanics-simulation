@@ -82,6 +82,11 @@ public class HUDController : MonoBehaviour
 
     private void ApplyOrbitElements() {
         if (Spacecraft.current == null || Spacecraft.current.Kepler.orbit == null) return;
-        orbitElementsText.text = JsonUtility.ToJson(Spacecraft.current.Kepler.orbit.elements, true);
+        orbitElementsText.text = $@"
+Spacecraft orbit:
+{ JsonUtility.ToJson(Spacecraft.current.Kepler.orbit.elements, true) }
+
+Velocity: { Spacecraft.current.Speed } m/s
+Time to gravity change: { Spacecraft.current.TimeToGravityChange }";
     }
 }

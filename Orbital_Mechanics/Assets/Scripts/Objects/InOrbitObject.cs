@@ -10,7 +10,7 @@ namespace Sim.Objects
 {
     public abstract class InOrbitObject : MonoBehaviour
     {
-        public static List<InOrbitObject> allObjects { get; private set; }
+        public static List<InOrbitObject> allObjects { get; set; }
 
         [Header("Orbit")]
         [SerializeField] protected bool isStationary;
@@ -35,7 +35,7 @@ namespace Sim.Objects
         public bool camInsideInfluence { get; private set; } = false;
         public static bool camInsideAnyInfluence = false;
 
-        private void Awake() {
+        protected void Awake() {
             if (allObjects == null) {
                 allObjects = new List<InOrbitObject>();
             }
@@ -134,7 +134,7 @@ namespace Sim.Objects
         }
 
         private void OnDestroy() {
-            allObjects.Remove(this);
+            allObjects?.Remove(this);
         }
     }
 }

@@ -20,6 +20,13 @@ public class NamesViewer : MonoBehaviour
         }
         initialized = true;
     }
+    public void DestroyNames() {
+        foreach (var name in names) {
+            Destroy(name.Key.gameObject);
+        }
+        names.Clear();
+        initialized = false;
+    }
 
     private void LateUpdate() {
         if (!initialized) return;

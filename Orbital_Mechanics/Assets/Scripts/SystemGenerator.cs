@@ -15,6 +15,7 @@ namespace Sim.Objects
         [Space]
         [SerializeField] private NamesViewer namesViewer;
         [SerializeField] private CameraController cameraController;
+        [SerializeField] private Maneuvers.ManeuverManager maneuverManager;
 
         public CelestialSO Star { get => star; }
 
@@ -23,6 +24,12 @@ namespace Sim.Objects
             GenerateBody(star, centralBody: null);
             namesViewer.Init();
             cameraController.Init();
+        }
+        public void ResetSystem() {
+            namesViewer.DestroyNames();
+            cameraController.initialized = false;
+            maneuverManager.DestroyManeuvers();
+            Sim.Visuals.LineButton.allLineButtons = null;
         }
 
         private void GenerateBody(CelestialSO body, Celestial centralBody)

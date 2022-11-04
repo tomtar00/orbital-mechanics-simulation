@@ -6,7 +6,7 @@ namespace Sim.Objects
 {
     public class Celestial : InOrbitObject
     {
-        public static List<Celestial> celestials { get; private set; }
+        public static List<Celestial> celestials { get; set; }
 
         [Header("Celestial")]
         [SerializeField] protected CelestialSO data;

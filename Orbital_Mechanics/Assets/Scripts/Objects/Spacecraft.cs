@@ -48,7 +48,15 @@ namespace Sim.Objects
         private bool slowingDown = false;
         private double maneuverInaccuracy = float.MaxValue;
 
-        private void Awake() {
+        public double Speed {
+            get => stateVectors.velocity.magnitude / SimulationSettings.Instance.scale;
+        }
+        public string TimeToGravityChange {
+            get => (timeToNextGravityChange > 0) ? timeToNextGravityChange.ToTimeSpan() : "Inf";
+        }
+
+        private new void Awake() {
+            base.Awake();
             current = this;
         }
 
@@ -261,33 +269,5 @@ namespace Sim.Objects
                 slowingDown = false;
             }
         }
-
-        private void OnGUI()
-        {
-            float startHeight = /* 20 */ Screen.height - 300;
-            float space = 20;
-            int i = 0;
-
-            // OrbitElements elements = this.kepler.orbit.elements;
-            string timeToGravityChange = (timeToNextGravityChange > 0) ? timeToNextGravityChange+"" : "Inf";
-
-            // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Semimajor Axis: {elements.semimajorAxis}");
-            // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Eccentricity: {elements.eccentricity}");
-            // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Inclination: {elements.inclination}");
-            // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Longitude of the ascending node: {elements.lonAscNode}");
-            // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Argument of periapsis: {elements.argPeriapsis}");
-            // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"SemilatusRectum: {elements.semiLatusRectum}");
-            // i++;
-            // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Mean anomaly: {elements.meanAnomaly}");
-            // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"True anomaly:  {elements.trueAnomaly}");
-            // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Anomaly:        {elements.anomaly}");
-            // i++;
-            // GUI.Label(new Rect(10, startHeight + space * i++, 300, 20), $"Time to periapsis: {elements.timeToPeriapsis}");
-            GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Time since velocity changed: {timeSinceVelocityChanged}");
-            GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Time to next gravity change: {timeToGravityChange}");
-            GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Time since gravity changed: {timeSinceGravityChange}");
-            GUI.Label(new Rect(30, startHeight + space * i++, 300, 20), $"Velocity: {stateVectors.velocity.magnitude / SimulationSettings.Instance.scale} m/s");
-        }
-
     }
 }

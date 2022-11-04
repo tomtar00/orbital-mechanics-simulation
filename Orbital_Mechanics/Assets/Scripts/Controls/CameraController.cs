@@ -23,7 +23,7 @@ public class CameraController : MonoBehaviour
     private Vector3 velocity;
     private float targetDistance;
     private Vector3 targetPosition;
-    public bool initialized { get; private set; } = false;
+    public bool initialized { get; set; } = false;
 
     private Transform focusObject;
     private Vector2 orbitAngles = new Vector2(45f, 0f);

@@ -38,6 +38,14 @@ namespace Sim.Maneuvers {
             }
         }
 
+        public void DestroyManeuvers() {
+            foreach(var maneuver in maneuvers) {
+                maneuver.drawer.DestroyRenderers();
+                Destroy(maneuver.drawer.gameObject);
+            }
+            maneuvers.Clear();
+        }
+
         public Maneuver CreateManeuver(Orbit currentOrbit, InOrbitObject inOrbitObject, Vector3Double relativePressPosition, double timeToOrbit, int futureOrbitIdx) {
 
             Maneuver lastManeuver = maneuvers.Count > 0 ? maneuvers[maneuvers.Count - 1] : null;
