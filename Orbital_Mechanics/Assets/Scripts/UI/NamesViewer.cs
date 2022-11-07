@@ -57,7 +57,7 @@ public class NamesViewer : MonoBehaviour
             if (pair.Key.position.z > 0)
                 pair.Key.position = new Vector3(pair.Key.position.x, pair.Key.position.y, 0);
             else
-                pair.Key.position = Vector3.up * 1000f;
+                pair.Key.position = Vector3.up * 10000f;
 
             if (!pair.Key.gameObject.activeSelf)
                 pair.Key.gameObject.SetActive(true);

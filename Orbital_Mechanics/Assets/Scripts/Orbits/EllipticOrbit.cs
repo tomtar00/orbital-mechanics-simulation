@@ -15,15 +15,14 @@ namespace Sim.Orbits
 
         public override OrbitalElements CalculateOtherElements(OrbitalElements elements)
         {
-            double sqrt = MathLib.Sqrt((1 - elements.eccentricity).SafeDivision(1 + elements.eccentricity));
-            elements.anomaly = 2 * MathLib.Atan(sqrt * MathLib.Tan(elements.trueAnomaly / 2));
-            elements.meanAnomaly = elements.anomaly - elements.eccentricity * MathLib.Sin(elements.anomaly);
-            
+            elements.trueAnomalyConstant = this.elements.trueAnomalyConstant = MathLib.Sqrt((1 + elements.eccentricity).SafeDivision(1 - elements.eccentricity));
+            elements.anomaly = CalculateAnomalyFromTrueAnomaly(elements.trueAnomaly);
+            elements.meanAnomaly = CalculateMeanAnomalyFromAnomaly(elements.anomaly);
+
             elements.semiminorAxis = elements.semimajorAxis * MathLib.Sqrt(1 - elements.eccentricity * elements.eccentricity);
             elements.meanMotion = MathLib.Sqrt((GM).SafeDivision(MathLib.Pow(elements.semimajorAxis, 3)));
             elements.semiLatusRectum = elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity);
 
-            elements.trueAnomalyConstant = MathLib.Sqrt((1 + elements.eccentricity).SafeDivision(1 - elements.eccentricity));
             elements.periodConstant = MathLib.Sqrt((MathLib.Pow(elements.semimajorAxis, 3) / GM));
             elements.period = 2 * MathLib.PI * elements.periodConstant;
 
@@ -72,7 +71,8 @@ namespace Sim.Orbits
             meanAnomaly = MathLib.Repeat(meanAnomaly, PI2);
             return meanAnomaly;
         }
-        public override double CalculateMeanAnomalyFromAnomaly(double anomaly) {
+        public override double CalculateMeanAnomalyFromAnomaly(double anomaly)
+        {
             double meanAnomaly = anomaly - elements.eccentricity * MathLib.Sin(anomaly);
             meanAnomaly = MathLib.Repeat(meanAnomaly, PI2);
             return meanAnomaly;
@@ -83,7 +83,8 @@ namespace Sim.Orbits
             trueAnomaly = MathLib.Repeat(trueAnomaly, PI2);
             return trueAnomaly;
         }
-        public override double CalculateAnomalyFromTrueAnomaly(double trueAnomaly) {
+        public override double CalculateAnomalyFromTrueAnomaly(double trueAnomaly)
+        {
             double anomaly = 2f * MathLib.Atan(MathLib.Tan(trueAnomaly / 2f) / elements.trueAnomalyConstant);
             anomaly = MathLib.Repeat(anomaly, 2 * MathLib.PI);
             return anomaly;
@@ -105,7 +106,7 @@ namespace Sim.Orbits
             meanAnomaly = eccentricAnomaly - elements.eccentricity * MathLib.Sin(eccentricAnomaly);
             trueAnomaly = CalculateTrueAnomaly(eccentricAnomaly);
             return CalculateOrbitalPosition(trueAnomaly);
-        } 
+        }
     }
 }
 

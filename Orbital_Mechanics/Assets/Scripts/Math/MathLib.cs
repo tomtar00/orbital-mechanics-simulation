@@ -77,7 +77,8 @@ namespace Sim.Math
             return a > b ? a : b;
         }
         public static double Repeat(double value, double length) {
-            return value % length;
+            double result = value % length;
+            return result < 0 ? result + length : result;
         }
 
         public static double Sin(double x)

@@ -5,12 +5,14 @@ using TMPro;
 using Sim.Maneuvers;
 using Sim.Objects;
 using Time = Sim.Time;
+using System;
 
 public class HUDController : MonoBehaviour
 {
     [Header("Orbit")]
     [SerializeField] private TMP_Text orbitElementsText;
     [Header("Time")]
+    [SerializeField] private TMP_Text currentDateText;
     [SerializeField] private TMP_Text timeScaleText;
     [SerializeField] private float[] timeScales;
     [SerializeField] private int defaultTimeScaleIdx = 3;
@@ -32,6 +34,12 @@ public class HUDController : MonoBehaviour
     }
     private void Update() {
         ApplyOrbitElements();
+        ApplyCurrentDate();
+    }
+
+    private void ApplyCurrentDate()
+    {
+        currentDateText.text = SystemGenerator.GetCurrentSimulationDate().ToString();
     }
 
     private void UpdateTimeScaleText() {

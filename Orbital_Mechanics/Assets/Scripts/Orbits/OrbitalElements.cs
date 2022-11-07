@@ -15,14 +15,14 @@ namespace Sim.Orbits {
 
         [Space]
 
-        public double meanAnomaly;
-        public double anomaly;
+        [HideInInspector] public double meanAnomaly;
+        [HideInInspector] public double anomaly;
 
-        public double semiminorAxis;
-        public double meanMotion;
-        public double semiLatusRectum;
-        public double timeToPeriapsis;
-        public double period;
+        [HideInInspector] public double semiminorAxis;
+        [HideInInspector] public double meanMotion;
+        [HideInInspector] public double semiLatusRectum;
+        [HideInInspector] public double timeToPeriapsis;
+        [HideInInspector] public double period;
 
         [NonSerialized] public double trueAnomalyConstant;
         [NonSerialized] public double periodConstant;

@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Sim.Objects;
 
@@ -51,7 +52,7 @@ public class SetupController : MonoBehaviour
         hudCanvas.interactable = true;
         setupCanvas.alpha = 0;
         setupCanvas.interactable = false;
-        systemGenerator.Generate();
+        systemGenerator.Generate(Convert.ToDateTime(dateInput.text));
         systemGenerator.Star.BodiesOnOrbit[celestialIdx].HasSpacecraft = false;
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Sim.Orbits;
+using Sim.Visuals;
 
 namespace Sim.Objects
 {
@@ -26,12 +28,18 @@ namespace Sim.Objects
 
         private float currentCamDistance;
 
-        public override void Init(Celestial centralBody, CelestialSO data)
+        public void InitializeCelestial(Celestial centralBody, CelestialSO data, double secondsDiff)
         {
             this.data = data;
             this.centralBody = centralBody;
 
-            base.Init(centralBody, data);
+            stateVectors = new StateVectors();
+            orbitDrawer = GetComponent<OrbitDrawer>();
+            orbitDrawer?.SetupOrbitRenderers();
+            if (!isStationary)
+            {
+                kepler = new KeplerianOrbit();
+            }
 
             if (infiniteInfluence) {
                 influenceRadius = float.MaxValue;
@@ -49,10 +57,10 @@ namespace Sim.Objects
 
             if (!isStationary)
             {
-                kepler.ApplyElementsFromStruct(data.Orbit, centralBody); 
-                mat = kepler.UpdateAnomalies((float)(DateTime.Now.ToOADate() + 2415018.5) - 2451545f);
+                kepler.ApplyElementsFromStruct(data.Orbit, centralBody);
+                mat = kepler.UpdateAnomalies(secondsDiff);
                 stateVectors = kepler.UpdateStateVectors(mat.Item3);
-                transform.localPosition = centralBody.transform.localPosition + kepler.orbit.CalculateOrbitalPosition(mat.Item3);
+                transform.localPosition = centralBody.transform.localPosition + stateVectors.position;
 
                 UpdateRelativePosition();
                 orbitDrawer.DrawOrbit(kepler.orbit.elements);

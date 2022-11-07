@@ -42,17 +42,6 @@ namespace Sim.Objects
             allObjects.Add(this);
         }
 
-        public virtual void Init(Celestial centralBody, CelestialSO data)
-        {
-            stateVectors = new StateVectors();
-            orbitDrawer = GetComponent<OrbitDrawer>();
-            orbitDrawer?.SetupOrbitRenderers();
-            if (!isStationary)
-            {
-                kepler = new KeplerianOrbit();
-            }
-        }
-
         protected void UpdateObject()
         {
             if (!isStationary)

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Sim.Objects
 {
@@ -19,17 +20,35 @@ namespace Sim.Objects
 
         public CelestialSO Star { get => star; }
 
-        public void Generate()
+        private static double secondsDiff;
+        private bool generated = false;
+
+        public void Generate(DateTime dateTime)
         {
+            this.generated = true;
+            SystemGenerator.secondsDiff = (dateTime - new DateTime(2000, 1, 1)).TotalSeconds;
             GenerateBody(star, centralBody: null);
             namesViewer.Init();
             cameraController.Init();
         }
-        public void ResetSystem() {
+        public void ResetSystem()
+        {
+            this.generated = false;
             namesViewer.DestroyNames();
             cameraController.initialized = false;
             maneuverManager.DestroyManeuvers();
             Sim.Visuals.LineButton.allLineButtons = null;
+        }
+
+        private void Update()
+        {
+            if (generated)
+            {
+                secondsDiff += Sim.Time.deltaTime;
+            }
+        }
+        public static DateTime GetCurrentSimulationDate() {
+            return new DateTime(2000, 1, 1).AddSeconds(secondsDiff);
         }
 
         private void GenerateBody(CelestialSO body, Celestial centralBody)
@@ -49,7 +68,7 @@ namespace Sim.Objects
             bodyData.Orbit = orbit;
 
             Celestial celestial = go.GetComponent<Celestial>();
-            celestial.Init(centralBody, bodyData);
+            celestial.InitializeCelestial(centralBody, bodyData, secondsDiff);
 
             if (body.HasSpacecraft)
             {
@@ -67,7 +86,7 @@ namespace Sim.Objects
             GameObject go = Instantiate(spacecraftPrefab, systemParent);
             Spacecraft craft = go.GetComponent<Spacecraft>();
             craft.CentralBody = celestial;
-            craft.Init(celestial, null);
+            craft.InitializeShip();
         }
     }
 }

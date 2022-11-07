@@ -5,8 +5,6 @@ using Sim.Visuals;
 using Sim.Math;
 using Sim.Maneuvers;
 
-// v = (0, 0, 0.000829)
-
 namespace Sim.Objects
 {
     [RequireComponent(typeof(OrbitDrawer))]
@@ -66,10 +64,6 @@ namespace Sim.Objects
             {
                 Debug.LogWarning($"Ship object ({gameObject.name}) is stationary!");
             }
-            else
-            {
-                InitializeShip();
-            }
         }
 
         private void LateUpdate()
@@ -95,8 +89,16 @@ namespace Sim.Objects
             );
         }
 
-        private void InitializeShip()
+        public void InitializeShip()
         {
+            stateVectors = new StateVectors();
+            orbitDrawer = GetComponent<OrbitDrawer>();
+            orbitDrawer?.SetupOrbitRenderers();
+            if (!isStationary)
+            {
+                kepler = new KeplerianOrbit();
+            }
+
             stateVectors.position = Vector3Double.right * (startSurfaceAltitude + centralBody.Model.transform.localScale.x / 2);
             transform.localPosition = centralBody.StateVectors.position + stateVectors.position;
 

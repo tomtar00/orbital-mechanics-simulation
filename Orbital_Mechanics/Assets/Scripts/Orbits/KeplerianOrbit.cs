@@ -106,7 +106,8 @@ namespace Sim.Orbits
             elements.eccVec = (Quaternion.AngleAxis((float)(-elements.argPeriapsis * MathLib.Rad2Deg), elements.angMomentum) * elements.eccVec);
             elements.eccVec = elements.eccVec.normalized * elements.eccentricity;
 
-            this.orbit = CreateOrbit(elements, centralBody, out _);
+            this.orbit = CreateOrbit(elements, centralBody, out OrbitType type);
+            this.orbitType = type;
         }
 
     }

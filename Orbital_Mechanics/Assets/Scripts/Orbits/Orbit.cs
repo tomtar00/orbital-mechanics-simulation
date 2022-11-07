@@ -138,7 +138,7 @@ namespace Sim.Orbits
                 a0 = a1;
                 eq = MeanAnomalyEquation(a0, elements.eccentricity, meanAnomaly);
                 deq = d_MeanAnomalyEquation(a0, elements.eccentricity);
-                a1 = a0 - (double)eq.SafeDivision(deq);
+                a1 = a0 - eq.SafeDivision(deq);
             }
 
             return a1;
