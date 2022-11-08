@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
-  m_Name: Mars
+  m_Name: Ganymede
   m_EditorClassIdentifier: 
-  mass: 6.39e+23
-  diameter: 6779000
+  mass: 1.4819e+23
+  diameter: 5268200
   orbit:
-    semimajorAxis: 227920000000
-    eccentricity: 0.0933941
-    inclination: 0.03228320542
-    lonAscNode: 0.8649771297
-    argPeriapsis: -1.282872301
-    trueAnomaly: 0.4080097875
+    semimajorAxis: 1070400000
+    eccentricity: 0.001
+    inclination: 0.003490658504
+    lonAscNode: 1.021017612
+    argPeriapsis: 3.460987907
+    trueAnomaly: 5.660682663
     meanAnomaly: 0
     anomaly: 0
     semiminorAxis: 0
@@ -28,8 +28,6 @@ MonoBehaviour:
     semiLatusRectum: 0
     timeToPeriapsis: 0
     period: 0
-  isStar: 0
-  hasSpacecraft: 0
-  material: {fileID: 2100000, guid: 96770e3f2a0bf0041a57141028fa4ed8, type: 2}
+  material: {fileID: 2100000, guid: 28fa11fe1d468e74ca0a2e8efbb7471b, type: 2}
   bodiesOnOrbit: []
-  type: 1
+  type: 2

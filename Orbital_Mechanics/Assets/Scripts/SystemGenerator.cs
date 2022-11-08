@@ -22,9 +22,11 @@ namespace Sim.Objects
 
         private static double secondsDiff;
         private bool generated = false;
+        private string spacecraftSpawnOrbit;
 
-        public void Generate(DateTime dateTime)
+        public void Generate(DateTime dateTime, string spacecraftSpawnOrbit)
         {
+            this.spacecraftSpawnOrbit = spacecraftSpawnOrbit;
             this.generated = true;
             SystemGenerator.secondsDiff = (dateTime - new DateTime(2000, 1, 1)).TotalSeconds;
             GenerateBody(star, centralBody: null);
@@ -53,7 +55,7 @@ namespace Sim.Objects
 
         private void GenerateBody(CelestialSO body, Celestial centralBody)
         {
-            GameObject prefab = body.IsStar ? starPrefab : planetPrefab;
+            GameObject prefab = body.Type == CelestialBodyType.STAR ? starPrefab : planetPrefab;
             GameObject go = Instantiate(prefab, systemParent);
             go.name = body.name;
 
@@ -70,7 +72,7 @@ namespace Sim.Objects
             Celestial celestial = go.GetComponent<Celestial>();
             celestial.InitializeCelestial(centralBody, bodyData, secondsDiff);
 
-            if (body.HasSpacecraft)
+            if (spacecraftSpawnOrbit == body.name)
             {
                 SpawnSpacecraft(celestial);
             }
@@ -84,6 +86,7 @@ namespace Sim.Objects
         private void SpawnSpacecraft(Celestial celestial)
         {
             GameObject go = Instantiate(spacecraftPrefab, systemParent);
+            go.name = "Spacecraft";
             Spacecraft craft = go.GetComponent<Spacecraft>();
             craft.CentralBody = celestial;
             craft.InitializeShip();

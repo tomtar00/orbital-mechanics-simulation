@@ -42,7 +42,7 @@ public class NamesViewer : MonoBehaviour
         names[go.transform] = celestial;
 
         go.GetComponent<Button>().onClick.AddListener(() => {
-            CameraController.Instance.Focus(celestial.transform);
+            CameraController.Instance.Focus(celestial);
         });
     }
 

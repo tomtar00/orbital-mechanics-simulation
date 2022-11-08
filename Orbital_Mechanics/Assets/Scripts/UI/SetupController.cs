@@ -2,6 +2,8 @@
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Sim.Objects;
+using System.Collections.Generic;
+using System.Linq;
 
 public class SetupController : MonoBehaviour
 {
@@ -19,6 +21,8 @@ public class SetupController : MonoBehaviour
     private void Start() {
         celestialIdx = dropdown.value;
         dateInput.text = "1/1/2000";
+
+        dropdown.AddOptions(systemGenerator.Star.BodiesOnOrbit.Select(b => b.name).ToList());
     }
 
     public void OnStartOrbitChanged(int celestialIdx) {
@@ -47,12 +51,10 @@ public class SetupController : MonoBehaviour
             return;
         }
 
-        systemGenerator.Star.BodiesOnOrbit[celestialIdx].HasSpacecraft = true;
         hudCanvas.alpha = 1;
         hudCanvas.interactable = true;
         setupCanvas.alpha = 0;
         setupCanvas.interactable = false;
-        systemGenerator.Generate(Convert.ToDateTime(dateInput.text));
-        systemGenerator.Star.BodiesOnOrbit[celestialIdx].HasSpacecraft = false;
+        systemGenerator.Generate(Convert.ToDateTime(dateInput.text), dropdown.options[dropdown.value].text);
     }
 }

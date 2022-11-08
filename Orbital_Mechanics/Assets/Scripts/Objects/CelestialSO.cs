@@ -16,16 +16,23 @@ namespace Sim.Objects
         [SerializeField] private OrbitalElements orbit;
         public OrbitalElements Orbit { get => orbit; set => orbit = value; }
 
-        [SerializeField] private bool isStar;
-        public bool IsStar { get => isStar; }
-        [SerializeField] private bool hasSpacecraft;
-        public bool HasSpacecraft { get => hasSpacecraft; set => hasSpacecraft = value; }
-        
+        [Space]
+        [SerializeField] private double argPrecessionPeriod;
+        public double ArgPrecessionPeriod { get => argPrecessionPeriod; }
+        [SerializeField] private double ascPrecessionPeriod; 
+        public double AscPrecessionPeriod { get => ascPrecessionPeriod; }
+
+        [Space]
+
         [SerializeField] private Material material;
         public Material Material { get => material; }
 
+        [Space]
+
         [SerializeField] private List<CelestialSO> bodiesOnOrbit;
         public List<CelestialSO> BodiesOnOrbit { get => bodiesOnOrbit; }
+
+        [Space]
 
         [SerializeField] private CelestialBodyType type;
         public CelestialBodyType Type { get => type; }

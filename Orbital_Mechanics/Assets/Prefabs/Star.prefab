@@ -49,7 +49,7 @@ MonoBehaviour:
   isStationary: 1
   centralBody: {fileID: 0}
   data: {fileID: 11400000, guid: 4c458452bc2effd4f9bfa4586c9ecfff, type: 2}
-  infiniteInfluence: 0
+  infiniteInfluence: 1
   model: {fileID: 3439329031701584081}
   meshRenderer: {fileID: 3439329031701584087}
   influenceSphere: {fileID: 3439329032960494409}

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
+  m_Name: Phobos
+  m_EditorClassIdentifier: 
+  mass: 1.0659e+16
+  diameter: 22533.4
+  orbit:
+    semimajorAxis: 9400000
+    eccentricity: 0.015
+    inclination: 0.01919862177
+    lonAscNode: 2.935643802
+    argPeriapsis: 3.775147172
+    trueAnomaly: 3.304232098
+    meanAnomaly: 0
+    anomaly: 0
+    semiminorAxis: 0
+    meanMotion: 0
+    semiLatusRectum: 0
+    timeToPeriapsis: 0
+    period: 0
+  material: {fileID: 2100000, guid: dd29d8fefb8d76b4a85586248f22a9e6, type: 2}
+  bodiesOnOrbit: []
+  type: 2

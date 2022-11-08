@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
+  m_Name: Callisto
+  m_EditorClassIdentifier: 
+  mass: 1.075938e+23
+  diameter: 4820600
+  orbit:
+    semimajorAxis: 1882700000
+    eccentricity: 0.007
+    inclination: 0.005235987756
+    lonAscNode: 5.394812718
+    argPeriapsis: 0.7644542124
+    trueAnomaly: 1.539408451
+    meanAnomaly: 0
+    anomaly: 0
+    semiminorAxis: 0
+    meanMotion: 0
+    semiLatusRectum: 0
+    timeToPeriapsis: 0
+    period: 0
+  material: {fileID: 2100000, guid: 508fbd3099df312438f0620af327599d, type: 2}
+  bodiesOnOrbit: []
+  type: 2

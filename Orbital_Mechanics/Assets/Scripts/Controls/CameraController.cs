@@ -23,10 +23,10 @@ public class CameraController : MonoBehaviour
     private Vector3 velocity;
     private float targetDistance;
     private Vector3 targetPosition;
-    public bool initialized { get; set; } = false;
-
-    private Transform focusObject;
     private Vector2 orbitAngles = new Vector2(45f, 0f);
+
+    public bool initialized { get; set; } = false;
+    public InOrbitObject focusObject { get; private set; }
     public bool focusingOnObject { get; private set; } = false;
     public Camera cam { get; private set; }
 
@@ -51,7 +51,8 @@ public class CameraController : MonoBehaviour
         if (focusOnEnable) Focused = true;
         targetDistance = distance;
         cam = GetComponent<Camera>();
-        Focus(Spacecraft.current?.transform);
+        if (Spacecraft.current != null)
+            Focus(Spacecraft.current);
         initialized = true;
     }
 
@@ -129,7 +130,7 @@ public class CameraController : MonoBehaviour
             -Input.GetAxis("Mouse Y"),
             Input.GetAxis("Mouse X")
         ) : Vector2.zero;
-        solarSystemHolder.position = -focusObject.localPosition;
+        solarSystemHolder.position = -focusObject.transform.localPosition;
         orbitAngles += rotationSpeed * Time.unscaledDeltaTime * input;
         Quaternion lookRotation = Quaternion.Euler(orbitAngles);
         Vector3 lookDirection = lookRotation * -Vector3.forward;
@@ -157,11 +158,11 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    public void Focus(Transform objectTransform)
+    public void Focus(InOrbitObject inOrbitObject)
     {
-        if (objectTransform != null)
+        if (inOrbitObject != null)
         {
-            focusObject = objectTransform;
+            focusObject = inOrbitObject;
             focusingOnObject = true;
         }
         else

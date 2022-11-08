@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Sim.Orbits;
 using Sim.Visuals;
+using Sim.Math;
 
 namespace Sim.Objects
 {
@@ -58,6 +59,7 @@ namespace Sim.Objects
             if (!isStationary)
             {
                 kepler.ApplyElementsFromStruct(data.Orbit, centralBody);
+                kepler.ApplyPrecessionChanges(data, secondsDiff);
                 mat = kepler.UpdateAnomalies(secondsDiff);
                 stateVectors = kepler.UpdateStateVectors(mat.Item3);
                 transform.localPosition = centralBody.transform.localPosition + stateVectors.position;

@@ -77,6 +77,17 @@ namespace Sim.Orbits
             }
         }
 
+        public void ApplyPrecessionChanges(CelestialSO celestialData, double secondsDiff) {
+
+            double CalculatePrecession(double precessionPeriodYears) {
+                double precessionPeriodSeconds = precessionPeriodYears * 365.25 * 24 * 60 * 60;
+                return secondsDiff.SafeDivision(precessionPeriodSeconds);
+            }
+
+            double PI2 = 2*MathLib.PI;
+            orbit.elements.argPeriapsis = MathLib.Repeat(orbit.elements.argPeriapsis + PI2 * CalculatePrecession(celestialData.ArgPrecessionPeriod), PI2);
+            orbit.elements.lonAscNode = MathLib.Repeat(orbit.elements.lonAscNode + PI2 * CalculatePrecession(celestialData.AscPrecessionPeriod), PI2);
+        }
         public (double, double, double) UpdateAnomalies(double time)
         {
             mat = orbit.GetFutureAnomalies(time);

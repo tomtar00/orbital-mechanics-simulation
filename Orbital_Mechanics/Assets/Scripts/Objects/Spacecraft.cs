@@ -46,9 +46,6 @@ namespace Sim.Objects
         private bool slowingDown = false;
         private double maneuverInaccuracy = float.MaxValue;
 
-        public double Speed {
-            get => stateVectors.velocity.magnitude / SimulationSettings.Instance.scale;
-        }
         public string TimeToGravityChange {
             get => (timeToNextGravityChange > 0) ? timeToNextGravityChange.ToTimeSpan() : "Inf";
         }
@@ -110,7 +107,6 @@ namespace Sim.Objects
             }
 
             Debug.Log("spacecraft period: " + kepler.orbit.elements.period.ToTimeSpan());
-            Debug.Log(centralBody.name + " period: " + centralBody.Kepler.orbit.elements.period.ToTimeSpan());
         }
         private float CircularOrbitSpeed()
         {

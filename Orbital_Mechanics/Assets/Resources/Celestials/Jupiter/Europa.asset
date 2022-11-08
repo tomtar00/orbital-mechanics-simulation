@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
-  m_Name: Moon
+  m_Name: Europa
   m_EditorClassIdentifier: 
-  mass: 7.347e+22
-  diameter: 3474000.8
+  mass: 4.799844e+22
+  diameter: 3121600
   orbit:
-    semimajorAxis: 384400000
-    eccentricity: 0.055
-    inclination: 0
-    lonAscNode: 0
-    argPeriapsis: 0
-    trueAnomaly: 0
+    semimajorAxis: 671100000
+    eccentricity: 0.009
+    inclination: 0.00872664626
+    lonAscNode: 3.211405824
+    argPeriapsis: 0.7853981634
+    trueAnomaly: 6.023780087
     meanAnomaly: 0
     anomaly: 0
     semiminorAxis: 0
@@ -28,8 +28,6 @@ MonoBehaviour:
     semiLatusRectum: 0
     timeToPeriapsis: 0
     period: 0
-  isStar: 0
-  hasSpacecraft: 0
-  material: {fileID: 2100000, guid: b3496bf1f8af9d247a6707ab06192350, type: 2}
+  material: {fileID: 2100000, guid: a1fbf10d75b069041bba2d71660df35d, type: 2}
   bodiesOnOrbit: []
   type: 2

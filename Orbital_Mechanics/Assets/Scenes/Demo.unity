@@ -1470,15 +1470,7 @@ MonoBehaviour:
   m_ItemImage: {fileID: 0}
   m_Value: 2
   m_Options:
-    m_Options:
-    - m_Text: Mercury
-      m_Image: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-    - m_Text: Venus
-      m_Image: {fileID: 0}
-    - m_Text: Earth
-      m_Image: {fileID: 0}
-    - m_Text: Mars
-      m_Image: {fileID: 0}
+    m_Options: []
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
@@ -1720,7 +1712,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Earth
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1747,7 +1739,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24.15
+  m_fontSize: 18
   m_fontSizeBase: 14
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -6484,6 +6476,7 @@ MonoBehaviour:
   - 2000
   - 10000
   - 100000
+  - 1000000
   defaultTimeScaleIdx: 3
   removeManeuver: {fileID: 865185170}
 --- !u!225 &1661029813
@@ -6556,7 +6549,7 @@ MonoBehaviour:
   scrollSensitivity: 7
   scrollDamping: 10
   minDistance: 0.1
-  maxDistance: 50
+  maxDistance: 120
 --- !u!20 &1687258584
 Camera:
   m_ObjectHideFlags: 0

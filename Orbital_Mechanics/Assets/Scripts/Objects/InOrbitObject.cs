@@ -35,6 +35,10 @@ namespace Sim.Objects
         public bool camInsideInfluence { get; private set; } = false;
         public static bool camInsideAnyInfluence = false;
 
+        public double Speed {
+            get => stateVectors.velocity.magnitude / SimulationSettings.Instance.scale;
+        }
+
         protected void Awake() {
             if (allObjects == null) {
                 allObjects = new List<InOrbitObject>();

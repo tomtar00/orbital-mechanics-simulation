@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c3c350472192c149822725a54cc75ed, type: 3}
+  m_Name: Jupiter
+  m_EditorClassIdentifier: 
+  mass: 1.89813e+27
+  diameter: 139820000
+  orbit:
+    semimajorAxis: 778299866330
+    eccentricity: 0.04838624
+    inclination: 0.02276602153
+    lonAscNode: 1.753600526
+    argPeriapsis: -1.496540059
+    trueAnomaly: 0.3777962899
+    meanAnomaly: 0
+    anomaly: 0
+    semiminorAxis: 0
+    meanMotion: 0
+    semiLatusRectum: 0
+    timeToPeriapsis: 0
+    period: 0
+  isStar: 0
+  hasSpacecraft: 0
+  material: {fileID: 2100000, guid: 5849c35954ac7b147957c20ae3dcd9a1, type: 2}
+  bodiesOnOrbit:
+  - {fileID: 11400000, guid: a570b2bfa2ff08841859752a48a2f030, type: 2}
+  - {fileID: 11400000, guid: 5dcf02a09f39b0548a8d831d4c5663f6, type: 2}
+  - {fileID: 11400000, guid: 496c8cc2691b2d34dbea45bda8e577da, type: 2}
+  - {fileID: 11400000, guid: 8dc72d6012c070f44963511ee352e48a, type: 2}
+  type: 1

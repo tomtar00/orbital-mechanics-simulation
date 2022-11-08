@@ -74,7 +74,7 @@ public class HUDController : MonoBehaviour
     }
 
     public void SpacecraftFocus() {
-        CameraController.Instance.Focus(Spacecraft.current.transform);
+        CameraController.Instance.Focus(Spacecraft.current);
     }
     public void FreeCamera() {
         CameraController.Instance.Focus(null);
@@ -89,12 +89,17 @@ public class HUDController : MonoBehaviour
     }
 
     private void ApplyOrbitElements() {
-        if (Spacecraft.current == null || Spacecraft.current.Kepler.orbit == null) return;
+        InOrbitObject obj = CameraController.Instance?.focusObject;
+        if (obj == null) return;
         orbitElementsText.text = $@"
-Spacecraft orbit:
-{ JsonUtility.ToJson(Spacecraft.current.Kepler.orbit.elements, true) }
+{obj.name}'s orbit:
+{ JsonUtility.ToJson(obj.Kepler.orbit.elements, true) }
 
-Velocity: { Spacecraft.current.Speed } m/s
-Time to gravity change: { Spacecraft.current.TimeToGravityChange }";
+Velocity: { obj.Speed } m/s
+";
+
+        if (obj is Spacecraft) {
+            orbitElementsText.text += $"Time to gravity change: { Spacecraft.current.TimeToGravityChange }";
+        }
     }
 }
