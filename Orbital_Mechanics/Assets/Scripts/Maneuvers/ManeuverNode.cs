@@ -7,6 +7,7 @@ namespace Sim.Maneuvers {
     public class ManeuverNode : MonoBehaviour
     {
         public static bool isDraggingAny { get; private set; }
+        public static bool isSelectedAny { get; private set; }
         public static ManeuverNode current { get; set; }
         public static List<string> directionsTags = new List<string> {
             "Prograde",  
@@ -86,6 +87,7 @@ namespace Sim.Maneuvers {
             HUDController.Instance.RemoveManeuverBtn.gameObject.SetActive(true);
             current = this;
             selected = true;
+            isSelectedAny = true;
 
             if (maneuver.NextManeuver != null) return;
 
@@ -95,6 +97,7 @@ namespace Sim.Maneuvers {
             if (!selected) return;
             vectorsHolder.SetActive(false);
             selected = false;
+            isSelectedAny = false;
             current = null;
 
             HUDController.Instance.RemoveManeuverBtn.gameObject.SetActive(false);

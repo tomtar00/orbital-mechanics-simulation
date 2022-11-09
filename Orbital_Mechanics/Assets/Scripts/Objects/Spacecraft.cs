@@ -116,19 +116,17 @@ namespace Sim.Objects
         private void AddVelocity(Vector3 d_vel)
         {
             timeSinceVelocityChanged = 0;
-            Vector3Double newVelocity = this.stateVectors.velocity + d_vel;
+            StateVectors newStateVectors = new StateVectors(stateVectors.position, stateVectors.velocity + d_vel);
+            kepler.CheckOrbitType(newStateVectors, centralBody);
 
-            StateVectors stateVectors = new StateVectors(this.stateVectors.position, newVelocity);
-            kepler.CheckOrbitType(stateVectors, centralBody);
+            kepler.orbit.ConvertStateVectorsToOrbitElements(newStateVectors);
 
-            kepler.orbit.ConvertStateVectorsToOrbitElements(stateVectors);
-
-            orbitDrawer.DrawOrbits(stateVectors, centralBody);
+            orbitDrawer.DrawOrbits(newStateVectors, centralBody);
         }
 
         private void HandleControls()
         {
-            if (CameraController.Instance.focusingOnObject) {
+            if (CameraController.Instance.focusObject == this && HUDController.Instance.isDefaultTimeScale) {
                 if (Input.GetKey(KeyCode.A)){
                     model.transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
                 } else if (Input.GetKey(KeyCode.D)) {
@@ -173,6 +171,7 @@ namespace Sim.Objects
             double currentManeuverInaccuracy;
             bool isTargetOrbit = kepler.orbit.Equals(next.drawer.orbits[0], SimulationSettings.Instance.maneuverPrecision, out currentManeuverInaccuracy);
             
+            // if (MathLib.Abs(next.timeToManeuver) < next.burnTime / 2) {
             if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit && currentManeuverInaccuracy < maneuverInaccuracy) {
                 AddVelocity(model.transform.forward * thrust * Time.deltaTime);
                 maneuverInaccuracy = currentManeuverInaccuracy;

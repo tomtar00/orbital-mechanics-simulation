@@ -25,14 +25,21 @@ public class HUDController : MonoBehaviour
     private int previousTimeScaleIdx = 1;
     private int currentTimeScaleIdx = 3;
 
+    public bool isDefaultTimeScale
+    {
+        get => Time.timeScale == timeScales[defaultTimeScaleIdx];
+    }
+
     public static HUDController Instance;
-    private void Awake() {
+    private void Awake()
+    {
         Instance = this;
         Time.timeScale = timeScales[currentTimeScaleIdx];
         UpdateTimeScaleText();
         currentTimeScaleIdx = defaultTimeScaleIdx;
     }
-    private void Update() {
+    private void Update()
+    {
         ApplyOrbitElements();
         ApplyCurrentDate();
     }
@@ -42,64 +49,75 @@ public class HUDController : MonoBehaviour
         currentDateText.text = SystemGenerator.GetCurrentSimulationDate().ToString();
     }
 
-    private void UpdateTimeScaleText() {
+    private void UpdateTimeScaleText()
+    {
         Time.timeScale = timeScales[currentTimeScaleIdx];
         timeScaleText.text = "x" + Time.timeScale;
     }
 
-    public void IncreaseTimeScale() {
+    public void IncreaseTimeScale()
+    {
         if (blockTimeChange) return;
         if (++currentTimeScaleIdx >= timeScales.Length) currentTimeScaleIdx = timeScales.Length - 1;
         previousTimeScaleIdx = currentTimeScaleIdx;
         UpdateTimeScaleText();
     }
-    public void DecreaseTimeScale() {
+    public void DecreaseTimeScale()
+    {
         if (blockTimeChange) return;
         if (--currentTimeScaleIdx < 0) currentTimeScaleIdx = 0;
         previousTimeScaleIdx = currentTimeScaleIdx;
         UpdateTimeScaleText();
     }
 
-    public void SetTimeScaleToDefault() {
+    public void SetTimeScaleToDefault()
+    {
         if (blockTimeChange) return;
         currentTimeScaleIdx = defaultTimeScaleIdx;
         UpdateTimeScaleText();
         blockTimeChange = true;
     }
-    public void SetTimeScaleToPrevious() {
+    public void SetTimeScaleToPrevious()
+    {
         if (!blockTimeChange) return;
         currentTimeScaleIdx = previousTimeScaleIdx;
         UpdateTimeScaleText();
         blockTimeChange = false;
     }
 
-    public void SpacecraftFocus() {
+    public void SpacecraftFocus()
+    {
         CameraController.Instance.Focus(Spacecraft.current);
     }
-    public void FreeCamera() {
+    public void FreeCamera()
+    {
         CameraController.Instance.Focus(null);
     }
 
-    public void RemoveCurrentManeuver() {
+    public void RemoveCurrentManeuver()
+    {
         ManeuverManager.Instance.RemoveManeuvers(ManeuverNode.current.maneuver);
     }
 
-    public void HandleAutoManeuversValueChange(bool isOn) {
+    public void HandleAutoManeuversValueChange(bool isOn)
+    {
         Spacecraft.current.Autopilot = isOn;
     }
 
-    private void ApplyOrbitElements() {
+    private void ApplyOrbitElements()
+    {
         InOrbitObject obj = CameraController.Instance?.focusObject;
         if (obj == null) return;
         orbitElementsText.text = $@"
 {obj.name}'s orbit:
-{ JsonUtility.ToJson(obj.Kepler.orbit.elements, true) }
+{JsonUtility.ToJson(obj.Kepler.orbit.elements, true)}
 
-Velocity: { obj.Speed } m/s
+Velocity: {obj.Speed} m/s
 ";
 
-        if (obj is Spacecraft) {
-            orbitElementsText.text += $"Time to gravity change: { Spacecraft.current.TimeToGravityChange }";
+        if (obj is Spacecraft)
+        {
+            orbitElementsText.text += $"Time to gravity change: {Spacecraft.current.TimeToGravityChange}";
         }
     }
 }

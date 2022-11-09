@@ -86,7 +86,7 @@ namespace Sim.Orbits
         public override double CalculateAnomalyFromTrueAnomaly(double trueAnomaly)
         {
             double anomaly = 2f * MathLib.Atan(MathLib.Tan(trueAnomaly / 2f) / elements.trueAnomalyConstant);
-            anomaly = MathLib.Repeat(anomaly, 2 * MathLib.PI);
+            anomaly = MathLib.Repeat(anomaly, PI2);
             return anomaly;
         }
 

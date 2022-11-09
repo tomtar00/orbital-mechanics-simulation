@@ -118,9 +118,9 @@ namespace Sim.Orbits
         public abstract Vector3Double CalculateVelocity(Vector3Double relativePosition, double trueAnomaly);
         public StateVectors ConvertOrbitElementsToStateVectors(double trueAnomaly)
         {
-            this.stateVectors.position = CalculateOrbitalPosition(trueAnomaly);
-            this.stateVectors.velocity = CalculateVelocity(this.stateVectors.position, trueAnomaly);
-            return this.stateVectors;
+            stateVectors.position = CalculateOrbitalPosition(trueAnomaly);
+            stateVectors.velocity = CalculateVelocity(stateVectors.position, trueAnomaly);
+            return stateVectors;
         }
 
         public abstract double CalculateMeanAnomaly(double time);

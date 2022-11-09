@@ -65,6 +65,11 @@ namespace Sim.Math
             return MathLib.Atan2(det, Vector3Double.Dot(a, b)) * MathLib.Rad2Deg;
         }
 
+        public override string ToString()
+        {
+            return $"({x}, {y}, {z})";
+        }
+
         public static Vector3Double operator / (Vector3Double vec, double value) {
             return new Vector3Double(vec.x / value, vec.y / value, vec.z / value);
         }

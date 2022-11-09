@@ -20,5 +20,10 @@ namespace Sim.Orbits {
             this.position = vectors.position;
             this.velocity = vectors.velocity;
         }
+
+        public override string ToString()
+        {
+            return "position = " + position + " velocity = " + velocity; 
+        }
     }
 }

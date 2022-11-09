@@ -25,7 +25,7 @@ namespace Sim.Visuals
         
         private float scaleMultiplier = .02f;
         private float minScale = .1f;
-        private float maxScale = 6f;
+        private float maxScale = 60f;
 
         public GameObject indicator { get; private set; }
         public LineRenderer line { get; private set; }
@@ -92,7 +92,7 @@ namespace Sim.Visuals
                 BakeMesh(); 
             }
 
-            if (hovering && showPointIndication) {
+            if (hovering && showPointIndication && !ManeuverNode.isSelectedAny) {
                 var worldPos = pointerData.pointerCurrentRaycast.worldPosition;
                 var convertedPos = ConvertWorldPosToOrbitPos(worldPos);
                 indicator.transform.localPosition = (Vector3)convertedPos;
@@ -104,6 +104,12 @@ namespace Sim.Visuals
                         indicator.transform.position, CameraController.Instance.cam.transform.position,
                         scaleMultiplier, minScale, maxScale
                     );
+                }
+            }
+            else {
+                if (showPointIndication && indicator.activeSelf)
+                {
+                    indicator.SetActive(false);
                 }
             }
         }
