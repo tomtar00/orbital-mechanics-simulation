@@ -28,7 +28,7 @@ namespace Sim.Objects
         {
             this.spacecraftSpawnOrbit = spacecraftSpawnOrbit;
             this.generated = true;
-            SystemGenerator.secondsDiff = (dateTime - new DateTime(2000, 1, 1)).TotalSeconds;
+            SystemGenerator.secondsDiff = (dateTime - new DateTime(2000, 1, 1, 12, 0, 0)).TotalSeconds;
             GenerateBody(star, centralBody: null);
             namesViewer.Init();
             cameraController.Init();
@@ -40,6 +40,7 @@ namespace Sim.Objects
             cameraController.initialized = false;
             maneuverManager.DestroyManeuvers();
             Sim.Visuals.LineButton.allLineButtons = null;
+            HUDController.Instance.SetTimeScaleToDefault(blockTime: false);
         }
 
         private void Update()
@@ -50,7 +51,7 @@ namespace Sim.Objects
             }
         }
         public static DateTime GetCurrentSimulationDate() {
-            return new DateTime(2000, 1, 1).AddSeconds(secondsDiff);
+            return new DateTime(2000, 1, 1, 12, 0, 0).AddSeconds(secondsDiff);
         }
 
         private void GenerateBody(CelestialSO body, Celestial centralBody)

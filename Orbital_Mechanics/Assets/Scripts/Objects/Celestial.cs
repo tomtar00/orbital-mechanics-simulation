@@ -59,7 +59,7 @@ namespace Sim.Objects
             if (!isStationary)
             {
                 kepler.ApplyElementsFromStruct(data.Orbit, centralBody);
-                kepler.ApplyPrecessionChanges(data, secondsDiff);
+                // kepler.ApplyPrecessionChanges(data, secondsDiff);
                 mat = kepler.UpdateAnomalies(secondsDiff);
                 stateVectors = kepler.UpdateStateVectors(mat.Item3);
                 transform.localPosition = centralBody.transform.localPosition + stateVectors.position;

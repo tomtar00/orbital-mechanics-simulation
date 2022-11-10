@@ -140,7 +140,14 @@ namespace Sim.Visuals
                 timePassed += timeToGravityChange;
             }
         }
-        private StateVectors DrawOrbit(StateVectors stateVectors, int lineIdx, Celestial currentCelestial, double timePassed, out Celestial nextCelestial, out double timeToGravityChange, out Orbit orbit)
+        private StateVectors DrawOrbit(
+            StateVectors stateVectors,
+            int lineIdx,
+            Celestial currentCelestial,
+            double timePassed,
+            out Celestial nextCelestial,
+            out double timeToGravityChange,
+            out Orbit orbit)
         {
             Orbit _orbit = KeplerianOrbit.CreateOrbit(stateVectors, currentCelestial, out _);
             orbit = _orbit;

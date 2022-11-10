@@ -17,10 +17,10 @@ MonoBehaviour:
   orbit:
     semimajorAxis: 421800000
     eccentricity: 0.004
-    inclination: 0
-    lonAscNode: 0
-    argPeriapsis: 0.8569566627
-    trueAnomaly: 5.771386752
+    inclination: 0.0006544984695
+    lonAscNode: 5.879176492
+    argPeriapsis: 1.154793609
+    trueAnomaly: 5.846146463
     meanAnomaly: 0
     anomaly: 0
     semiminorAxis: 0
@@ -28,6 +28,8 @@ MonoBehaviour:
     semiLatusRectum: 0
     timeToPeriapsis: 0
     period: 0
+  argPrecessionPeriod: 1.333
+  ascPrecessionPeriod: 0
   material: {fileID: 2100000, guid: 2c14bd076e2da0b4e839153e3078e571, type: 2}
   bodiesOnOrbit: []
   type: 2

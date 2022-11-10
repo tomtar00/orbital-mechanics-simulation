@@ -15,7 +15,9 @@ namespace Sim.Orbits
 
         public override OrbitalElements CalculateOtherElements(OrbitalElements elements)
         {
-            elements.trueAnomalyConstant = this.elements.trueAnomalyConstant = MathLib.Sqrt((1 + elements.eccentricity).SafeDivision(1 - elements.eccentricity));
+            elements.trueAnomalyConstant = MathLib.Sqrt((1 + elements.eccentricity).SafeDivision(1 - elements.eccentricity));
+            this.elements.trueAnomalyConstant = elements.trueAnomalyConstant;
+            this.elements.eccentricity = elements.eccentricity;
             elements.anomaly = CalculateAnomalyFromTrueAnomaly(elements.trueAnomaly);
             elements.meanAnomaly = CalculateMeanAnomalyFromAnomaly(elements.anomaly);
 

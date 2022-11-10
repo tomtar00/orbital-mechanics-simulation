@@ -111,7 +111,7 @@ namespace Sim.Orbits
 
             elements.angMomentum = (Quaternion.AngleAxis((float)(elements.inclination * MathLib.Rad2Deg), Vector3.right) * Vector3.up);
             elements.angMomentum = (Quaternion.AngleAxis((float)(elements.lonAscNode * MathLib.Rad2Deg), Vector3.up) * elements.angMomentum);
-            elements.angMomentum = elements.angMomentum.normalized * (double)MathLib.Sqrt(GM * elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity));
+            elements.angMomentum = elements.angMomentum.normalized * MathLib.Sqrt(GM * elements.semimajorAxis * (1 - elements.eccentricity * elements.eccentricity));
 
             elements.eccVec = (Quaternion.AngleAxis((float)(-elements.lonAscNode * MathLib.Rad2Deg), Vector3.up) * Vector3.right);
             elements.eccVec = (Quaternion.AngleAxis((float)(-elements.argPeriapsis * MathLib.Rad2Deg), elements.angMomentum) * elements.eccVec);

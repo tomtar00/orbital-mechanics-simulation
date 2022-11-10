@@ -2,7 +2,6 @@
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Sim.Objects;
-using System.Collections.Generic;
 using System.Linq;
 
 public class SetupController : MonoBehaviour
@@ -20,7 +19,7 @@ public class SetupController : MonoBehaviour
 
     private void Start() {
         celestialIdx = dropdown.value;
-        dateInput.text = "1/1/2000";
+        dateInput.text = "1/1/2000 12:00:00";
 
         dropdown.AddOptions(systemGenerator.Star.BodiesOnOrbit.Select(b => b.name).ToList());
     }
@@ -38,6 +37,8 @@ public class SetupController : MonoBehaviour
         setupCanvas.alpha = 1;
         setupCanvas.interactable = true;
 
+        wrongDate.SetActive(false);
+
         systemGenerator.ResetSystem();
         InOrbitObject.allObjects = null;
         Celestial.celestials = null;
@@ -45,8 +46,7 @@ public class SetupController : MonoBehaviour
 
     public void FinishSetup() {
 
-        Regex regex = new Regex("^(?:(?:31(\\/|-|\\.)(?:0?[13578]|1[02]))\\1|(?:(?:29|30)(\\/|-|\\.)(?:0?[13-9]|1[0-2])\\2))(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$|^(?:29(\\/|-|\\.)0?2\\3(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\\d|2[0-8])(\\/|-|\\.)(?:(?:0?[1-9])|(?:1[0-2]))\\4(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$");
-        if (!regex.Match(dateInput.text).Success) {
+        if (!DateTime.TryParse(dateInput.text, out DateTime date)) {
             wrongDate.SetActive(true);
             return;
         }
@@ -55,6 +55,6 @@ public class SetupController : MonoBehaviour
         hudCanvas.interactable = true;
         setupCanvas.alpha = 0;
         setupCanvas.interactable = false;
-        systemGenerator.Generate(Convert.ToDateTime(dateInput.text), dropdown.options[dropdown.value].text);
+        systemGenerator.Generate(date, dropdown.options[dropdown.value].text);
     }
 }

@@ -70,7 +70,7 @@ public class HUDController : MonoBehaviour
         UpdateTimeScaleText();
     }
 
-    public void SetTimeScaleToDefault()
+    public void SetTimeScaleToDefault(bool blockTime = true)
     {
         if (blockTimeChange) return;
         currentTimeScaleIdx = defaultTimeScaleIdx;

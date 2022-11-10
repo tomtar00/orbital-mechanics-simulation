@@ -39,7 +39,7 @@ namespace Sim.Objects
         public double timeSinceVelocityChanged { get; private set; }
         public double timeToNextGravityChange { get; set; }
         public double timeSinceGravityChange { get; set; }
-        public float Thrust { get => thrust; }
+        public float Thrust { get => thrust * SimulationSettings.Instance.scale; }
         public bool Autopilot { set => autopilot = value; }
 
         private bool canUpdateOrbit = true;
@@ -138,7 +138,7 @@ namespace Sim.Objects
                     model.transform.Rotate(-Vector3.right, rotationSpeed * Time.deltaTime);
                 }
                 if (Input.GetKey(KeyCode.Space)) {
-                    AddVelocity(model.transform.forward * thrust * Time.deltaTime);
+                    AddVelocity(model.transform.forward * Thrust * Time.deltaTime);
                 }
             }
         }
@@ -171,9 +171,8 @@ namespace Sim.Objects
             double currentManeuverInaccuracy;
             bool isTargetOrbit = kepler.orbit.Equals(next.drawer.orbits[0], SimulationSettings.Instance.maneuverPrecision, out currentManeuverInaccuracy);
             
-            // if (MathLib.Abs(next.timeToManeuver) < next.burnTime / 2) {
             if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit && currentManeuverInaccuracy < maneuverInaccuracy) {
-                AddVelocity(model.transform.forward * thrust * Time.deltaTime);
+                AddVelocity(model.transform.forward * Thrust * Time.deltaTime);
                 maneuverInaccuracy = currentManeuverInaccuracy;
             }
             else

@@ -291,7 +291,7 @@ MonoBehaviour:
   startVelocity: {x: 0, y: 0, z: 0.0008304}
   startSurfaceAltitude: 0.5
   rotationSpeed: 250
-  thrust: 0.00006
+  thrust: 200
   autopilot: 1
   maneuverSuccessMat: {fileID: 2100000, guid: 2c9ea98cce2557d46a3793af0d128915, type: 2}
   maneuverFailMat: {fileID: 2100000, guid: b4f3fa97e11945746b2a769563b31410, type: 2}

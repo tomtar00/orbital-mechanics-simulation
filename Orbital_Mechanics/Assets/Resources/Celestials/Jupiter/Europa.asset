@@ -28,6 +28,8 @@ MonoBehaviour:
     semiLatusRectum: 0
     timeToPeriapsis: 0
     period: 0
+  argPrecessionPeriod: 1.394
+  ascPrecessionPeriod: 30.202
   material: {fileID: 2100000, guid: a1fbf10d75b069041bba2d71660df35d, type: 2}
   bodiesOnOrbit: []
   type: 2

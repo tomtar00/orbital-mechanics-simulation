@@ -812,7 +812,7 @@ MonoBehaviour:
   G: 6.674e-11
   scale: 0.0000001
   gravityFalloff: 0.001
-  dontDrawPlanetOrbitMultiplier: 15
+  dontDrawPlanetOrbitMultiplier: 5
   dontDrawMoonOrbitMultiplier: 1
 --- !u!114 &153973665
 MonoBehaviour:
@@ -980,7 +980,7 @@ MonoBehaviour:
   m_CharacterValidation: 0
   m_RegexValue: 
   m_GlobalPointSize: 14
-  m_CharacterLimit: 10
+  m_CharacterLimit: 19
   m_OnEndEdit:
     m_PersistentCalls:
       m_Calls: []
@@ -1304,7 +1304,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: dd/mm/YYYY
+  m_text: dd/mm/YYYY HH:mm:ss
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

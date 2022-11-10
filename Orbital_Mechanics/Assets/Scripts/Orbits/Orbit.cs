@@ -1,5 +1,4 @@
 ﻿using Sim.Objects;
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Sim.Math;
@@ -78,15 +77,19 @@ namespace Sim.Orbits
 
             // Argument of periapsis
             // source: https://en.wikipedia.org/wiki/Argument_of_periapsis
-            if (elements.lonAscNode != 0) {
+            if (elements.lonAscNode != 0)
+            {
                 elements.argPeriapsis = MathLib.Acos(Vector3Double.Dot(nodeVector, elements.eccVec).SafeDivision(nodeMag * elements.eccentricity));
-                if (elements.eccVec.y < 0) {
+                if (elements.eccVec.y < 0)
+                {
                     elements.argPeriapsis = PI2 - elements.argPeriapsis;
                 }
             }
-            else {
+            else
+            {
                 elements.argPeriapsis = MathLib.Atan2(elements.eccVec.z, elements.eccVec.x);
-                if (elements.angMomentum.y < 0) {
+                if (elements.angMomentum.y < 0)
+                {
                     elements.argPeriapsis = PI2 - elements.argPeriapsis;
                 }
             }
@@ -208,19 +211,24 @@ namespace Sim.Orbits
                         celestialPosition = centralBodyOrbit.CalculateOrbitalPosition(mat.Item3);
                         celestialVelocity = centralBodyOrbit.CalculateVelocity(celestialPosition, mat.Item3);
 
-                        if (stateVectors == null) {
+                        if (stateVectors == null)
+                        {
                             stateVectors = new StateVectors(position + celestialPosition, spacecraftVelocity + celestialVelocity);
                         }
-                        else {
+                        else
+                        {
                             stateVectors.position = position + celestialPosition;
                             stateVectors.velocity = spacecraftVelocity + celestialVelocity;
                         }
                     }
-                    else {
-                        if (stateVectors == null){
-                            stateVectors = new StateVectors(position, spacecraftVelocity );
+                    else
+                    {
+                        if (stateVectors == null)
+                        {
+                            stateVectors = new StateVectors(position, spacecraftVelocity);
                         }
-                        else {
+                        else
+                        {
                             stateVectors.position = position;
                             stateVectors.velocity = spacecraftVelocity;
                         }
@@ -268,7 +276,7 @@ namespace Sim.Orbits
                             celestialPosition = celestial.Kepler.orbit.CalculateOrbitalPosition(mat.Item3);
 
                             relativePosition = (spacecraftPosition - celestialPosition);
-                            diff = relativePosition.sqrMagnitude - MathLib.Pow(celestial.InfluenceRadius, 2);           
+                            diff = relativePosition.sqrMagnitude - MathLib.Pow(celestial.InfluenceRadius, 2);
 
                             if (diff < 0)
                             {
@@ -282,10 +290,12 @@ namespace Sim.Orbits
                         // get encounter state vectors
                         spacecraftVelocity = CalculateVelocity(spacecraftPosition, _mat.Item3);
                         celestialVelocity = celestial.Kepler.orbit.CalculateVelocity(celestialPosition, mat.Item3);
-                        if (stateVectors == null) {
+                        if (stateVectors == null)
+                        {
                             stateVectors = new StateVectors(relativePosition, spacecraftVelocity - celestialVelocity);
                         }
-                        else {
+                        else
+                        {
                             stateVectors.position = relativePosition;
                             stateVectors.velocity = spacecraftVelocity - celestialVelocity;
                         }
@@ -296,7 +306,7 @@ namespace Sim.Orbits
                         break;
                     }
                 }
-                
+
                 lastTime = time;
                 if (encounter) break;
                 points.Add(position);
@@ -333,14 +343,15 @@ namespace Sim.Orbits
                 }
                 else time = timeToChange;
 
-                if (diff > 0) 
+                if (diff > 0)
                     resultTime = timeToChange;
             }
 
             return resultTime;
         }
-    
-        public bool Equals(Orbit orbit, double precision, out double inaccuracy) {
+
+        public bool Equals(Orbit orbit, double precision, out double inaccuracy)
+        {
             double[] diffs = new[] {
                 MathLib.Abs(elements.semimajorAxis - orbit.elements.semimajorAxis),
                 MathLib.Abs(elements.eccentricity - orbit.elements.eccentricity),
@@ -348,9 +359,13 @@ namespace Sim.Orbits
                 MathLib.Abs(elements.argPeriapsis - orbit.elements.argPeriapsis),
                 MathLib.Abs(elements.lonAscNode - orbit.elements.lonAscNode)
             };
-            inaccuracy = diffs.Sum();
+
+            if (diffs[1] > 1)
+                inaccuracy = 999;
+            else
+                inaccuracy = diffs[0];
+
             return diffs.All(diff => diff < precision);
-            // return diffs.Sum() < diffs.Length * precision;
         }
     }
 }
