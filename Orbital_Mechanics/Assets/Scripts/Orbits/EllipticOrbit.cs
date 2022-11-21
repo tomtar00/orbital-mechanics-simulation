@@ -61,9 +61,7 @@ namespace Sim.Orbits
             // source: https://en.wikipedia.org/wiki/Elliptic_orbit#Flight_path_angle
             double pathAngle = MathLib.Atan((elements.eccentricity * MathLib.Sin(trueAnomaly)) / (1 + elements.eccentricity * MathLib.Cos(trueAnomaly))) * MathLib.Rad2Deg;
 
-            return (Quaternion.AngleAxis((float)pathAngle, elements.angMomentum) *
-                            Quaternion.AngleAxis(-90, elements.angMomentum) * relativePosition.normalized *
-                            (float)this.speed);
+            return Quaternion.AngleAxis((float)pathAngle - 90, elements.angMomentum) * relativePosition.normalized * (float)this.speed;
         }
 
         public override double CalculateMeanAnomaly(double time)
@@ -92,11 +90,11 @@ namespace Sim.Orbits
             return anomaly;
         }
 
-        public override double MeanAnomalyEquation(double E, double e, double M)
+        public override double KeplerEquation(double E, double e, double M)
         {
             return M - E + e * MathLib.Sin(E); // M - E + e*sin(E) = 0
         }
-        public override double d_MeanAnomalyEquation(double E, double e)
+        public override double d_KeplerEquation(double E, double e)
         {
             return -1f + e * MathLib.Cos(E); //  -1 + e*cos(E) = 0
         }

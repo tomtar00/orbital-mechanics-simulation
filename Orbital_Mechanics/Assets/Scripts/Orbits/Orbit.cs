@@ -42,7 +42,7 @@ namespace Sim.Orbits
                 this.GM = KeplerianOrbit.G * centralBody.Data.Mass;
         }
 
-        public virtual void ConvertStateVectorsToOrbitElements(StateVectors stateVectors)
+        public void ConvertStateVectorsToOrbitElements(StateVectors stateVectors)
         {
             Vector3Double relativePosition = stateVectors.position;
             Vector3Double velocity = stateVectors.velocity;
@@ -52,22 +52,18 @@ namespace Sim.Orbits
             var elements = new OrbitalElements();
 
             // Semi-major axis
-            // source2: https://en.wikipedia.org/wiki/Vis-viva_equation
             elements.semimajorAxis = (GM * posMagnitude).SafeDivision((2 * GM - velMagnitude * velMagnitude * posMagnitude));
 
             // Eccentricity
-            // source: https://en.wikipedia.org/wiki/Eccentricity_vector
             elements.angMomentum = Vector3Double.Cross(velocity, relativePosition);
             double angMomMag = elements.angMomentum.magnitude;
             elements.eccVec = (Vector3Double.Cross(elements.angMomentum, velocity) / GM) - (relativePosition.SafeDivision(posMagnitude));
             elements.eccentricity = elements.eccVec.magnitude;
 
             // Inclination
-            // source: https://en.wikipedia.org/wiki/Orbital_inclination
             elements.inclination = MathLib.Acos(elements.angMomentum.y.SafeDivision(angMomMag));
 
             // Longitude of the ascending node
-            // source: https://en.wikipedia.org/wiki/Longitude_of_the_ascending_node
             Vector3Double nodeVector = elements.inclination != 0 && elements.inclination != MathLib.PI ?
                 -Vector3Double.Cross(Vector3Double.up, elements.angMomentum) : Vector3Double.right;
             double nodeMag = nodeVector.magnitude;
@@ -76,7 +72,6 @@ namespace Sim.Orbits
                 elements.lonAscNode = PI2 - elements.lonAscNode;
 
             // Argument of periapsis
-            // source: https://en.wikipedia.org/wiki/Argument_of_periapsis
             if (elements.lonAscNode != 0)
             {
                 elements.argPeriapsis = MathLib.Acos(Vector3Double.Dot(nodeVector, elements.eccVec).SafeDivision(nodeMag * elements.eccentricity));
@@ -94,8 +89,7 @@ namespace Sim.Orbits
                 }
             }
 
-            // True anomaly
-            // source: https://en.wikipedia.org/wiki/True_anomaly                
+            // True anomaly               
             double eccPosDot = Vector3Double.Dot(elements.eccVec, relativePosition);
             elements.trueAnomaly = MathLib.Acos(eccPosDot.SafeDivision(elements.eccentricity * posMagnitude));
             if (Vector3Double.Dot(relativePosition, velocity) < 0)
@@ -139,8 +133,8 @@ namespace Sim.Orbits
             while (MathLib.Abs(a1 - a0) > 0.0001f)
             {
                 a0 = a1;
-                eq = MeanAnomalyEquation(a0, elements.eccentricity, meanAnomaly);
-                deq = d_MeanAnomalyEquation(a0, elements.eccentricity);
+                eq = KeplerEquation(a0, elements.eccentricity, meanAnomaly);
+                deq = d_KeplerEquation(a0, elements.eccentricity);
                 a1 = a0 - eq.SafeDivision(deq);
             }
 
@@ -162,8 +156,8 @@ namespace Sim.Orbits
             return (PI2 - meanAnomaly) * elements.periodConstant;
         }
 
-        public abstract double MeanAnomalyEquation(double anomaly, double e, double M);
-        public abstract double d_MeanAnomalyEquation(double anomaly, double e);
+        public abstract double KeplerEquation(double anomaly, double e, double M);
+        public abstract double d_KeplerEquation(double anomaly, double e);
 
         public Vector3Double[] GenerateOrbitPoints(int resolution, InOrbitObject self, double timePassed, out StateVectors stateVectors, out Celestial nextCelestial, out double timeToGravityChange)
         {
@@ -350,7 +344,7 @@ namespace Sim.Orbits
             return resultTime;
         }
 
-        public bool Equals(Orbit orbit, double precision, out double inaccuracy)
+        public bool Equals(Orbit orbit, double[] precision)
         {
             double[] diffs = new[] {
                 MathLib.Abs(elements.semimajorAxis - orbit.elements.semimajorAxis),
@@ -360,12 +354,9 @@ namespace Sim.Orbits
                 MathLib.Abs(elements.lonAscNode - orbit.elements.lonAscNode)
             };
 
-            if (diffs[1] > 1)
-                inaccuracy = 999;
-            else
-                inaccuracy = diffs[0];
-
-            return diffs.All(diff => diff < precision);
+            bool isSameType = (elements.eccentricity > 1 && orbit.elements.eccentricity > 1)
+                              || (elements.eccentricity < 1 && orbit.elements.eccentricity < 1);
+            return isSameType && diffs.Select((value, i) => (value, i)).All(item => item.value < precision[item.i]);
         }
     }
 }

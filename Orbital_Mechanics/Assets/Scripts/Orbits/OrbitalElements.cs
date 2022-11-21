@@ -13,8 +13,6 @@ namespace Sim.Orbits {
         public double argPeriapsis;
         public double trueAnomaly;
 
-        [Space]
-
         [HideInInspector] public double meanAnomaly;
         [HideInInspector] public double anomaly;
 

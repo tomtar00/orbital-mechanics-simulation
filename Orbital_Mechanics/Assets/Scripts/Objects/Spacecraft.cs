@@ -5,6 +5,8 @@ using Sim.Visuals;
 using Sim.Math;
 using Sim.Maneuvers;
 
+using System.Linq;
+
 namespace Sim.Objects
 {
     [RequireComponent(typeof(OrbitDrawer))]
@@ -16,7 +18,7 @@ namespace Sim.Objects
         [Space]
         [SerializeField] protected bool useCustomStartVelocity;
         [SerializeField]
-        [DrawIf("useCustomStartVelocity", true, ComparisonType.Equals)] 
+        [DrawIf("useCustomStartVelocity", true, ComparisonType.Equals)]
         protected Vector3 startVelocity;
         [SerializeField] protected float startSurfaceAltitude;
 
@@ -44,13 +46,14 @@ namespace Sim.Objects
 
         private bool canUpdateOrbit = true;
         private bool slowingDown = false;
-        private double maneuverInaccuracy = float.MaxValue;
 
-        public string TimeToGravityChange {
+        public string TimeToGravityChange
+        {
             get => (timeToNextGravityChange > 0) ? timeToNextGravityChange.ToTimeSpan() : "Inf";
         }
 
-        private new void Awake() {
+        private new void Awake()
+        {
             base.Awake();
             current = this;
         }
@@ -68,16 +71,16 @@ namespace Sim.Objects
             timeSinceVelocityChanged += Time.deltaTime;
             timeToNextGravityChange -= Time.deltaTime;
             timeSinceGravityChange += Time.deltaTime;
-            
+
             base.UpdateObject();
 
             UpdateOrbitRenderer();
-            
+
             HandleControls();
             CheckWillSoonEnterExitInfluence();
             CheckCelestialInfluence();
 
-            HandleManeuverDirection();  
+            HandleManeuverDirection();
             AutomateManeuvers();
 
             gameObject.transform.localScale = NumericExtensions.ScaleWithDistance(
@@ -101,7 +104,8 @@ namespace Sim.Objects
 
             if (useCustomStartVelocity)
                 AddVelocity(startVelocity);
-            else {
+            else
+            {
                 Vector3 velDirection = Vector3.Cross(stateVectors.position, Vector3.up).normalized;
                 AddVelocity(velDirection * CircularOrbitSpeed());
             }
@@ -126,65 +130,81 @@ namespace Sim.Objects
 
         private void HandleControls()
         {
-            if (CameraController.Instance.focusObject == this && HUDController.Instance.isDefaultTimeScale) {
-                if (Input.GetKey(KeyCode.A)){
+            if (CameraController.Instance.focusObject == this && HUDController.Instance.isDefaultTimeScale)
+            {
+                if (Input.GetKey(KeyCode.A))
+                {
                     model.transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
-                } else if (Input.GetKey(KeyCode.D)) {
+                }
+                else if (Input.GetKey(KeyCode.D))
+                {
                     model.transform.Rotate(-Vector3.up, rotationSpeed * Time.deltaTime);
                 }
-                if (Input.GetKey(KeyCode.W)){
+                if (Input.GetKey(KeyCode.W))
+                {
                     model.transform.Rotate(Vector3.right, rotationSpeed * Time.deltaTime);
-                } else if (Input.GetKey(KeyCode.S)) {
+                }
+                else if (Input.GetKey(KeyCode.S))
+                {
                     model.transform.Rotate(-Vector3.right, rotationSpeed * Time.deltaTime);
                 }
-                if (Input.GetKey(KeyCode.Space)) {
+                if (Input.GetKey(KeyCode.Space))
+                {
                     AddVelocity(model.transform.forward * Thrust * Time.deltaTime);
                 }
             }
         }
-        private void HandleManeuverDirection() {
+        private void HandleManeuverDirection()
+        {
             Maneuver next = ManeuverManager.Instance.NextManeuver;
-            if (next != null) {
+            if (next != null)
+            {
                 if (next.addedVelocity == Vector3.zero) return;
-                if (!maneuverDirection.gameObject.activeSelf) {
+                if (!maneuverDirection.gameObject.activeSelf)
+                {
                     maneuverDirection.gameObject.SetActive(true);
                 }
                 maneuverDirection.rotation = Quaternion.LookRotation(next.addedVelocity);
-                if (Vector3Double.Angle(model.transform.forward, next.addedVelocity) < maneuverSuccessAngle) {
-                    foreach(var mesh in arrowMeshRenderers)
+                if (Vector3Double.Angle(model.transform.forward, next.addedVelocity) < maneuverSuccessAngle)
+                {
+                    foreach (var mesh in arrowMeshRenderers)
                         mesh.material = maneuverSuccessMat;
                 }
-                else {
-                    foreach(var mesh in arrowMeshRenderers)
+                else
+                {
+                    foreach (var mesh in arrowMeshRenderers)
                         mesh.material = maneuverFailMat;
                 }
-            } 
-            else if (maneuverDirection.gameObject.activeSelf) {
+            }
+            else if (maneuverDirection.gameObject.activeSelf)
+            {
                 maneuverDirection.gameObject.SetActive(false);
             }
         }
-        private void AutomateManeuvers() {
+        private void AutomateManeuvers()
+        {
             if (!autopilot) return;
             Maneuver next = ManeuverManager.Instance.NextManeuver;
             if (next == null) return;
-                
-            double currentManeuverInaccuracy;
-            bool isTargetOrbit = kepler.orbit.Equals(next.drawer.orbits[0], SimulationSettings.Instance.maneuverPrecision, out currentManeuverInaccuracy);
-            
-            if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit && currentManeuverInaccuracy < maneuverInaccuracy) {
+
+            bool isTargetOrbit = kepler.orbit.Equals(next.drawer.orbits[0], SimulationSettings.Instance.maneuverPrecision);
+
+            if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit && next.timeToManeuver > -(next.burnTime / 2 + 1))
+            {
                 AddVelocity(model.transform.forward * Thrust * Time.deltaTime);
-                maneuverInaccuracy = currentManeuverInaccuracy;
             }
             else
             {
-                maneuverInaccuracy = float.MaxValue;
                 if (ManeuverNode.isDraggingAny) return;
-                if (next.timeToManeuver < -next.burnTime / 2) 
+                if (next.timeToManeuver < -next.burnTime / 2)
                 {
+                    // Debug.Log("current orbit: " + JsonUtility.ToJson(kepler.orbit.elements, true));
+                    // Debug.Log("target orbit: " + JsonUtility.ToJson(next.drawer.orbits[0], true));
                     HUDController.Instance.SetTimeScaleToPrevious();
                     ManeuverManager.Instance.RemoveFirst();
                 }
-                else if (next.timeToManeuver < next.burnTime / 2 + SimulationSettings.Instance.maneuverTimeSlowdownOffset) {
+                else if (next.timeToManeuver < next.burnTime / 2 + SimulationSettings.Instance.maneuverTimeSlowdownOffset)
+                {
                     HUDController.Instance.SetTimeScaleToDefault();
                 }
             }
@@ -193,7 +213,7 @@ namespace Sim.Objects
             {
                 model.rotation = Quaternion.RotateTowards(model.rotation, Quaternion.LookRotation(next.addedVelocity), rotationSpeed * Time.deltaTime);
             }
-            
+
         }
         private void CheckCelestialInfluence()
         {
@@ -244,23 +264,27 @@ namespace Sim.Objects
 
             //Debug.Log($"Entering {celestial.name} with vectors: R = {relativePosition}, V = {velocity - centralBody.Velocity}");
         }
-        private void UpdateOrbitRenderer() {
-            if (kepler.orbit.elements.timeToPeriapsis < 0.1f && 
+        private void UpdateOrbitRenderer()
+        {
+            if (kepler.orbit.elements.timeToPeriapsis < 0.1f &&
                 kepler.orbitType == OrbitType.ELLIPTIC &&
                 orbitDrawer.lineRenderers[0].loop &&
-                canUpdateOrbit) 
+                canUpdateOrbit)
             {
                 orbitDrawer.DrawOrbits(stateVectors, centralBody);
                 canUpdateOrbit = false;
             }
             else canUpdateOrbit = true;
         }
-        private void CheckWillSoonEnterExitInfluence() {
-            if (timeToNextGravityChange < SimulationSettings.Instance.influenceChangeTimeSlowdownOffset && timeToNextGravityChange > 0) {
+        private void CheckWillSoonEnterExitInfluence()
+        {
+            if (timeToNextGravityChange < SimulationSettings.Instance.influenceChangeTimeSlowdownOffset && timeToNextGravityChange > 0)
+            {
                 HUDController.Instance.SetTimeScaleToDefault();
                 slowingDown = true;
             }
-            else if (timeSinceGravityChange > SimulationSettings.Instance.influenceChangeTimeSlowdownOffset && slowingDown) {
+            else if (timeSinceGravityChange > SimulationSettings.Instance.influenceChangeTimeSlowdownOffset && slowingDown)
+            {
                 HUDController.Instance.SetTimeScaleToPrevious();
                 slowingDown = false;
             }

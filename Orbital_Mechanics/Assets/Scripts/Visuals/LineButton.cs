@@ -20,9 +20,9 @@ namespace Sim.Visuals
         public static event OnHover onLineHovering;
 
         public bool showPointIndication;
-        [DrawIf("showPointIndication", true, ComparisonType.Equals)] 
+        [DrawIf("showPointIndication", true, ComparisonType.Equals)]
         public GameObject indicationPrefab;
-        
+
         private float scaleMultiplier = .02f;
         private float minScale = .1f;
         private float maxScale = 60f;
@@ -35,46 +35,55 @@ namespace Sim.Visuals
 
         private bool hovering = false;
         private new bool enabled = true;
-        
+
         public Orbit orbit { get; set; }
 
         Vector3Double closestWorldPoint;
 
-        public bool Enabled {
+        public bool Enabled
+        {
             get => enabled;
-            set {
+            set
+            {
                 enabled = value;
                 if (_collider == null)
                     _collider = gameObject.GetComponent<MeshCollider>();
-                
+
                 _collider.enabled = value;
             }
         }
 
-        private void Start() {
+        private void Start()
+        {
             if (allLineButtons == null) allLineButtons = new List<LineButton>();
             allLineButtons.Add(this);
             line = GetComponent<LineRenderer>();
-            if (_collider == null) _collider = line.GetComponent<MeshCollider>();  
+            if (_collider == null) _collider = line.GetComponent<MeshCollider>();
 
-            if (showPointIndication) {
+            if (showPointIndication)
+            {
                 indicator = Instantiate(indicationPrefab, transform);
                 indicator.SetActive(false);
             }
         }
 
-        public static void EnableAllLineButtons(bool enabled, LineButton exception) {
-            foreach(var line in allLineButtons) {
-                if (line != exception) {
+        public static void EnableAllLineButtons(bool enabled, LineButton exception)
+        {
+            foreach (var line in allLineButtons)
+            {
+                if (line != exception)
+                {
                     line.Enabled = enabled;
                 }
             }
         }
-        public void ClearAllClickHandlers() {
+        public void ClearAllClickHandlers()
+        {
             onLinePressed = null;
         }
 
-        private void LateUpdate() {
+        private void Update()
+        {
 
             if (orbit != null)
             {
@@ -88,25 +97,29 @@ namespace Sim.Visuals
 
             if (!enabled) return;
 
-            if (Input.GetKey(KeyCode.Q)) {
-                BakeMesh(); 
+            if (Input.GetKey(KeyCode.Q))
+            {
+                BakeMesh();
             }
 
-            if (hovering && showPointIndication && !ManeuverNode.isSelectedAny) {
+            if (hovering && showPointIndication && !ManeuverNode.isSelectedAny)
+            {
                 var worldPos = pointerData.pointerCurrentRaycast.worldPosition;
                 var convertedPos = ConvertWorldPosToOrbitPos(worldPos);
                 indicator.transform.localPosition = (Vector3)convertedPos;
                 if (onLineHovering != null)
                     onLineHovering(this, (Vector3)convertedPos);
 
-                if (showPointIndication && indicator.activeSelf) {
+                if (showPointIndication && indicator.activeSelf)
+                {
                     indicator.transform.localScale = NumericExtensions.ScaleWithDistance(
                         indicator.transform.position, CameraController.Instance.cam.transform.position,
                         scaleMultiplier, minScale, maxScale
                     );
                 }
             }
-            else {
+            else
+            {
                 if (showPointIndication && indicator.activeSelf)
                 {
                     indicator.SetActive(false);
@@ -114,13 +127,16 @@ namespace Sim.Visuals
             }
         }
 
-        public Vector3Double ConvertWorldPosToOrbitPos(Vector3 worldPos, bool returnWorldOrbitPos = false) {
-            if (orbit != null) {
+        public Vector3Double ConvertWorldPosToOrbitPos(Vector3 worldPos, bool returnWorldOrbitPos = false)
+        {
+            if (orbit != null)
+            {
                 var pressLocalPosition = worldPos - orbit.centralBody.transform.position;
                 double angleToPoint = -Vector3Double.SignedAngle(orbit.elements.eccVec, (Vector3Double)pressLocalPosition, orbit.elements.angMomentum);
                 if (!returnWorldOrbitPos)
                     return orbit.CalculateOrbitalPosition(angleToPoint * MathLib.Deg2Rad);
-                else {
+                else
+                {
                     return orbit.CalculateOrbitalPosition(angleToPoint * MathLib.Deg2Rad) + (Vector3Double)orbit.centralBody.transform.position;
                 }
             }
@@ -134,7 +150,8 @@ namespace Sim.Visuals
 
             var worldPos = pointerEventData.pointerCurrentRaycast.worldPosition;
             onLinePressed(ConvertWorldPosToOrbitPos(worldPos));
-            if (showPointIndication) {
+            if (showPointIndication)
+            {
                 indicator.SetActive(false);
             }
         }
@@ -144,10 +161,12 @@ namespace Sim.Visuals
             hovering = true;
             pointerData = pointerEventData;
 
-            if (ManeuverNode.current == null) {
+            if (ManeuverNode.current == null)
+            {
                 if (showPointIndication) indicator.SetActive(true);
             }
-            else if (!ManeuverNode.current.isDragging) {
+            else if (!ManeuverNode.current.isDragging)
+            {
                 if (showPointIndication) indicator.SetActive(true);
             }
             else indicator.SetActive(false);
@@ -156,12 +175,14 @@ namespace Sim.Visuals
         {
             if (!enabled) return;
             hovering = false;
-            if (showPointIndication) {
+            if (showPointIndication)
+            {
                 indicator.SetActive(false);
             }
         }
 
-        public void BakeMesh() {
+        public void BakeMesh()
+        {
             Mesh lineMesh = new Mesh();
             line.startWidth *= SimulationSettings.Instance.linePressTolerance;
             line.BakeMesh(lineMesh, CameraController.Instance.dummyCamera, true);

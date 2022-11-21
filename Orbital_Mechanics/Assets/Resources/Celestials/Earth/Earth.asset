@@ -28,8 +28,8 @@ MonoBehaviour:
     semiLatusRectum: 0
     timeToPeriapsis: 0
     period: 0
-  isStar: 0
-  hasSpacecraft: 0
+  argPrecessionPeriod: 0
+  ascPrecessionPeriod: 0
   material: {fileID: 2100000, guid: aba251bab80144840928aef4889284f4, type: 2}
   bodiesOnOrbit:
   - {fileID: 11400000, guid: 9b09114719179fd4e92a6328f6d73ba3, type: 2}

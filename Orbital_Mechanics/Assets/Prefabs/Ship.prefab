@@ -268,7 +268,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lineWidth: 3
-  orbitResolution: 201
+  orbitResolution: 200
   depth: 5
   isManeuver: 0
 --- !u!114 &7396680545357339825

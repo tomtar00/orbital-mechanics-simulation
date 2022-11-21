@@ -20,7 +20,6 @@ namespace Sim.Maneuvers {
 
         public Dictionary<string, Vector3> directions { get; private set; }
 
-        // [SerializeField] private float orbitWidthOnDrag = 5;
         [SerializeField] private float scaleMultiplier = .1f;
         [SerializeField] private float minScale = .2f;
         [SerializeField] private float maxScale = 10f;
@@ -107,7 +106,6 @@ namespace Sim.Maneuvers {
             isDragging = true;
             isDraggingAny = true;
             LineButton.EnableAllLineButtons(false, lineButton);
-            // lineButton.line.startWidth *= orbitWidthOnDrag;
             lineButton.BakeMesh();
             lineButton.indicator.SetActive(false);
             _collider.enabled = false;
@@ -118,7 +116,6 @@ namespace Sim.Maneuvers {
             isDragging = false;
             isDraggingAny = false;
             LineButton.EnableAllLineButtons(true, lineButton);
-            // lineButton.line.startWidth /= orbitWidthOnDrag;
             lineButton.BakeMesh();
             _collider.enabled = true;
             if (selected) vectorsHolder.SetActive(true);

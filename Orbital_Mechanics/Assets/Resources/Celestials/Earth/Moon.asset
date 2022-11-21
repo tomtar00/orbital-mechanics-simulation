@@ -17,10 +17,10 @@ MonoBehaviour:
   orbit:
     semimajorAxis: 384400000
     eccentricity: 0.0554
-    inclination: 0.0900589894
-    lonAscNode: 2.152689099
-    argPeriapsis: 5.37701036
-    trueAnomaly: 2.52287135
+    inclination: 0.09146001756
+    lonAscNode: 2.163476202
+    argPeriapsis: 5.391717773
+    trueAnomaly: 2.616948419
     meanAnomaly: 0
     anomaly: 0
     semiminorAxis: 0

@@ -75,7 +75,8 @@ public class HUDController : MonoBehaviour
         if (blockTimeChange) return;
         currentTimeScaleIdx = defaultTimeScaleIdx;
         UpdateTimeScaleText();
-        blockTimeChange = true;
+        if (blockTime)
+            blockTimeChange = true;
     }
     public void SetTimeScaleToPrevious()
     {
