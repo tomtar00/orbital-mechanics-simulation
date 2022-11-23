@@ -809,11 +809,11 @@ MonoBehaviour:
   maneuverTimeSlowdownOffset: 10
   addVelocitySensitivity: 1e+18
   maneuverPrecision:
-  - 1
-  - 0.03
-  - 0.1
-  - 0.1
   - 0.05
+  - 0.04
+  - 0.1
+  - 0.1
+  - 0.1
   G: 6.674e-11
   scale: 0.0000001
   gravityFalloff: 0.001

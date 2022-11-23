@@ -189,7 +189,7 @@ namespace Sim.Objects
 
             bool isTargetOrbit = kepler.orbit.Equals(next.drawer.orbits[0], SimulationSettings.Instance.maneuverPrecision);
 
-            if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit && next.timeToManeuver > -(next.burnTime / 2 + 1))
+            if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit && next.timeToManeuver > -(next.burnTime / 2 + .2))
             {
                 AddVelocity(model.transform.forward * Thrust * Time.deltaTime);
             }
@@ -198,8 +198,10 @@ namespace Sim.Objects
                 if (ManeuverNode.isDraggingAny) return;
                 if (next.timeToManeuver < -next.burnTime / 2)
                 {
-                    // Debug.Log("current orbit: " + JsonUtility.ToJson(kepler.orbit.elements, true));
-                    // Debug.Log("target orbit: " + JsonUtility.ToJson(next.drawer.orbits[0], true));
+                    // if (isTargetOrbit) {
+                    //     Debug.Log("current orbit: " + JsonUtility.ToJson(kepler.orbit.elements, true));
+                    //     Debug.Log("target orbit: " + JsonUtility.ToJson(next.drawer.orbits[0], true));
+                    // }
                     HUDController.Instance.SetTimeScaleToPrevious();
                     ManeuverManager.Instance.RemoveFirst();
                 }
@@ -219,7 +221,7 @@ namespace Sim.Objects
         {
             if (centralBody == null) return;
 
-            if (stateVectors.position.sqrMagnitude - centralBody.InfluenceRadius * centralBody.InfluenceRadius > 0) // .5f
+            if (stateVectors.position.sqrMagnitude - centralBody.InfluenceRadius * centralBody.InfluenceRadius > 0)
             {
                 ExitCelestialInfluence();
             }
@@ -227,7 +229,7 @@ namespace Sim.Objects
             {
                 foreach (var orbitingCelestial in centralBody.celestialsOnOrbit)
                 {
-                    if ((transform.localPosition - orbitingCelestial.transform.localPosition).sqrMagnitude - orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius < 0) // -.5f
+                    if ((transform.localPosition - orbitingCelestial.transform.localPosition).sqrMagnitude - orbitingCelestial.InfluenceRadius * orbitingCelestial.InfluenceRadius < 0)
                     {
                         EnterCelestialInfluence(orbitingCelestial);
                         break;
