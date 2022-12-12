@@ -11,7 +11,8 @@ namespace Sim.Orbits
         public Orbit orbit { get; set; }
         public OrbitType orbitType { get; set; } = OrbitType.NONE;
 
-        public KeplerianOrbit() {
+        public KeplerianOrbit()
+        {
             G = SimulationSettings.Instance.G;
         }
 
@@ -77,16 +78,17 @@ namespace Sim.Orbits
             }
         }
 
-        public void ApplyPrecessionChanges(CelestialSO celestialData, double secondsDiff) {
-
-            double CalculatePrecession(double precessionPeriodYears) {
+        public void ApplyPrecessionChanges(CelestialSO celestialData, double secondsDiff)
+        {
+            double CalculatePrecession(double precessionPeriodYears)
+            {
                 double precessionPeriodSeconds = precessionPeriodYears * 365.25 * 24 * 60 * 60;
                 return secondsDiff.SafeDivision(precessionPeriodSeconds);
             }
 
-            double PI2 = 2*MathLib.PI;
+            double PI2 = 2 * MathLib.PI;
             orbit.elements.argPeriapsis = MathLib.Repeat(orbit.elements.argPeriapsis + PI2 * CalculatePrecession(celestialData.ArgPrecessionPeriod), PI2);
-            orbit.elements.lonAscNode = MathLib.Repeat(orbit.elements.lonAscNode + PI2 * CalculatePrecession(celestialData.AscPrecessionPeriod), PI2);
+            orbit.elements.lonAscNode = MathLib.Repeat(orbit.elements.lonAscNode + PI2 * CalculatePrecession(-celestialData.AscPrecessionPeriod), PI2);
         }
         public (double, double, double) UpdateAnomalies(double time)
         {
@@ -101,7 +103,8 @@ namespace Sim.Orbits
         {
             return orbit.ConvertOrbitElementsToStateVectors(trueAnomaly);
         }
-        public void UpdateTimeToPeriapsis() {
+        public void UpdateTimeToPeriapsis()
+        {
             orbit.elements.timeToPeriapsis = orbit.CalculateTimeToPeriapsis(orbit.elements.meanAnomaly);
         }
 

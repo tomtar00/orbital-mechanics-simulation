@@ -14,6 +14,7 @@ namespace Sim.Objects
     {
         [Header("Spacecraft")]
         [SerializeField] protected Transform model;
+        [SerializeField] protected GameObject engine;
         [SerializeField] protected Transform maneuverDirection;
         [Space]
         [SerializeField] protected bool useCustomStartVelocity;
@@ -25,6 +26,7 @@ namespace Sim.Objects
         [Header("Controls")]
         [SerializeField] protected float rotationSpeed = 50;
         [SerializeField] protected float thrust;
+        [SerializeField] protected AnimationCurve thrustCurve;
         [Space]
         [SerializeField] private bool autopilot;
         [SerializeField] private Material maneuverSuccessMat;
@@ -42,10 +44,14 @@ namespace Sim.Objects
         public double timeToNextGravityChange { get; set; }
         public double timeSinceGravityChange { get; set; }
         public float Thrust { get => thrust * SimulationSettings.Instance.scale; }
+        public float CurrentThrustPercentage { get => (_currentThrust * 100) / Thrust; }
         public bool Autopilot { set => autopilot = value; }
 
-        private bool canUpdateOrbit = true;
-        private bool slowingDown = false;
+        bool _canUpdateOrbit = true;
+        bool _slowingDown = false;
+        bool _burning = false;
+        float _currentThrust;
+        float _burnTimeElapsed = 0;
 
         public string TimeToGravityChange
         {
@@ -87,6 +93,15 @@ namespace Sim.Objects
                 gameObject.transform.position, CameraController.Instance.cam.transform.position,
                 scaleMultiplier, minScale, maxScale
             );
+
+            if (_burning) {
+                if (!engine.activeSelf)
+                    engine.SetActive(true);
+            }
+            else {
+                if (engine.activeSelf)
+                    engine.SetActive(false);
+            }
         }
 
         public void InitializeShip()
@@ -122,10 +137,11 @@ namespace Sim.Objects
             timeSinceVelocityChanged = 0;
             StateVectors newStateVectors = new StateVectors(stateVectors.position, stateVectors.velocity + d_vel);
             kepler.CheckOrbitType(newStateVectors, centralBody);
-
             kepler.orbit.ConvertStateVectorsToOrbitElements(newStateVectors);
-
             orbitDrawer.DrawOrbits(newStateVectors, centralBody);
+
+            _burning = true;
+            _burnTimeElapsed += Time.deltaTime;
         }
 
         private void HandleControls()
@@ -151,7 +167,7 @@ namespace Sim.Objects
                 if (Input.GetKey(KeyCode.Space))
                 {
                     AddVelocity(model.transform.forward * Thrust * Time.deltaTime);
-                }
+                } else _burning = false;
             }
         }
         private void HandleManeuverDirection()
@@ -189,9 +205,10 @@ namespace Sim.Objects
 
             bool isTargetOrbit = kepler.orbit.Equals(next.drawer.orbits[0], SimulationSettings.Instance.maneuverPrecision);
 
-            if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit && next.timeToManeuver > -(next.burnTime / 2 + .2))
+            if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit/*  && next.timeToManeuver > -(next.burnTime / 2 + .2) */)
             {
-                AddVelocity(model.transform.forward * Thrust * Time.deltaTime);
+                _currentThrust = Thrust * Time.deltaTime * thrustCurve.Evaluate((float)(_burnTimeElapsed / next.burnTime));
+                AddVelocity(model.transform.forward * _currentThrust);
             }
             else
             {
@@ -200,10 +217,13 @@ namespace Sim.Objects
                 {
                     // if (isTargetOrbit) {
                     //     Debug.Log("current orbit: " + JsonUtility.ToJson(kepler.orbit.elements, true));
-                    //     Debug.Log("target orbit: " + JsonUtility.ToJson(next.drawer.orbits[0], true));
+                    //     Debug.Log("target orbit: " + JsonUtility.ToJson(next.drawer.orbits[0].elements, true));
                     // }
                     HUDController.Instance.SetTimeScaleToPrevious();
                     ManeuverManager.Instance.RemoveFirst();
+                    _burning = false;
+                    _currentThrust = 0;
+                    _burnTimeElapsed = 0;
                 }
                 else if (next.timeToManeuver < next.burnTime / 2 + SimulationSettings.Instance.maneuverTimeSlowdownOffset)
                 {
@@ -271,24 +291,24 @@ namespace Sim.Objects
             if (kepler.orbit.elements.timeToPeriapsis < 0.1f &&
                 kepler.orbitType == OrbitType.ELLIPTIC &&
                 orbitDrawer.lineRenderers[0].loop &&
-                canUpdateOrbit)
+                _canUpdateOrbit)
             {
                 orbitDrawer.DrawOrbits(stateVectors, centralBody);
-                canUpdateOrbit = false;
+                _canUpdateOrbit = false;
             }
-            else canUpdateOrbit = true;
+            else _canUpdateOrbit = true;
         }
         private void CheckWillSoonEnterExitInfluence()
         {
             if (timeToNextGravityChange < SimulationSettings.Instance.influenceChangeTimeSlowdownOffset && timeToNextGravityChange > 0)
             {
                 HUDController.Instance.SetTimeScaleToDefault();
-                slowingDown = true;
+                _slowingDown = true;
             }
-            else if (timeSinceGravityChange > SimulationSettings.Instance.influenceChangeTimeSlowdownOffset && slowingDown)
+            else if (timeSinceGravityChange > SimulationSettings.Instance.influenceChangeTimeSlowdownOffset && _slowingDown)
             {
                 HUDController.Instance.SetTimeScaleToPrevious();
-                slowingDown = false;
+                _slowingDown = false;
             }
         }
     }

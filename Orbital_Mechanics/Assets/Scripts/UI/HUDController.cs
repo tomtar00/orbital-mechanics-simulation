@@ -117,7 +117,8 @@ Velocity: {obj.Speed} m/s
 
         if (obj is Spacecraft)
         {
-            orbitElementsText.text += $"Time to gravity change: {Spacecraft.current.TimeToGravityChange}";
+            orbitElementsText.text += $"Time to gravity change: {Spacecraft.current.TimeToGravityChange}\n";
+            orbitElementsText.text += $"Current thrust: {Spacecraft.current.CurrentThrustPercentage}%";
         }
     }
 }

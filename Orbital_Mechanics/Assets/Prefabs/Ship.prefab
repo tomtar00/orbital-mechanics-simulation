@@ -286,12 +286,55 @@ MonoBehaviour:
   isStationary: 0
   centralBody: {fileID: 0}
   model: {fileID: 7396680545637218754}
+  engine: {fileID: 9006151940970990961}
   maneuverDirection: {fileID: 385384647210114175}
   useCustomStartVelocity: 0
   startVelocity: {x: 0, y: 0, z: 0.0008304}
   startSurfaceAltitude: 0.5
   rotationSpeed: 250
-  thrust: 75
+  thrust: 200
+  thrustCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0.0015792847
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.9676465
+      value: 0.97665894
+      inSlope: -0.01957365
+      outSlope: -0.01957365
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.11526748
+      outWeight: 0.11378913
+    - serializedVersion: 3
+      time: 0.9820787
+      value: 0.5076966
+      inSlope: -43.275616
+      outSlope: -43.275616
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.09953547
+      outWeight: 0.32758802
+    - serializedVersion: 3
+      time: 0.99365234
+      value: 0.049999237
+      inSlope: -0.057621423
+      outSlope: -0.057621423
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.32748935
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   autopilot: 1
   maneuverSuccessMat: {fileID: 2100000, guid: 2c9ea98cce2557d46a3793af0d128915, type: 2}
   maneuverFailMat: {fileID: 2100000, guid: b4f3fa97e11945746b2a769563b31410, type: 2}
@@ -330,7 +373,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.3, y: 0.3, z: 0.7}
-  m_Children: []
+  m_Children:
+  - {fileID: 6059679143886269271}
   m_Father: {fileID: 7396680545357339824}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -361,6 +405,85 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: dde2043135954444ca887e2d4d5d0143, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+--- !u!1 &9006151940970990961
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6059679143886269271}
+  - component: {fileID: 8572160591906474958}
+  - component: {fileID: 634645591668441360}
+  m_Layer: 0
+  m_Name: Engine
+  m_TagString: Player
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &6059679143886269271
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006151940970990961}
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.04285714}
+  m_LocalScale: {x: 0.49999997, y: 0.49999997, z: 0.35714284}
+  m_Children: []
+  m_Father: {fileID: 7396680545637218754}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!33 &8572160591906474958
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006151940970990961}
+  m_Mesh: {fileID: -4432124805086160128, guid: 61f08c8b6682cc0419b9d8e686a5952d, type: 3}
+--- !u!23 &634645591668441360
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006151940970990961}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: b4f3fa97e11945746b2a769563b31410, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

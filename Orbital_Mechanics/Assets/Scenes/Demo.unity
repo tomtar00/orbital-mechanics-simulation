@@ -809,11 +809,9 @@ MonoBehaviour:
   maneuverTimeSlowdownOffset: 10
   addVelocitySensitivity: 1e+18
   maneuverPrecision:
-  - 0.05
-  - 0.04
-  - 0.1
-  - 0.1
-  - 0.1
+  - 0.01
+  - 0.01
+  - 0.01
   G: 6.674e-11
   scale: 0.0000001
   gravityFalloff: 0.001
@@ -1424,7 +1422,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -40.139984}
+  m_AnchoredPosition: {x: 0, y: 20}
   m_SizeDelta: {x: 250, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &274011701
@@ -1961,7 +1959,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -1.800003}
+  m_AnchoredPosition: {x: 0, y: 59.11}
   m_SizeDelta: {x: 1000, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &345539424

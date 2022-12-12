@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sim.Math;
+using UnityEngine;
 
 namespace Sim.Orbits
 {
@@ -349,13 +350,18 @@ namespace Sim.Orbits
             double[] diffs = new[] {
                 MathLib.Abs(elements.semimajorAxis - orbit.elements.semimajorAxis),
                 MathLib.Abs(elements.eccentricity - orbit.elements.eccentricity),
-                MathLib.Abs(elements.inclination - orbit.elements.inclination),
+                MathLib.Abs(elements.inclination - orbit.elements.inclination)/* ,
                 MathLib.Abs(elements.argPeriapsis - orbit.elements.argPeriapsis),
-                MathLib.Abs(elements.lonAscNode - orbit.elements.lonAscNode)
+                MathLib.Abs(elements.lonAscNode - orbit.elements.lonAscNode) */
             };
 
             bool isSameType = (elements.eccentricity > 1 && orbit.elements.eccentricity > 1)
                               || (elements.eccentricity < 1 && orbit.elements.eccentricity < 1);
+
+            // int[] noMatch = diffs.Select((value, i) => (value, i)).Where(item => item.value > precision[item.i]).Select(item => item.i).ToArray();
+            // Debug.Log(string.Join(",", noMatch));
+            // Debug.Log(string.Join(" -- ", diffs));
+
             return isSameType && diffs.Select((value, i) => (value, i)).All(item => item.value < precision[item.i]);
         }
     }
