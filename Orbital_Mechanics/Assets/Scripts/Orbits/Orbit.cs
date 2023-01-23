@@ -358,10 +358,6 @@ namespace Sim.Orbits
             bool isSameType = (elements.eccentricity > 1 && orbit.elements.eccentricity > 1)
                               || (elements.eccentricity < 1 && orbit.elements.eccentricity < 1);
 
-            // int[] noMatch = diffs.Select((value, i) => (value, i)).Where(item => item.value > precision[item.i]).Select(item => item.i).ToArray();
-            // Debug.Log(string.Join(",", noMatch));
-            // Debug.Log(string.Join(" -- ", diffs));
-
             return isSameType && diffs.Select((value, i) => (value, i)).All(item => item.value < precision[item.i]);
         }
     }

@@ -76,13 +76,7 @@ namespace Sim.Maneuvers
             double currentTimeToOrbit = MathLib.Max(timeToOrbit - timeOnCurrentOrbit, 0f); 
             
             if (enterMeanAnomaly > meanAnomaly) enterMeanAnomaly -= MathLib.PI * 2f;
-            double time = ((meanAnomaly - enterMeanAnomaly) / orbit.elements.meanMotion) + currentTimeToOrbit;
-
-            // Debug.Log("===== MANEUVER ======");
-            // Debug.Log("maneuver anomaly: " + anomaly + " mean: " + meanAnomaly);
-            // Debug.Log("enter mean: " + enterMeanAnomaly + " mean motion: " + orbit.elements.meanMotion);
-            // Debug.Log("time on orbit: " +  (time - currentTimeToOrbit).ToTimeSpan() + " to orbit: " + currentTimeToOrbit.ToTimeSpan());
-            // Debug.Log("=====================");
+            double time = ((meanAnomaly - enterMeanAnomaly) / orbit.elements.meanMotion) + currentTimeToOrbit;;
 
             if (time < 0) {
                 time += orbit.elements.period;

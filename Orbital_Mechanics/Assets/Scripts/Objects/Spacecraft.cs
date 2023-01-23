@@ -94,11 +94,13 @@ namespace Sim.Objects
                 scaleMultiplier, minScale, maxScale
             );
 
-            if (_burning) {
+            if (_burning)
+            {
                 if (!engine.activeSelf)
                     engine.SetActive(true);
             }
-            else {
+            else
+            {
                 if (engine.activeSelf)
                     engine.SetActive(false);
             }
@@ -167,7 +169,8 @@ namespace Sim.Objects
                 if (Input.GetKey(KeyCode.Space))
                 {
                     AddVelocity(model.transform.forward * Thrust * Time.deltaTime);
-                } else _burning = false;
+                }
+                else _burning = false;
             }
         }
         private void HandleManeuverDirection()
@@ -205,25 +208,21 @@ namespace Sim.Objects
 
             bool isTargetOrbit = kepler.orbit.Equals(next.drawer.orbits[0], SimulationSettings.Instance.maneuverPrecision);
 
-            if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit/*  && next.timeToManeuver > -(next.burnTime / 2 + .2) */)
+            if (next.timeToManeuver < next.burnTime / 2 && !isTargetOrbit)
             {
                 _currentThrust = Thrust * Time.deltaTime * thrustCurve.Evaluate((float)(_burnTimeElapsed / next.burnTime));
                 AddVelocity(model.transform.forward * _currentThrust);
             }
             else
             {
+                _burning = false;
+                _currentThrust = 0;
+                _burnTimeElapsed = 0;
                 if (ManeuverNode.isDraggingAny) return;
                 if (next.timeToManeuver < -next.burnTime / 2)
                 {
-                    // if (isTargetOrbit) {
-                    //     Debug.Log("current orbit: " + JsonUtility.ToJson(kepler.orbit.elements, true));
-                    //     Debug.Log("target orbit: " + JsonUtility.ToJson(next.drawer.orbits[0].elements, true));
-                    // }
                     HUDController.Instance.SetTimeScaleToPrevious();
                     ManeuverManager.Instance.RemoveFirst();
-                    _burning = false;
-                    _currentThrust = 0;
-                    _burnTimeElapsed = 0;
                 }
                 else if (next.timeToManeuver < next.burnTime / 2 + SimulationSettings.Instance.maneuverTimeSlowdownOffset)
                 {
