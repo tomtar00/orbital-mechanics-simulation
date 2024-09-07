@@ -44,7 +44,7 @@ namespace Sim.Objects
         public double timeToNextGravityChange { get; set; }
         public double timeSinceGravityChange { get; set; }
         public float Thrust { get => thrust * SimulationSettings.Instance.scale; }
-        public float CurrentThrustPercentage { get => (_currentThrust * 100) / Thrust; }
+        public float CurrentThrustPercentage { get => (_currentThrust * 10000) / Thrust; }
         public bool Autopilot { set => autopilot = value; }
 
         bool _canUpdateOrbit = true;
@@ -168,9 +168,15 @@ namespace Sim.Objects
                 }
                 if (Input.GetKey(KeyCode.Space))
                 {
+                    _currentThrust = Thrust / 100f;
                     AddVelocity(model.transform.forward * Thrust * Time.deltaTime);
                 }
                 else _burning = false;
+
+                if (Input.GetKeyUp(KeyCode.Space))
+                {
+                    _currentThrust = 0;
+                }
             }
         }
         private void HandleManeuverDirection()

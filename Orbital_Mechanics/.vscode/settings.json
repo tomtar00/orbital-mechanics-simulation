@@ -57,5 +57,6 @@
         "Semilatus",
         "semimajor",
         "semiminor"
-    ]
+    ],
+    "dotnet.preferCSharpExtension": true
 }
