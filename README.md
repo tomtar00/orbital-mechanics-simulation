@@ -7,19 +7,38 @@ This project aims to provide a simple implementation of a basic space maneuver s
 ![main](.github/images/main.png)
 
 2. Create maneuvers pressing on spacecraft's orbit/tracjectory.
-![1](.github/video/1.mp4)
+
+https://github.com/user-attachments/assets/11988d64-22df-4d0c-b723-c2c5535c0225
+
+
 3. Modify maneuvers by pressing arrows that represent change to velocity in the marked direction
-![2](.github/video/2.mp4)
+
+https://github.com/user-attachments/assets/2557c6e1-f101-48f4-a44e-04f5f7ca256c
+
+
 4. You can also drag the entire maneuver node along the trajectory line
-![3](.github/video/3.mp4)
+
+https://github.com/user-attachments/assets/3d12b54c-d4e1-452e-b3c6-4a91df1a06d8
+
+
 5. Use autopilot or rotate the spacecraft towards the final maneuver direction marked as an arrow near the spacecraft
-![4](.github/video/4.mp4)
+
+https://github.com/user-attachments/assets/213cdc27-c6a3-41f3-a921-88e496bf43f1
+
+
 6. Wait for autopilot to make the burn or do it yourself when spacecraft is near the maneuver node
-![5](.github/video/5.mp4)
+
+https://github.com/user-attachments/assets/35c6c1d0-3ac9-405c-97e6-f21d3587d5ac
+
+
 7. You can also create multiple maneuver nodes that relay on future trajectories
-![6](.github/video/6.mp4)
+   
+https://github.com/user-attachments/assets/5eb6d999-0d8d-43b3-9ef4-eb938c7b4f29
 
 ### Controls
 - `Q` - unlock cursor (press in empty space to lock cursor)
 - `W` `A` `S` `D` - rotate spacecraft
 - `Space` - add acceleration
+
+
+
